@@ -29,10 +29,10 @@ export const currentUser = {
 };
 
 export const dashboardStats = [
-	{ id: 1, value: 3, label: "Mes tournois" },
-	{ id: 2, value: 24, label: "Équipes" },
-	{ id: 3, value: 48, label: "Matchs" },
-	{ id: 4, value: 128, label: "Joueurs" },
+	{ id: 1, value: 3,  label: "Mes tournois" },
+	{ id: 2, value: 8,  label: "Équipes" },
+	{ id: 3, value: 12, label: "Matchs" },
+	{ id: 4, value: 64, label: "Joueurs" },
 ];
 
 export const myTournaments = [

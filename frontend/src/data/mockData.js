@@ -92,36 +92,36 @@ export const organizers = [
 	{
 		id: 1,
 		name: "Club Sportif Lyonnais",
-		tournaments: 12,
+		tournaments: 3,
 		location: "Lyon, France",
-		since: 2019,
-		categories: ["U15", "U17", "Senior"],
+		since: 2023,
+		categories: ["U15", "U17"],
 		verified: true,
 	},
 	{
 		id: 2,
 		name: "Association Football Bretagne",
-		tournaments: 8,
+		tournaments: 2,
 		location: "Rennes, France",
-		since: 2020,
+		since: 2024,
 		categories: ["U13", "U15", "U18"],
 		verified: true,
 	},
 	{
 		id: 3,
 		name: "Paris Football Club Académie",
-		tournaments: 21,
+		tournaments: 2,
 		location: "Paris, France",
-		since: 2017,
-		categories: ["U15", "U17", "U18", "Senior"],
+		since: 2023,
+		categories: ["U15", "U17", "U18"],
 		verified: true,
 	},
 	{
 		id: 4,
 		name: "Sud Foot Organisation",
-		tournaments: 5,
+		tournaments: 1,
 		location: "Marseille, France",
-		since: 2022,
+		since: 2024,
 		categories: ["U17", "Senior"],
 		verified: false,
 	},
@@ -159,10 +159,10 @@ export const features = [
 ];
 
 export const platformStats = [
-	{ id: 1, value: "350+", label: "Tournois organisés" },
-	{ id: 2, value: "2 500+", label: "Équipes inscrites" },
-	{ id: 3, value: "25k+", label: "Joueurs" },
-	{ id: 4, value: "15+", label: "Pays" },
+	{ id: 1, value: "8",   label: "Tournois organisés" },
+	{ id: 2, value: "42",  label: "Équipes inscrites" },
+	{ id: 3, value: "310", label: "Joueurs" },
+	{ id: 4, value: "3",   label: "Régions" },
 ];
 
 export const footerLinks = {

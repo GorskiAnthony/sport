@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import BreadcrumbContext from "../../contexts/BreadcrumbContext";
 import { getDashboardStats, getMyTournaments } from "../../services/dashboardService";
+import QRCodeModal from "../../components/ui/QRCodeModal";
 
 const STATUS_STYLES = {
 	"En cours": "bg-green-500/20 text-green-400",
@@ -26,24 +27,36 @@ function StatCard({ value, label, loading }) {
 	);
 }
 
-function TournamentRow({ id, icon, name, dates, location, status }) {
+function TournamentRow({ tournament, onQR }) {
+	const { icon, name, dates, location, status, sport, category } = tournament;
 	return (
-		<Link
-			to={`/dashboard/tournois`}
-			className="flex items-center justify-between px-5 py-4 bg-[#161B22] border border-white/5 rounded-xl hover:border-green-500/30 transition-colors duration-200 group"
-			aria-label={`${name} — ${status}`}
-		>
-			<div className="flex items-center gap-4">
+		<div className="flex items-center justify-between px-5 py-4 bg-[#161B22] border border-white/5 rounded-xl hover:border-green-500/30 transition-colors duration-200 group">
+			<Link to="/dashboard/tournois" className="flex items-center gap-4 flex-1 min-w-0" aria-label={`${name} — ${status}`}>
 				<span className="text-2xl" aria-hidden="true">{icon}</span>
-				<div>
-					<p className="text-white font-semibold text-sm group-hover:text-green-400 transition-colors">{name}</p>
+				<div className="min-w-0">
+					<p className="text-white font-semibold text-sm group-hover:text-green-400 transition-colors truncate">{name}</p>
 					<p className="text-slate-500 text-xs mt-0.5">{dates} · {location}</p>
 				</div>
+			</Link>
+			<div className="flex items-center gap-2 flex-shrink-0">
+				<span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[status] ?? STATUS_STYLES["À venir"]}`}>
+					{status}
+				</span>
+				<button
+					onClick={() => onQR(tournament)}
+					aria-label={`QR code pour ${name}`}
+					title="Générer le QR code"
+					className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-green-500/20 text-slate-400 hover:text-green-400 rounded-lg transition-colors"
+				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+						<rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+						<rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="3" height="3" />
+						<rect x="19" y="19" width="2" height="2" /><rect x="17" y="14" width="2" height="2" />
+						<rect x="14" y="17" width="2" height="2" />
+					</svg>
+				</button>
 			</div>
-			<span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[status] ?? STATUS_STYLES["À venir"]}`}>
-				{status}
-			</span>
-		</Link>
+		</div>
 	);
 }
 
@@ -53,6 +66,7 @@ function DashboardPage() {
 	const [tournaments, setTournaments] = useState([]);
 	const [loadingStats, setLoadingStats] = useState(true);
 	const [loadingTournaments, setLoadingTournaments] = useState(true);
+	const [qrTarget, setQrTarget] = useState(null);
 
 	useEffect(() => {
 		ctx?.setCrumbs([{ label: "Tableau de bord" }]);
@@ -65,6 +79,7 @@ function DashboardPage() {
 	}, []);
 
 	return (
+		<>
 		<div className="max-w-5xl space-y-8">
 			<h1 className="text-white text-2xl font-extrabold">Tableau de bord</h1>
 
@@ -106,12 +121,17 @@ function DashboardPage() {
 				) : (
 					<ul className="space-y-3" role="list">
 						{tournaments.map((t) => (
-							<li key={t.id}><TournamentRow {...t} /></li>
+							<li key={t.id}><TournamentRow tournament={t} onQR={setQrTarget} /></li>
 						))}
 					</ul>
 				)}
 			</section>
 		</div>
+
+		{qrTarget && (
+			<QRCodeModal tournament={qrTarget} onClose={() => setQrTarget(null)} />
+		)}
+		</>
 	);
 }
 

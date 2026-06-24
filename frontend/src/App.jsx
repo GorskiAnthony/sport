@@ -1,22 +1,42 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import HeroSection from "./components/HeroSection";
+import FeaturesSection from "./components/FeaturesSection";
+import CommunitySection from "./components/CommunitySection";
+import StatsSection from "./components/StatsSection";
 import SpectatorHomePage from "./pages/SpectatorHomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CreateTournamentPage from "./pages/CreateTournamentPage";
 import AddTeamPage from "./pages/AddTeamPage";
+import SportsPage from "./pages/SportsPage";
 import TournoisPage from "./pages/TournoisPage";
 import EquipesPage from "./pages/EquipesPage";
+import PublicTournamentPage from "./pages/PublicTournamentPage";
+import SpectatorClassementsPage from "./pages/spectator/ClassementsPage";
+import SpectatorFavorisPage from "./pages/spectator/FavorisPage";
 import OrganisateursPage from "./pages/OrganisateursPage";
 import AProposPage from "./pages/AProposPage";
 import TarifsPage from "./pages/TarifsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import DashboardLayout from "./layouts/DashboardLayout";
+import SpectatorLayout from "./layouts/SpectatorLayout";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import DashboardMatchsPage from "./pages/dashboard/MatchsPage";
 import DashboardEquipesPage from "./pages/dashboard/EquipesPage";
 import DashboardTournoisPage from "./pages/dashboard/TournoisPage";
+
+function HomePage() {
+	return (
+		<main id="main-content" className="flex-1">
+			<HeroSection />
+			<FeaturesSection />
+			<CommunitySection />
+			<StatsSection />
+		</main>
+	);
+}
 
 function Layout({ children, hideFooter = false }) {
 	return (
@@ -39,7 +59,21 @@ function App() {
 		<BrowserRouter>
 			<Routes>
 				{/* Public */}
-				<Route path="/" element={<Layout><SpectatorHomePage /></Layout>} />
+				<Route path="/" element={<Layout><HomePage /></Layout>} />
+				{/* Spectator layout — toutes les pages restent dans ce layout */}
+				<Route path="/accueil" element={<SpectatorLayout />}>
+					<Route index element={<SpectatorHomePage />} />
+					<Route path="tournois" element={<TournoisPage />} />
+					<Route path="sports" element={<SportsPage />} />
+					<Route path="equipes" element={<EquipesPage />} />
+					<Route path="classements" element={<SpectatorClassementsPage />} />
+					<Route path="favoris" element={<SpectatorFavorisPage />} />
+				</Route>
+
+				{/* Public tournament page — target des QR codes */}
+				<Route path="/tournoi/:id" element={<PublicTournamentPage />} />
+
+				<Route path="/sports" element={<Layout><SportsPage /></Layout>} />
 				<Route path="/tournois" element={<Layout><TournoisPage /></Layout>} />
 				<Route path="/equipes" element={<Layout><EquipesPage /></Layout>} />
 				<Route path="/organisateurs" element={<Layout><OrganisateursPage /></Layout>} />

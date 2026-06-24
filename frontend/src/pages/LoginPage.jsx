@@ -42,7 +42,7 @@ function LoginPage() {
 			localStorage.setItem("user", JSON.stringify(data.user));
 			toast.success(`Bon retour, ${data.user.name} !`, "Connexion réussie");
 			setTimeout(() => {
-				navigate(data.user.role === "organisateur" ? "/dashboard" : "/");
+				navigate(data.user.role === "organisateur" ? "/dashboard" : "/accueil");
 			}, 800);
 		} catch (err) {
 			if (err.code === "EMAIL_NOT_FOUND") {

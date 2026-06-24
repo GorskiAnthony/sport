@@ -3,12 +3,12 @@ import { Link, NavLink } from "react-router-dom";
 import Button from "./Button";
 
 const NAV_LINKS = [
-	{ label: "Accueil",     to: "/" },
-	{ label: "Tournois",    to: "/tournois" },
-	{ label: "Sports",      to: "/sports" },
-	{ label: "Équipes",     to: "/equipes" },
-	{ label: "Classements", to: "/classements" },
-	{ label: "À propos",    to: "/a-propos" },
+	{ label: "Accueil",  to: "/" },
+	{ label: "Tournois", to: "/tournois" },
+	{ label: "Sports",   to: "/sports" },
+	{ label: "Équipes",  to: "/equipes" },
+	{ label: "Tarifs",   to: "/tarifs" },
+	{ label: "À propos", to: "/a-propos" },
 ];
 
 function SearchModal({ onClose }) {
