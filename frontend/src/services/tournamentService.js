@@ -20,4 +20,10 @@ export const getTournamentById = async (id) => {
 	return Promise.resolve({ data: tournament ?? null });
 };
 
-export default { getUpcomingTournaments, getAllTournaments, getTournamentById };
+export const createTournament = async (payload) => {
+	// TODO: remplacer par l'appel réel quand le backend est prêt
+	// return api.post("/tournaments", payload);
+	return Promise.resolve({ data: { id: Date.now(), ...payload } });
+};
+
+export default { getUpcomingTournaments, getAllTournaments, getTournamentById, createTournament };

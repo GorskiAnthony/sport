@@ -1,11 +1,27 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import HeroSection from "./components/HeroSection";
 import FeaturesSection from "./components/FeaturesSection";
 import CommunitySection from "./components/CommunitySection";
 import StatsSection from "./components/StatsSection";
-import Footer from "./components/Footer";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import CreateTournamentPage from "./pages/CreateTournamentPage";
+import AddTeamPage from "./pages/AddTeamPage";
 
-function App() {
+function HomePage() {
+	return (
+		<main id="main-content" className="flex-1">
+			<HeroSection />
+			<FeaturesSection />
+			<CommunitySection />
+			<StatsSection />
+		</main>
+	);
+}
+
+function Layout({ children, hideFooter = false }) {
 	return (
 		<div className="bg-[#0D1117] text-white min-h-screen flex flex-col">
 			<a
@@ -14,18 +30,59 @@ function App() {
 			>
 				Aller au contenu principal
 			</a>
-
 			<Navbar />
-
-			<main id="main-content" className="flex-1">
-				<HeroSection />
-				<FeaturesSection />
-				<CommunitySection />
-				<StatsSection />
-			</main>
-
-			<Footer />
+			{children}
+			{!hideFooter && <Footer />}
 		</div>
+	);
+}
+
+function App() {
+	return (
+		<BrowserRouter>
+			<Routes>
+				<Route
+					path="/"
+					element={
+						<Layout>
+							<HomePage />
+						</Layout>
+					}
+				/>
+				<Route
+					path="/connexion"
+					element={
+						<Layout hideFooter>
+							<LoginPage />
+						</Layout>
+					}
+				/>
+				<Route
+					path="/inscription"
+					element={
+						<Layout hideFooter>
+							<RegisterPage />
+						</Layout>
+					}
+				/>
+				<Route
+					path="/inscription/tournoi"
+					element={
+						<Layout hideFooter>
+							<CreateTournamentPage />
+						</Layout>
+					}
+				/>
+				<Route
+					path="/inscription/equipes"
+					element={
+						<Layout hideFooter>
+							<AddTeamPage />
+						</Layout>
+					}
+				/>
+			</Routes>
+		</BrowserRouter>
 	);
 }
 
