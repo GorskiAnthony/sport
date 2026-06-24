@@ -96,7 +96,7 @@ function TournoisPage() {
 	useEffect(() => {
 		ctx?.setCrumbs([
 			{ label: "Accueil", to: "/dashboard" },
-			{ label: "Tournois", to: "/dashboard/tournois" },
+			{ label: "Tournois", to: "/dashboard/tournaments" },
 			{ label: "Challenge U15" },
 			{ label: "Match" },
 		]);

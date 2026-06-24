@@ -166,7 +166,7 @@ function SportCard({ sport }) {
 
 			{sport.active && (
 				<Link
-					to="/tournois"
+					to="/tournaments"
 					className="mt-4 w-full flex items-center justify-center gap-1.5 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-semibold rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500"
 				>
 					Voir les tournois
@@ -287,7 +287,7 @@ function SportsPage() {
 						Vous organisez des tournois dans une discipline non listée ? Contactez-nous, on peut l'ajouter rapidement.
 					</p>
 					<Link
-						to="/a-propos"
+						to="/about"
 						className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black text-sm font-bold px-6 py-2.5 rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500"
 					>
 						Nous contacter

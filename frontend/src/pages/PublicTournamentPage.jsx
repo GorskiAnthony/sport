@@ -63,13 +63,13 @@ function PublicTournamentPage() {
 					</Link>
 					<div className="flex items-center gap-2">
 						{user ? (
-							<Link to="/accueil" className="text-green-400 text-sm hover:text-green-300 transition-colors">
+							<Link to="/home" className="text-green-400 text-sm hover:text-green-300 transition-colors">
 								Mon espace
 							</Link>
 						) : (
 							<>
-								<Link to="/connexion" className="text-slate-400 text-sm hover:text-white transition-colors">Se connecter</Link>
-								<Link to="/inscription" className="bg-green-500 hover:bg-green-400 text-black text-sm font-bold px-4 py-1.5 rounded-lg transition-colors">
+								<Link to="/login" className="text-slate-400 text-sm hover:text-white transition-colors">Se connecter</Link>
+								<Link to="/register" className="bg-green-500 hover:bg-green-400 text-black text-sm font-bold px-4 py-1.5 rounded-lg transition-colors">
 									Créer un compte
 								</Link>
 							</>
@@ -179,13 +179,13 @@ function PublicTournamentPage() {
 						</p>
 						<div className="flex flex-col gap-2">
 							<Link
-								to={`/inscription?redirect=/tournoi/${id}`}
+								to={`/register?redirect=/tournoi/${id}`}
 								className="w-full py-3 bg-green-500 hover:bg-green-400 text-black text-sm font-bold rounded-xl transition-colors text-center"
 							>
 								Créer un compte gratuit
 							</Link>
 							<Link
-								to={`/connexion?redirect=/tournoi/${id}`}
+								to={`/login?redirect=/tournoi/${id}`}
 								className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 text-sm rounded-xl transition-colors text-center"
 							>
 								J'ai déjà un compte

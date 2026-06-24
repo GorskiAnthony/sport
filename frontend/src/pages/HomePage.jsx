@@ -10,7 +10,7 @@ function HomePage() {
 
 	if (loading) return null;
 	if (user?.role === "organisateur") return <Navigate to="/dashboard" replace />;
-	if (user?.role === "spectateur")   return <Navigate to="/accueil"   replace />;
+	if (user?.role === "spectateur")   return <Navigate to="/home"   replace />;
 
 	return (
 		<main id="main-content" className="flex-1">

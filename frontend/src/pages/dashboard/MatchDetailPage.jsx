@@ -470,7 +470,7 @@ function MatchDetailPage() {
 			setMatch(data);
 			if (data) {
 				ctx?.setCrumbs([
-					{ label: "Matchs", to: "/dashboard/matchs" },
+					{ label: "Matchs", to: "/dashboard/matches" },
 					{ label: `${data.team1} – ${data.team2}` },
 				]);
 			}
@@ -516,7 +516,7 @@ function MatchDetailPage() {
 			<div className="flex items-center justify-between mb-5">
 				<div className="flex items-center gap-3">
 					<button
-						onClick={() => navigate("/dashboard/matchs")}
+						onClick={() => navigate("/dashboard/matches")}
 						className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
 						aria-label="Retour aux matchs"
 					>

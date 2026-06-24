@@ -449,7 +449,7 @@ function NewTournamentPage() {
 
 	useEffect(() => {
 		ctx?.setCrumbs([
-			{ label: "Tournois", to: "/dashboard/tournois" },
+			{ label: "Tournois", to: "/dashboard/tournaments" },
 			{ label: step === 1 ? "Nouveau tournoi" : `${tournament?.name ?? "Équipes"}` },
 		]);
 	}, [step, tournament]);

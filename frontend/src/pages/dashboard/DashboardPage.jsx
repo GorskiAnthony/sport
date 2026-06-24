@@ -31,7 +31,7 @@ function TournamentRow({ tournament, onQR }) {
 	const { icon, name, dates, location, status, sport, category } = tournament;
 	return (
 		<div className="flex items-center justify-between px-5 py-4 bg-[#161B22] border border-white/5 rounded-xl hover:border-green-500/30 transition-colors duration-200 group">
-			<Link to="/dashboard/tournois" className="flex items-center gap-4 flex-1 min-w-0" aria-label={`${name} — ${status}`}>
+			<Link to="/dashboard/tournaments" className="flex items-center gap-4 flex-1 min-w-0" aria-label={`${name} — ${status}`}>
 				<span className="text-2xl" aria-hidden="true">{icon}</span>
 				<div className="min-w-0">
 					<p className="text-white font-semibold text-sm group-hover:text-green-400 transition-colors truncate">{name}</p>
@@ -99,7 +99,7 @@ function DashboardPage() {
 						Mes tournois
 					</h2>
 					<Link
-						to="/dashboard/nouveau-tournoi"
+						to="/dashboard/new-tournament"
 						className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
 					>
 						+ Créer un tournoi

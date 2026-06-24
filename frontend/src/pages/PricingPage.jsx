@@ -115,7 +115,7 @@ function TarifsPage() {
 						<Button
 							text={cta}
 							variant={ctaVariant}
-							href="/inscription"
+							href="/register"
 							className="w-full justify-center py-3"
 						/>
 					</li>

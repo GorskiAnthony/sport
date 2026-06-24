@@ -310,7 +310,7 @@ function NotFoundPage() {
 						className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm px-6 py-3 rounded-lg transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
 						← Retour à l'accueil
 					</Link>
-					<Link to="/tournois"
+					<Link to="/tournaments"
 						className="inline-flex items-center gap-2 border border-white/20 text-slate-300 hover:text-white hover:border-white/40 font-semibold text-sm px-6 py-3 rounded-lg transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
 						Voir les tournois
 					</Link>

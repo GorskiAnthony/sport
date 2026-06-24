@@ -43,7 +43,7 @@ function LoginPage() {
 			authLogin(data.user, data.token);
 			toast.success(`Bon retour, ${data.user.name} !`, "Connexion réussie");
 			setTimeout(() => {
-				navigate(data.user.role === "organisateur" ? "/dashboard" : "/accueil");
+				navigate(data.user.role === "organisateur" ? "/dashboard" : "/home");
 			}, 800);
 		} catch (err) {
 			if (err.code === "EMAIL_NOT_FOUND") {
@@ -107,7 +107,7 @@ function LoginPage() {
 
 				<p className="text-slate-400 text-sm text-center mt-2">
 					Pas encore de compte ?{" "}
-					<Link to="/inscription" className="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+					<Link to="/register" className="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
 						Créer un compte
 					</Link>
 				</p>

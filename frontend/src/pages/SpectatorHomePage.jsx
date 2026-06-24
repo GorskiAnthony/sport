@@ -277,7 +277,7 @@ function LiveTournamentRow({ match }) {
 function LiveTournamentsPanel() {
 	return (
 		<div className="flex-1 min-w-0">
-			<SectionHeader title="Tournois en cours" href="/tournois" label="Voir tous les tournois" />
+			<SectionHeader title="Tournois en cours" href="/tournaments" label="Voir tous les tournois" />
 			<div>
 				{liveTournaments.map((match) => (
 					<LiveTournamentRow key={match.id} match={match} />
@@ -292,7 +292,7 @@ function LiveTournamentsPanel() {
 function StandingsPanel() {
 	return (
 		<div className="w-64 flex-shrink-0">
-			<SectionHeader title="Classements populaires" href="/classements" label="Voir tous les classements" />
+			<SectionHeader title="Classements populaires" href="/standings" label="Voir tous les classements" />
 			<div className="space-y-2">
 				{popularStandings.map((team) => (
 					<div
@@ -313,7 +313,7 @@ function StandingsPanel() {
 				))}
 			</div>
 			<Link
-				to="/classements"
+				to="/standings"
 				className="mt-4 w-full py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center"
 			>
 				Voir tous les classements
@@ -328,7 +328,7 @@ function EventsPanel() {
 	return (
 		<div className="w-56 flex-shrink-0">
 			{/* Upcoming */}
-			<SectionHeader title="Prochains événements" href="/tournois" label="Voir tous les événements" />
+			<SectionHeader title="Prochains événements" href="/tournaments" label="Voir tous les événements" />
 			<div className="space-y-3">
 				{upcomingEvents.map((ev) => (
 					<div key={ev.id} className="flex items-center gap-3 hover:bg-white/[0.02] -mx-4 px-4 py-1 rounded-lg transition-colors cursor-pointer">

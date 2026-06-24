@@ -65,7 +65,7 @@ function CreateTournamentPage() {
 		setLoading(true);
 		try {
 			await createTournament(form);
-			navigate("/inscription/equipes");
+			navigate("/register/teams");
 		} finally {
 			setLoading(false);
 		}

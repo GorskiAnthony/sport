@@ -65,12 +65,12 @@ const Icon = {
 
 const NAV = [
 	{ to: "/dashboard",             label: "Tableau de bord", icon: Icon.Dashboard,  end: true },
-	{ to: "/dashboard/tournois",    label: "Tournois",        icon: Icon.Tournament },
-	{ to: "/dashboard/equipes",     label: "Équipes",         icon: Icon.Teams },
-	{ to: "/dashboard/matchs",      label: "Matchs",          icon: Icon.Matches },
-	{ to: "/dashboard/classements", label: "Classements",     icon: Icon.Standings },
+	{ to: "/dashboard/tournaments",    label: "Tournois",        icon: Icon.Tournament },
+	{ to: "/dashboard/teams",     label: "Équipes",         icon: Icon.Teams },
+	{ to: "/dashboard/matches",      label: "Matchs",          icon: Icon.Matches },
+	{ to: "/dashboard/standings", label: "Classements",     icon: Icon.Standings },
 	{ to: "/dashboard/messages",    label: "Messages",        icon: Icon.Messages },
-	{ to: "/dashboard/parametres",  label: "Paramètres",      icon: Icon.Settings },
+	{ to: "/dashboard/settings",  label: "Paramètres",      icon: Icon.Settings },
 ];
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */

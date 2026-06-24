@@ -15,26 +15,26 @@ const LoginPage                = lazy(() => import("./pages/LoginPage"));
 const RegisterPage             = lazy(() => import("./pages/RegisterPage"));
 const CreateTournamentPage     = lazy(() => import("./pages/CreateTournamentPage"));
 const AddTeamPage              = lazy(() => import("./pages/AddTeamPage"));
-const SportsPage               = lazy(() => import("./pages/SportsPage"));
-const TournoisPage             = lazy(() => import("./pages/TournoisPage"));
-const EquipesPage              = lazy(() => import("./pages/EquipesPage"));
-const OrganisateursPage        = lazy(() => import("./pages/OrganisateursPage"));
-const AProposPage              = lazy(() => import("./pages/AProposPage"));
-const TarifsPage               = lazy(() => import("./pages/TarifsPage"));
-const NotFoundPage             = lazy(() => import("./pages/NotFoundPage"));
-const PublicTournamentPage     = lazy(() => import("./pages/PublicTournamentPage"));
-const SpectatorClassementsPage = lazy(() => import("./pages/spectator/ClassementsPage"));
-const SpectatorFavorisPage     = lazy(() => import("./pages/spectator/FavorisPage"));
+const SportsPage                  = lazy(() => import("./pages/SportsPage"));
+const TournamentsPage             = lazy(() => import("./pages/TournamentsPage"));
+const TeamsPage                   = lazy(() => import("./pages/TeamsPage"));
+const OrganizersPage              = lazy(() => import("./pages/OrganizersPage"));
+const AboutPage                   = lazy(() => import("./pages/AboutPage"));
+const PricingPage                 = lazy(() => import("./pages/PricingPage"));
+const NotFoundPage                = lazy(() => import("./pages/NotFoundPage"));
+const PublicTournamentPage        = lazy(() => import("./pages/PublicTournamentPage"));
+const SpectatorStandingsPage      = lazy(() => import("./pages/spectator/StandingsPage"));
+const SpectatorFavoritesPage      = lazy(() => import("./pages/spectator/FavoritesPage"));
 const DashboardPage               = lazy(() => import("./pages/dashboard/DashboardPage"));
-const DashboardMatchsPage         = lazy(() => import("./pages/dashboard/MatchsPage"));
+const DashboardMatchesPage        = lazy(() => import("./pages/dashboard/MatchesPage"));
 const DashboardMatchDetailPage    = lazy(() => import("./pages/dashboard/MatchDetailPage"));
-const DashboardEquipesPage        = lazy(() => import("./pages/dashboard/EquipesPage"));
-const DashboardTournoisPage       = lazy(() => import("./pages/dashboard/TournoisPage"));
-const DashboardClassementsPage    = lazy(() => import("./pages/dashboard/ClassementsPage"));
+const DashboardTeamsPage          = lazy(() => import("./pages/dashboard/TeamsPage"));
+const DashboardTournamentsPage    = lazy(() => import("./pages/dashboard/TournamentsPage"));
+const DashboardStandingsPage      = lazy(() => import("./pages/dashboard/StandingsPage"));
 const DashboardMessagesPage       = lazy(() => import("./pages/dashboard/MessagesPage"));
-const DashboardParametresPage     = lazy(() => import("./pages/dashboard/ParametresPage"));
+const DashboardSettingsPage       = lazy(() => import("./pages/dashboard/SettingsPage"));
 const DashboardNewTournamentPage  = lazy(() => import("./pages/dashboard/NewTournamentPage"));
-const SpectatorParametresPage     = lazy(() => import("./pages/spectator/ParametresPage"));
+const SpectatorSettingsPage       = lazy(() => import("./pages/spectator/SettingsPage"));
 
 /* ─── Loader Suspense ──────────────────────────────────────────── */
 function PageLoader() {
@@ -76,25 +76,25 @@ const router = createBrowserRouter([
 	{
 		element: <PublicLayoutNoFooter />,
 		children: [
-			{ path: "/connexion",             element: <LoginPage /> },
-			{ path: "/inscription",           element: <RegisterPage /> },
-			{ path: "/inscription/tournoi",   element: <CreateTournamentPage /> },
-			{ path: "/inscription/equipes",   element: <AddTeamPage /> },
+			{ path: "/login",             element: <LoginPage /> },
+			{ path: "/register",           element: <RegisterPage /> },
+			{ path: "/register/tournament",   element: <CreateTournamentPage /> },
+			{ path: "/register/teams",   element: <AddTeamPage /> },
 		],
 	},
 
 	/* Spectateur — sidebar persistante sur toutes ses pages */
 	{
-		path: "/accueil",
+		path: "/home",
 		element: <SpectatorLayout />,
 		children: [
-			{ index: true,         element: <SpectatorHomePage /> },
-			{ path: "tournois",    element: <TournoisPage /> },
+			{ index: true,        element: <SpectatorHomePage /> },
+			{ path: "tournaments", element: <TournamentsPage /> },
 			{ path: "sports",      element: <SportsPage /> },
-			{ path: "equipes",     element: <EquipesPage /> },
-			{ path: "classements", element: <SpectatorClassementsPage /> },
-			{ path: "favoris",     element: <SpectatorFavorisPage /> },
-			{ path: "parametres",  element: <SpectatorParametresPage /> },
+			{ path: "teams",       element: <TeamsPage /> },
+			{ path: "standings",   element: <SpectatorStandingsPage /> },
+			{ path: "favorites",   element: <SpectatorFavoritesPage /> },
+			{ path: "settings",    element: <SpectatorSettingsPage /> },
 		],
 	},
 
@@ -103,32 +103,32 @@ const router = createBrowserRouter([
 		path: "/dashboard",
 		element: <DashboardLayout />,
 		children: [
-			{ index: true,           element: <DashboardPage /> },
-			{ path: "matchs",        element: <DashboardMatchsPage /> },
-			{ path: "matchs/:id",    element: <DashboardMatchDetailPage /> },
-			{ path: "equipes",       element: <DashboardEquipesPage /> },
-			{ path: "tournois",      element: <DashboardTournoisPage /> },
-			{ path: "classements",     element: <DashboardClassementsPage /> },
-			{ path: "messages",        element: <DashboardMessagesPage /> },
-			{ path: "parametres",      element: <DashboardParametresPage /> },
-			{ path: "nouveau-tournoi", element: <DashboardNewTournamentPage /> },
+			{ index: true,            element: <DashboardPage /> },
+			{ path: "matches",        element: <DashboardMatchesPage /> },
+			{ path: "matches/:id",    element: <DashboardMatchDetailPage /> },
+			{ path: "teams",          element: <DashboardTeamsPage /> },
+			{ path: "tournaments",    element: <DashboardTournamentsPage /> },
+			{ path: "standings",      element: <DashboardStandingsPage /> },
+			{ path: "messages",       element: <DashboardMessagesPage /> },
+			{ path: "settings",       element: <DashboardSettingsPage /> },
+			{ path: "new-tournament", element: <DashboardNewTournamentPage /> },
 		],
 	},
 
 	/* QR code — layout autonome */
-	{ path: "/tournoi/:id", element: <PublicTournamentPage /> },
+	{ path: "/tournament/:id", element: <PublicTournamentPage /> },
 
 	/* Pages publiques — avec footer (après les routes spécifiques) */
 	{
 		element: <PublicLayout />,
 		children: [
-			{ index: true,            element: <HomePage /> },
-			{ path: "/sports",        element: <SportsPage /> },
-			{ path: "/tournois",      element: <TournoisPage /> },
-			{ path: "/equipes",       element: <EquipesPage /> },
-			{ path: "/organisateurs", element: <OrganisateursPage /> },
-			{ path: "/a-propos",      element: <AProposPage /> },
-			{ path: "/tarifs",        element: <TarifsPage /> },
+			{ index: true,        element: <HomePage /> },
+			{ path: "/sports",    element: <SportsPage /> },
+			{ path: "/tournaments", element: <TournamentsPage /> },
+			{ path: "/teams",     element: <TeamsPage /> },
+			{ path: "/organizers", element: <OrganizersPage /> },
+			{ path: "/about",     element: <AboutPage /> },
+			{ path: "/pricing",   element: <PricingPage /> },
 		],
 	},
 

@@ -5,11 +5,11 @@ import { useAuth } from "../contexts/AuthContext";
 
 const NAV_LINKS = [
 	{ label: "Accueil",  to: "/" },
-	{ label: "Tournois", to: "/tournois" },
+	{ label: "Tournois", to: "/tournaments" },
 	{ label: "Sports",   to: "/sports" },
-	{ label: "Équipes",  to: "/equipes" },
-	{ label: "Tarifs",   to: "/tarifs" },
-	{ label: "À propos", to: "/a-propos" },
+	{ label: "Équipes",  to: "/teams" },
+	{ label: "Tarifs",   to: "/pricing" },
+	{ label: "À propos", to: "/about" },
 ];
 
 function SearchModal({ onClose }) {
@@ -66,7 +66,7 @@ function Logo() {
 
 function UserMenu({ user, logout }) {
 	const navigate = useNavigate();
-	const spaceHref = user.role === "organisateur" ? "/dashboard" : "/accueil";
+	const spaceHref = user.role === "organisateur" ? "/dashboard" : "/home";
 	const spaceLabel = user.role === "organisateur" ? "Mon dashboard" : "Mon espace";
 	const avatarColor = user.role === "organisateur"
 		? "bg-green-500/20 border-green-500/30 text-green-400"
@@ -146,8 +146,8 @@ function Navbar() {
 						) : (
 							<>
 								<div className="hidden md:flex items-center gap-2">
-									<Button text="Se connecter" variant="outline" href="/connexion" />
-									<Button text="Créer un compte" variant="primary" href="/inscription" />
+									<Button text="Se connecter" variant="outline" href="/login" />
+									<Button text="Créer un compte" variant="primary" href="/register" />
 								</div>
 							</>
 						)}
@@ -195,14 +195,14 @@ function Navbar() {
 						{!user && (
 							<div className="mt-3 pt-3 border-t border-white/5 flex flex-col gap-2">
 								<Link
-									to="/connexion"
+									to="/login"
 									onClick={() => setMobileMenuOpen(false)}
 									className="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-slate-300 border border-white/10 hover:bg-white/5 transition-colors"
 								>
 									Se connecter
 								</Link>
 								<Link
-									to="/inscription"
+									to="/register"
 									onClick={() => setMobileMenuOpen(false)}
 									className="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-black bg-green-500 hover:bg-green-400 font-semibold transition-colors"
 								>

@@ -64,16 +64,16 @@ const Icon = {
 };
 
 const NAV = [
-	{ to: "/accueil",              label: "Accueil",     icon: Icon.Home,       end: true },
-	{ to: "/accueil/tournois",     label: "Tournois",    icon: Icon.Tournament },
-	{ to: "/accueil/sports",       label: "Sports",      icon: Icon.Sports },
-	{ to: "/accueil/equipes",      label: "Équipes",     icon: Icon.Teams },
-	{ to: "/accueil/classements",  label: "Classements", icon: Icon.Standings },
-	{ to: "/accueil/favoris",      label: "Favoris",     icon: Icon.Heart },
+	{ to: "/home",              label: "Accueil",     icon: Icon.Home,       end: true },
+	{ to: "/home/tournaments",     label: "Tournois",    icon: Icon.Tournament },
+	{ to: "/home/sports",       label: "Sports",      icon: Icon.Sports },
+	{ to: "/home/teams",      label: "Équipes",     icon: Icon.Teams },
+	{ to: "/home/standings",  label: "Classements", icon: Icon.Standings },
+	{ to: "/home/favorites",      label: "Favoris",     icon: Icon.Heart },
 ];
 
 const NAV_BOTTOM = [
-	{ to: "/accueil/parametres", label: "Paramètres", icon: Icon.Settings },
+	{ to: "/home/settings", label: "Paramètres", icon: Icon.Settings },
 ];
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */

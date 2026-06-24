@@ -24,7 +24,7 @@ function ActionButtons({ id, onRequestDelete }) {
 	return (
 		<div className="flex items-center gap-2">
 			<Link
-				to={`/dashboard/matchs/${id}`}
+				to={`/dashboard/matches/${id}`}
 				aria-label="Modifier le match"
 				className="w-7 h-7 flex items-center justify-center bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400"
 			>

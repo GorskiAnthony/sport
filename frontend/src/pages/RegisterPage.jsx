@@ -49,7 +49,7 @@ function RegisterPage() {
 			localStorage.setItem("token", data.token);
 			localStorage.setItem("user", JSON.stringify(data.user));
 			toast.success("Votre compte a été créé avec succès.", "Bienvenue !");
-			setTimeout(() => navigate(role === "organisateur" ? "/inscription/tournoi" : "/"), 800);
+			setTimeout(() => navigate(role === "organisateur" ? "/register/tournament" : "/"), 800);
 		} catch (err) {
 			if (err.code === "EMAIL_TAKEN") {
 				setErrors({ email: "Un compte existe déjà avec cet email." });
@@ -133,7 +133,7 @@ function RegisterPage() {
 				<p className="text-slate-400 text-sm text-center mt-2">
 					Déjà un compte ?{" "}
 					<Link
-						to="/connexion"
+						to="/login"
 						className="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded"
 					>
 						Se connecter
