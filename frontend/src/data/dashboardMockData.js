@@ -1,3 +1,25 @@
+// Fake credentials — remplacer par l'API réelle
+export const mockUsers = [
+	{
+		id: 1,
+		email: "jean.dupont@email.fr",
+		password: "password123",
+		name: "Jean Dupont",
+		initials: "JD",
+		role: "organisateur",
+		token: "mock-token-organisateur",
+	},
+	{
+		id: 2,
+		email: "spectateur@email.fr",
+		password: "password123",
+		name: "Marie Martin",
+		initials: "MM",
+		role: "spectateur",
+		token: "mock-token-spectateur",
+	},
+];
+
 export const currentUser = {
 	id: 1,
 	name: "Jean Dupont",

@@ -6,13 +6,14 @@ import PasswordInput from "../components/ui/PasswordInput";
 import SocialAuthButtons from "../components/ui/SocialAuthButtons";
 import Button from "../components/Button";
 import { login } from "../services/authService";
+import { useToast } from "../contexts/ToastContext";
 
 function LoginPage() {
 	const navigate = useNavigate();
+	const toast = useToast();
 	const [form, setForm] = useState({ email: "", password: "" });
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
-	const [serverError, setServerError] = useState("");
 
 	const handleChange = (field) => (e) => {
 		setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -35,30 +36,32 @@ function LoginPage() {
 			return;
 		}
 		setLoading(true);
-		setServerError("");
 		try {
 			const { data } = await login(form);
 			localStorage.setItem("token", data.token);
-			navigate("/");
-		} catch {
-			setServerError("Email ou mot de passe incorrect.");
+			localStorage.setItem("user", JSON.stringify(data.user));
+			toast.success(`Bon retour, ${data.user.name} !`, "Connexion réussie");
+			setTimeout(() => {
+				navigate(data.user.role === "organisateur" ? "/dashboard" : "/");
+			}, 800);
+		} catch (err) {
+			if (err.code === "EMAIL_NOT_FOUND") {
+				setErrors({ email: "Aucun compte trouvé avec cet email." });
+				toast.error("Aucun compte trouvé avec cet email.", "Email inconnu");
+			} else if (err.code === "WRONG_PASSWORD") {
+				setErrors({ password: "Mot de passe incorrect." });
+				toast.error("Vérifiez votre mot de passe.", "Mot de passe incorrect");
+			} else {
+				toast.error("Une erreur est survenue. Réessayez.", "Erreur");
+			}
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<AuthCard
-			title="Connexion"
-			subtitle="Bon retour ! Connectez-vous à votre compte."
-		>
+		<AuthCard title="Connexion" subtitle="Bon retour ! Connectez-vous à votre compte.">
 			<form onSubmit={handleSubmit} noValidate aria-label="Formulaire de connexion">
-				{serverError && (
-					<p role="alert" className="mb-4 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-4 py-2.5">
-						{serverError}
-					</p>
-				)}
-
 				<div className="space-y-4">
 					<FormInput
 						id="login-email"
@@ -71,7 +74,6 @@ function LoginPage() {
 						required
 						error={errors.email}
 					/>
-
 					<div>
 						<PasswordInput
 							id="login-password"
@@ -104,14 +106,18 @@ function LoginPage() {
 
 				<p className="text-slate-400 text-sm text-center mt-2">
 					Pas encore de compte ?{" "}
-					<Link
-						to="/inscription"
-						className="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded"
-					>
+					<Link to="/inscription" className="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
 						Créer un compte
 					</Link>
 				</p>
 			</form>
+
+			{/* Dev hint */}
+			<div className="mt-5 p-3 rounded-lg bg-white/[0.03] border border-white/5 text-xs text-slate-500 space-y-1">
+				<p className="font-medium text-slate-400">Comptes de test :</p>
+				<p>📋 <span className="text-slate-300">jean.dupont@email.fr</span> / <span className="text-slate-300">password123</span> <span className="text-green-500">(organisateur)</span></p>
+				<p>📋 <span className="text-slate-300">spectateur@email.fr</span> / <span className="text-slate-300">password123</span> <span className="text-slate-400">(spectateur)</span></p>
+			</div>
 		</AuthCard>
 	);
 }

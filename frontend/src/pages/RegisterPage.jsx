@@ -6,6 +6,7 @@ import PasswordInput from "../components/ui/PasswordInput";
 import SocialAuthButtons from "../components/ui/SocialAuthButtons";
 import Button from "../components/Button";
 import { register } from "../services/authService";
+import { useToast } from "../contexts/ToastContext";
 
 const ROLES = [
 	{ id: "organisateur", label: "Organisateur" },
@@ -14,11 +15,11 @@ const ROLES = [
 
 function RegisterPage() {
 	const navigate = useNavigate();
+	const toast = useToast();
 	const [role, setRole] = useState("organisateur");
 	const [form, setForm] = useState({ name: "", email: "", password: "" });
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
-	const [serverError, setServerError] = useState("");
 
 	const handleChange = (field) => (e) => {
 		setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -43,13 +44,19 @@ function RegisterPage() {
 			return;
 		}
 		setLoading(true);
-		setServerError("");
 		try {
 			const { data } = await register({ ...form, role });
 			localStorage.setItem("token", data.token);
-			navigate(role === "organisateur" ? "/inscription/tournoi" : "/");
-		} catch {
-			setServerError("Une erreur est survenue. Veuillez réessayer.");
+			localStorage.setItem("user", JSON.stringify(data.user));
+			toast.success("Votre compte a été créé avec succès.", "Bienvenue !");
+			setTimeout(() => navigate(role === "organisateur" ? "/inscription/tournoi" : "/"), 800);
+		} catch (err) {
+			if (err.code === "EMAIL_TAKEN") {
+				setErrors({ email: "Un compte existe déjà avec cet email." });
+				toast.error("Un compte existe déjà avec cet email.", "Email déjà utilisé");
+			} else {
+				toast.error("Une erreur est survenue. Veuillez réessayer.", "Erreur");
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -58,12 +65,6 @@ function RegisterPage() {
 	return (
 		<AuthCard title="Créer un compte" subtitle="Rejoignez la communauté Tournoi Center.">
 			<form onSubmit={handleSubmit} noValidate aria-label="Formulaire de création de compte">
-				{serverError && (
-					<p role="alert" className="mb-4 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-4 py-2.5">
-						{serverError}
-					</p>
-				)}
-
 				{/* Role selector */}
 				<fieldset className="mb-4">
 					<legend className="sr-only">Choisissez votre rôle</legend>

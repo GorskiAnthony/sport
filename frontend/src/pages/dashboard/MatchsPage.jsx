@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import BreadcrumbContext from "../../contexts/BreadcrumbContext";
 import { getMatches, deleteMatch } from "../../services/dashboardService";
+import { useToast } from "../../contexts/ToastContext";
 
 function ScoreCell({ score1, score2 }) {
 	const isDraw = score1 === score2;
@@ -47,6 +48,7 @@ function ActionButtons({ id, onDelete }) {
 
 function MatchsPage() {
 	const ctx = useContext(BreadcrumbContext);
+	const toast = useToast();
 	const [matchList, setMatchList] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -58,8 +60,10 @@ function MatchsPage() {
 	}, []);
 
 	const handleDelete = async (id) => {
+		const match = matchList.find((m) => m.id === id);
 		await deleteMatch(id);
 		setMatchList((prev) => prev.filter((m) => m.id !== id));
+		toast.success(`${match?.team1} – ${match?.team2} supprimé.`, "Match supprimé");
 	};
 
 	return (

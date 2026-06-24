@@ -46,6 +46,21 @@
 	100% { background-position: 60px 60px; }
 }
 
+@keyframes toast-in {
+	from { opacity: 0; transform: translateX(calc(100% + 24px)); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+	from { opacity: 1; transform: translateX(0); max-height: 120px; margin-bottom: 8px; }
+	to   { opacity: 0; transform: translateX(calc(100% + 24px)); max-height: 0; margin-bottom: 0; }
+}
+
+@keyframes toast-progress {
+	from { width: 100%; }
+	to   { width: 0%; }
+}
+
 @keyframes spark-out {
 	0%   { transform: translate(0, 0) scale(1); opacity: 1; }
 	100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }

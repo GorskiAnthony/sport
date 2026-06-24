@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import BreadcrumbContext from "../../contexts/BreadcrumbContext";
 import { getDashboardTeams, deleteDashboardTeam } from "../../services/dashboardService";
+import { useToast } from "../../contexts/ToastContext";
 
 const CATEGORY_STYLES = {
 	U13: "bg-pink-500/20 text-pink-400",
@@ -39,6 +40,7 @@ function ActionButtons({ id, onDelete }) {
 
 function EquipesPage() {
 	const ctx = useContext(BreadcrumbContext);
+	const toast = useToast();
 	const [teams, setTeams] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -50,8 +52,10 @@ function EquipesPage() {
 	}, []);
 
 	const handleDelete = async (id) => {
+		const team = teams.find((t) => t.id === id);
 		await deleteDashboardTeam(id);
 		setTeams((prev) => prev.filter((t) => t.id !== id));
+		toast.success(`${team?.name} a été supprimée.`, "Équipe supprimée");
 	};
 
 	return (
