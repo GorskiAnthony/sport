@@ -107,16 +107,10 @@ function Footer() {
 					<div className="lg:col-span-1">
 						<a
 							href="/"
-							aria-label="Tourneo — retour à l'accueil"
-							className="flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded w-fit"
+							aria-label="Tournoi Center — retour à l'accueil"
+							className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded w-fit block"
 						>
-							<span className="flex items-center justify-center w-8 h-8 bg-green-500 rounded" aria-hidden="true">
-								<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<circle cx="9" cy="9" r="7" stroke="black" strokeWidth="2" />
-									<path d="M9 5v4l3 2" stroke="black" strokeWidth="2" strokeLinecap="round" />
-								</svg>
-							</span>
-							<span className="text-white font-bold text-base tracking-wide">TOURNA</span>
+							<img src="/logo_white.png" alt="Tournoi Center" className="h-16 w-auto" />
 						</a>
 						<p className="mt-4 text-slate-400 text-sm leading-relaxed">
 							La plateforme de référence pour organiser et vivre des tournois de tous types.
@@ -154,7 +148,7 @@ function Footer() {
 				{/* Bottom bar */}
 				<div className="border-t border-white/5 pt-6">
 					<p className="text-slate-500 text-xs text-center">
-						© 2024 Tournéomanager. Tous droits réservés.
+						© 2024 Tournoi Center. Tous droits réservés.
 					</p>
 				</div>
 			</div>

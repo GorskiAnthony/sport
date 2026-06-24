@@ -45,10 +45,10 @@ function StatsSection() {
 						id="stats-heading"
 						className="text-white text-3xl md:text-4xl font-extrabold leading-tight"
 					>
-						Tourneo accompagne
+						Tournoi Center accompagne
 					</h2>
 					<p className="mt-4 text-slate-400 text-sm leading-relaxed max-w-md">
-						Tourneo accompagne des centaines d'organisateurs et des milliers d'équipes chaque année dans la réussite de leurs tournois.
+						Tournoi Center accompagne des centaines d'organisateurs et des milliers d'équipes chaque année dans la réussite de leurs tournois.
 					</p>
 
 					<dl

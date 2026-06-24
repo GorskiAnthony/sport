@@ -15,6 +15,11 @@ import OrganisateursPage from "./pages/OrganisateursPage";
 import AProposPage from "./pages/AProposPage";
 import TarifsPage from "./pages/TarifsPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import DashboardMatchsPage from "./pages/dashboard/MatchsPage";
+import DashboardEquipesPage from "./pages/dashboard/EquipesPage";
+import DashboardTournoisPage from "./pages/dashboard/TournoisPage";
 
 function HomePage() {
 	return (
@@ -60,6 +65,14 @@ function App() {
 				<Route path="/inscription" element={<Layout hideFooter><RegisterPage /></Layout>} />
 				<Route path="/inscription/tournoi" element={<Layout hideFooter><CreateTournamentPage /></Layout>} />
 				<Route path="/inscription/equipes" element={<Layout hideFooter><AddTeamPage /></Layout>} />
+
+				{/* Organiser dashboard */}
+				<Route path="/dashboard" element={<DashboardLayout />}>
+					<Route index element={<DashboardPage />} />
+					<Route path="matchs" element={<DashboardMatchsPage />} />
+					<Route path="equipes" element={<DashboardEquipesPage />} />
+					<Route path="tournois" element={<DashboardTournoisPage />} />
+				</Route>
 
 				{/* 404 */}
 				<Route path="*" element={<Layout><NotFoundPage /></Layout>} />

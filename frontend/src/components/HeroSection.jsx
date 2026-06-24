@@ -83,7 +83,7 @@ function HeroSection() {
 	return (
 		<section
 			className="relative min-h-[520px] flex items-center"
-			aria-label="Bienvenue sur Tourneo"
+			aria-label="Bienvenue sur Tournoi Center"
 		>
 			<div className="absolute inset-0 overflow-hidden" aria-hidden="true">
 				<img src={heroBg} alt="" className="w-full h-full object-cover object-center" />

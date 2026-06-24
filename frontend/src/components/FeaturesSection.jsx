@@ -44,7 +44,7 @@ function FeaturesSection() {
 			<div className="max-w-7xl mx-auto">
 				<div className="max-w-lg mb-12">
 					<p className="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">
-						Pourquoi choisir Tourneo ?
+						Pourquoi choisir Tournoi Center ?
 					</p>
 					<h2
 						id="features-heading"
@@ -54,14 +54,14 @@ function FeaturesSection() {
 						<span className="text-green-400">au même endroit.</span>
 					</h2>
 					<p className="mt-4 text-slate-400 text-sm leading-relaxed">
-						Que vous soyez organisateur, éducateur ou joueur, Tourneo simplifie la gestion et la participation à vos tournois.
+						Que vous soyez organisateur, éducateur ou joueur, Tournoi Center simplifie la gestion et la participation à vos tournois.
 					</p>
 				</div>
 
 				<ul
 					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
 					role="list"
-					aria-label="Fonctionnalités de Tourneo"
+					aria-label="Fonctionnalités de Tournoi Center"
 					aria-busy={loading}
 				>
 					{loading

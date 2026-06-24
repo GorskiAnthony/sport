@@ -3,7 +3,7 @@ import PageHeader from "../components/ui/PageHeader";
 import { getPlatformStats } from "../services/statsService";
 
 const VALUES = [
-	{ icon: "🤝", title: "Accessibilité", description: "Tourneo est pensé pour tous — clubs amateurs, académies ou organisateurs indépendants." },
+	{ icon: "🤝", title: "Accessibilité", description: "Tournoi Center est pensé pour tous — clubs amateurs, académies ou organisateurs indépendants." },
 	{ icon: "⚡", title: "Simplicité", description: "Créer et gérer un tournoi ne devrait pas être compliqué. On s'est assuré que ça ne l'est pas." },
 	{ icon: "🌍", title: "Communauté", description: "Des milliers de joueurs et d'organisateurs connectés autour de leur passion commune." },
 ];
@@ -29,7 +29,7 @@ function AProposPage() {
 					badge="Notre histoire"
 					title="La plateforme pensée par"
 					highlight="des passionnés."
-					subtitle="Tourneo est né d'une frustration simple : organiser un tournoi de football ne devrait pas prendre des semaines. On a décidé de tout simplifier."
+					subtitle="Tournoi Center est né d'une frustration simple : organiser un tournoi de football ne devrait pas prendre des semaines. On a décidé de tout simplifier."
 				/>
 			</section>
 
