@@ -9,6 +9,12 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CreateTournamentPage from "./pages/CreateTournamentPage";
 import AddTeamPage from "./pages/AddTeamPage";
+import TournoisPage from "./pages/TournoisPage";
+import EquipesPage from "./pages/EquipesPage";
+import OrganisateursPage from "./pages/OrganisateursPage";
+import AProposPage from "./pages/AProposPage";
+import TarifsPage from "./pages/TarifsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function HomePage() {
 	return (
@@ -41,46 +47,22 @@ function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route
-					path="/"
-					element={
-						<Layout>
-							<HomePage />
-						</Layout>
-					}
-				/>
-				<Route
-					path="/connexion"
-					element={
-						<Layout hideFooter>
-							<LoginPage />
-						</Layout>
-					}
-				/>
-				<Route
-					path="/inscription"
-					element={
-						<Layout hideFooter>
-							<RegisterPage />
-						</Layout>
-					}
-				/>
-				<Route
-					path="/inscription/tournoi"
-					element={
-						<Layout hideFooter>
-							<CreateTournamentPage />
-						</Layout>
-					}
-				/>
-				<Route
-					path="/inscription/equipes"
-					element={
-						<Layout hideFooter>
-							<AddTeamPage />
-						</Layout>
-					}
-				/>
+				{/* Public */}
+				<Route path="/" element={<Layout><HomePage /></Layout>} />
+				<Route path="/tournois" element={<Layout><TournoisPage /></Layout>} />
+				<Route path="/equipes" element={<Layout><EquipesPage /></Layout>} />
+				<Route path="/organisateurs" element={<Layout><OrganisateursPage /></Layout>} />
+				<Route path="/a-propos" element={<Layout><AProposPage /></Layout>} />
+				<Route path="/tarifs" element={<Layout><TarifsPage /></Layout>} />
+
+				{/* Auth */}
+				<Route path="/connexion" element={<Layout hideFooter><LoginPage /></Layout>} />
+				<Route path="/inscription" element={<Layout hideFooter><RegisterPage /></Layout>} />
+				<Route path="/inscription/tournoi" element={<Layout hideFooter><CreateTournamentPage /></Layout>} />
+				<Route path="/inscription/equipes" element={<Layout hideFooter><AddTeamPage /></Layout>} />
+
+				{/* 404 */}
+				<Route path="*" element={<Layout><NotFoundPage /></Layout>} />
 			</Routes>
 		</BrowserRouter>
 	);

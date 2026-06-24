@@ -1,4 +1,11 @@
 import api from "./api";
+import { teams } from "../data/mockData";
+
+export const getTeams = async () => {
+	// TODO: remplacer par l'appel réel quand le backend est prêt
+	// return api.get("/teams");
+	return Promise.resolve({ data: teams });
+};
 
 export const addTeam = async (payload) => {
 	// TODO: remplacer par l'appel réel quand le backend est prêt
@@ -12,4 +19,4 @@ export const deleteTeam = async (id) => {
 	return Promise.resolve({ data: { success: true } });
 };
 
-export default { addTeam, deleteTeam };
+export default { getTeams, addTeam, deleteTeam };
