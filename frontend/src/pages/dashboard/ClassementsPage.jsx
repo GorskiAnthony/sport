@@ -70,7 +70,8 @@ function StandingsTable({ tournament }) {
 			{rows.length === 0 ? (
 				<p className="px-5 py-8 text-slate-500 text-sm text-center">Aucune équipe inscrite.</p>
 			) : (
-				<table className="w-full text-sm" aria-label={`Classement ${tournament.name}`}>
+			<div className="overflow-x-auto">
+				<table className="w-full text-sm min-w-[480px]" aria-label={`Classement ${tournament.name}`}>
 					<thead>
 						<tr className="border-b border-white/5">
 							{["#", "Équipe", "J", "V", "N", "D", "BP", "BC", "Pts"].map((h) => (
@@ -103,6 +104,7 @@ function StandingsTable({ tournament }) {
 						))}
 					</tbody>
 				</table>
+			</div>
 			)}
 		</section>
 	);
@@ -122,9 +124,9 @@ function ClassementsPage() {
 
 	return (
 		<div className="max-w-5xl">
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 				<h1 className="text-white text-2xl font-extrabold">Classements</h1>
-				<div className="flex items-center gap-1 bg-[#161B22] border border-white/5 rounded-lg p-1" role="group" aria-label="Filtrer par statut">
+				<div className="flex items-center gap-1 bg-[#161B22] border border-white/5 rounded-lg p-1 overflow-x-auto" role="group" aria-label="Filtrer par statut">
 					{[["all", "Tous"], ["En cours", "En cours"], ["À venir", "À venir"], ["Terminé", "Terminé"]].map(([val, label]) => (
 						<button
 							key={val}

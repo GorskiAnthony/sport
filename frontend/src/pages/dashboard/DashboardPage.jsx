@@ -94,7 +94,7 @@ function DashboardPage() {
 
 			{/* My tournaments */}
 			<section aria-labelledby="my-tournaments-heading">
-				<div className="flex items-center justify-between mb-4">
+				<div className="flex flex-wrap items-center justify-between gap-3 mb-4">
 					<h2 id="my-tournaments-heading" className="text-white font-semibold text-base">
 						Mes tournois
 					</h2>

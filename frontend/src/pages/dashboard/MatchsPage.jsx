@@ -73,7 +73,7 @@ function MatchsPage() {
 	return (
 		<>
 		<div className="max-w-5xl">
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 				<h1 className="text-white text-2xl font-extrabold">Matchs</h1>
 				<button className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
 					+ Ajouter un match
@@ -81,7 +81,8 @@ function MatchsPage() {
 			</div>
 
 			<div className="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
-				<table className="w-full text-sm" aria-label="Liste des matchs">
+			<div className="overflow-x-auto">
+				<table className="w-full text-sm min-w-[560px]" aria-label="Liste des matchs">
 					<thead>
 						<tr className="border-b border-white/5">
 							<th scope="col" className="text-left px-5 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">Équipe 1</th>
@@ -120,6 +121,7 @@ function MatchsPage() {
 						))}
 					</tbody>
 				</table>
+			</div>
 			</div>
 		</div>
 

@@ -99,13 +99,14 @@ function UserMenu({ user, logout }) {
 
 function Navbar() {
 	const [searchOpen, setSearchOpen] = useState(false);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const { user, logout } = useAuth();
 
 	return (
 		<>
 			<header className="sticky top-0 z-50 bg-[#0D1117]/95 backdrop-blur border-b border-white/5">
 				<nav
-					className="max-w-7xl mx-auto flex items-center justify-between px-6 h-16"
+					className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 h-16"
 					aria-label="Navigation principale"
 				>
 					<Logo />
@@ -144,12 +145,73 @@ function Navbar() {
 							<UserMenu user={user} logout={logout} />
 						) : (
 							<>
-								<Button text="Se connecter" variant="outline" href="/connexion" />
-								<Button text="Créer un compte" variant="primary" href="/inscription" />
+								<div className="hidden md:flex items-center gap-2">
+									<Button text="Se connecter" variant="outline" href="/connexion" />
+									<Button text="Créer un compte" variant="primary" href="/inscription" />
+								</div>
 							</>
 						)}
+						{/* Hamburger — mobile only */}
+						<button
+							onClick={() => setMobileMenuOpen((o) => !o)}
+							className="md:hidden w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+							aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+							aria-expanded={mobileMenuOpen}
+						>
+							{mobileMenuOpen ? (
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+									<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+								</svg>
+							) : (
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+									<line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+								</svg>
+							)}
+						</button>
 					</div>
 				</nav>
+
+				{/* Mobile menu */}
+				{mobileMenuOpen && (
+					<div className="md:hidden border-t border-white/5 bg-[#0D1117]/98 px-4 py-3">
+						<ul className="space-y-1" role="list">
+							{NAV_LINKS.map(({ label, to }) => (
+								<li key={to}>
+									<NavLink
+										to={to}
+										end={to === "/"}
+										onClick={() => setMobileMenuOpen(false)}
+										className={({ isActive }) =>
+											`block px-3 py-2.5 rounded-lg text-sm transition-colors ${
+												isActive ? "text-white bg-white/5" : "text-slate-400 hover:text-white hover:bg-white/5"
+											}`
+										}
+									>
+										{label}
+									</NavLink>
+								</li>
+							))}
+						</ul>
+						{!user && (
+							<div className="mt-3 pt-3 border-t border-white/5 flex flex-col gap-2">
+								<Link
+									to="/connexion"
+									onClick={() => setMobileMenuOpen(false)}
+									className="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-slate-300 border border-white/10 hover:bg-white/5 transition-colors"
+								>
+									Se connecter
+								</Link>
+								<Link
+									to="/inscription"
+									onClick={() => setMobileMenuOpen(false)}
+									className="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-black bg-green-500 hover:bg-green-400 font-semibold transition-colors"
+								>
+									Créer un compte
+								</Link>
+							</div>
+						)}
+					</div>
+				)}
 			</header>
 
 			{searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}

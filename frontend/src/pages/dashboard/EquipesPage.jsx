@@ -391,7 +391,7 @@ function EquipesPage() {
 	return (
 		<>
 			<div className="max-w-5xl">
-				<div className="flex items-center justify-between mb-6">
+				<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 					<h1 className="text-white text-2xl font-extrabold">
 						Équipes
 					</h1>
@@ -404,8 +404,9 @@ function EquipesPage() {
 				</div>
 
 				<div className="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+				<div className="overflow-x-auto">
 					<table
-						className="w-full text-sm"
+						className="w-full text-sm min-w-[480px]"
 						aria-label="Liste des équipes"
 					>
 						<thead>
@@ -517,6 +518,7 @@ function EquipesPage() {
 							</p>
 						</div>
 					)}
+				</div>
 				</div>
 			</div>
 
