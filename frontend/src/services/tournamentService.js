@@ -1,29 +1,34 @@
-import api from "./api";
 import { upcomingTournaments } from "../data/mockData";
+import { K, read, write, getOrSeed } from "../utils/localStore";
+import { myTournaments } from "../data/dashboardMockData";
 
-export const getUpcomingTournaments = async (limit = 3) => {
-	// TODO: remplacer par l'appel réel quand le backend est prêt
-	// return api.get(`/tournaments?upcoming=true&limit=${limit}`);
-	return Promise.resolve({ data: upcomingTournaments.slice(0, limit) });
+const SPORT_ICONS = {
+	football: "⚽", futsal: "⚽", basketball: "🏀", handball: "🤾",
+	volleyball: "🏐", rugby: "🏉", tennis: "🎾", esport: "🎮",
 };
 
-export const getAllTournaments = async (params = {}) => {
-	// TODO: remplacer par l'appel réel quand le backend est prêt
-	// return api.get("/tournaments", { params });
-	return Promise.resolve({ data: upcomingTournaments });
-};
+export const getUpcomingTournaments = async (limit = 3) =>
+	Promise.resolve({ data: upcomingTournaments.slice(0, limit) });
+
+export const getAllTournaments = async () =>
+	Promise.resolve({ data: upcomingTournaments });
 
 export const getTournamentById = async (id) => {
-	// TODO: remplacer par l'appel réel quand le backend est prêt
-	// return api.get(`/tournaments/${id}`);
 	const tournament = upcomingTournaments.find((t) => t.id === id);
 	return Promise.resolve({ data: tournament ?? null });
 };
 
 export const createTournament = async (payload) => {
-	// TODO: remplacer par l'appel réel quand le backend est prêt
-	// return api.post("/tournaments", payload);
-	return Promise.resolve({ data: { id: Date.now(), ...payload } });
+	const all    = getOrSeed(K.tournaments, myTournaments);
+	const newT   = {
+		id:     Date.now(),
+		icon:   SPORT_ICONS[payload.sport] ?? "🏆",
+		status: "À venir",
+		teams:  0,
+		...payload,
+	};
+	write(K.tournaments, [...all, newT]);
+	return Promise.resolve({ data: newT });
 };
 
 export default { getUpcomingTournaments, getAllTournaments, getTournamentById, createTournament };

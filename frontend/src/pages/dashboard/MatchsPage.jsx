@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import BreadcrumbContext from "../../contexts/BreadcrumbContext";
 import { getMatches, deleteMatch } from "../../services/dashboardService";
 import { useToast } from "../../contexts/ToastContext";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 
 function ScoreCell({ score1, score2 }) {
 	const isDraw = score1 === score2;
@@ -19,11 +20,11 @@ function ScoreCell({ score1, score2 }) {
 	);
 }
 
-function ActionButtons({ id, onDelete }) {
+function ActionButtons({ id, onRequestDelete }) {
 	return (
 		<div className="flex items-center gap-2">
 			<Link
-				to={`/dashboard/tournois`}
+				to={`/dashboard/matchs/${id}`}
 				aria-label="Modifier le match"
 				className="w-7 h-7 flex items-center justify-center bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400"
 			>
@@ -33,7 +34,7 @@ function ActionButtons({ id, onDelete }) {
 				</svg>
 			</Link>
 			<button
-				onClick={() => onDelete(id)}
+				onClick={() => onRequestDelete(id)}
 				aria-label="Supprimer le match"
 				className="w-7 h-7 flex items-center justify-center bg-slate-500/10 text-slate-400 rounded hover:bg-red-500/20 hover:text-red-400 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-400"
 			>
@@ -47,10 +48,11 @@ function ActionButtons({ id, onDelete }) {
 }
 
 function MatchsPage() {
-	const ctx = useContext(BreadcrumbContext);
+	const ctx   = useContext(BreadcrumbContext);
 	const toast = useToast();
 	const [matchList, setMatchList] = useState([]);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading]     = useState(true);
+	const [pending, setPending]     = useState(null);
 
 	useEffect(() => {
 		ctx?.setCrumbs([{ label: "Matchs" }]);
@@ -59,20 +61,21 @@ function MatchsPage() {
 			.finally(() => setLoading(false));
 	}, []);
 
-	const handleDelete = async (id) => {
-		const match = matchList.find((m) => m.id === id);
+	const confirmDelete = async () => {
+		if (!pending) return;
+		const { id, team1, team2, date } = pending;
 		await deleteMatch(id);
 		setMatchList((prev) => prev.filter((m) => m.id !== id));
-		toast.success(`${match?.team1} – ${match?.team2} supprimé.`, "Match supprimé");
+		toast.success(`${team1} – ${team2} supprimé.`, "Match supprimé");
+		setPending(null);
 	};
 
 	return (
+		<>
 		<div className="max-w-5xl">
 			<div className="flex items-center justify-between mb-6">
 				<h1 className="text-white text-2xl font-extrabold">Matchs</h1>
-				<button
-					className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
-				>
+				<button className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
 					+ Ajouter un match
 				</button>
 			</div>
@@ -90,16 +93,16 @@ function MatchsPage() {
 					</thead>
 					<tbody>
 						{loading ? (
-							[1, 2, 3, 4].map((i) => (
+							[1,2,3,4].map((i) => (
 								<tr key={i} className="border-b border-white/5 last:border-0 animate-pulse">
-									{[1, 2, 3, 4, 5].map((j) => (
+									{[1,2,3,4,5].map((j) => (
 										<td key={j} className="px-5 py-4">
 											<div className="h-3.5 bg-white/5 rounded w-24" />
 										</td>
 									))}
 								</tr>
 							))
-						) : matchList.map((m) => (
+						) : matchList.filter(Boolean).map((m) => (
 							<tr key={m.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
 								<td className="px-5 py-4 text-white">{m.team1}</td>
 								<td className="px-5 py-4 text-slate-300 font-medium">{m.team2}</td>
@@ -108,7 +111,10 @@ function MatchsPage() {
 									<ScoreCell score1={m.score1} score2={m.score2} />
 								</td>
 								<td className="px-5 py-4">
-									<ActionButtons id={m.id} onDelete={handleDelete} />
+									<ActionButtons
+										id={m.id}
+										onRequestDelete={(id) => setPending(matchList.find((x) => x.id === id))}
+									/>
 								</td>
 							</tr>
 						))}
@@ -116,6 +122,16 @@ function MatchsPage() {
 				</table>
 			</div>
 		</div>
+
+		{pending && (
+			<ConfirmModal
+				title="Supprimer ce match ?"
+				message={`${pending.team1} – ${pending.team2} · ${pending.date}. Cette action est irréversible.`}
+				onConfirm={confirmDelete}
+				onClose={() => setPending(null)}
+			/>
+		)}
+		</>
 	);
 }
 

@@ -99,7 +99,7 @@ function DashboardPage() {
 						Mes tournois
 					</h2>
 					<Link
-						to="/dashboard/tournois"
+						to="/dashboard/nouveau-tournoi"
 						className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
 					>
 						+ Créer un tournoi

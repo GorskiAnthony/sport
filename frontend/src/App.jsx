@@ -25,10 +25,16 @@ const NotFoundPage             = lazy(() => import("./pages/NotFoundPage"));
 const PublicTournamentPage     = lazy(() => import("./pages/PublicTournamentPage"));
 const SpectatorClassementsPage = lazy(() => import("./pages/spectator/ClassementsPage"));
 const SpectatorFavorisPage     = lazy(() => import("./pages/spectator/FavorisPage"));
-const DashboardPage            = lazy(() => import("./pages/dashboard/DashboardPage"));
-const DashboardMatchsPage      = lazy(() => import("./pages/dashboard/MatchsPage"));
-const DashboardEquipesPage     = lazy(() => import("./pages/dashboard/EquipesPage"));
-const DashboardTournoisPage    = lazy(() => import("./pages/dashboard/TournoisPage"));
+const DashboardPage               = lazy(() => import("./pages/dashboard/DashboardPage"));
+const DashboardMatchsPage         = lazy(() => import("./pages/dashboard/MatchsPage"));
+const DashboardMatchDetailPage    = lazy(() => import("./pages/dashboard/MatchDetailPage"));
+const DashboardEquipesPage        = lazy(() => import("./pages/dashboard/EquipesPage"));
+const DashboardTournoisPage       = lazy(() => import("./pages/dashboard/TournoisPage"));
+const DashboardClassementsPage    = lazy(() => import("./pages/dashboard/ClassementsPage"));
+const DashboardMessagesPage       = lazy(() => import("./pages/dashboard/MessagesPage"));
+const DashboardParametresPage     = lazy(() => import("./pages/dashboard/ParametresPage"));
+const DashboardNewTournamentPage  = lazy(() => import("./pages/dashboard/NewTournamentPage"));
+const SpectatorParametresPage     = lazy(() => import("./pages/spectator/ParametresPage"));
 
 /* ─── Loader Suspense ──────────────────────────────────────────── */
 function PageLoader() {
@@ -88,6 +94,7 @@ const router = createBrowserRouter([
 			{ path: "equipes",     element: <EquipesPage /> },
 			{ path: "classements", element: <SpectatorClassementsPage /> },
 			{ path: "favoris",     element: <SpectatorFavorisPage /> },
+			{ path: "parametres",  element: <SpectatorParametresPage /> },
 		],
 	},
 
@@ -96,10 +103,15 @@ const router = createBrowserRouter([
 		path: "/dashboard",
 		element: <DashboardLayout />,
 		children: [
-			{ index: true,      element: <DashboardPage /> },
-			{ path: "matchs",   element: <DashboardMatchsPage /> },
-			{ path: "equipes",  element: <DashboardEquipesPage /> },
-			{ path: "tournois", element: <DashboardTournoisPage /> },
+			{ index: true,           element: <DashboardPage /> },
+			{ path: "matchs",        element: <DashboardMatchsPage /> },
+			{ path: "matchs/:id",    element: <DashboardMatchDetailPage /> },
+			{ path: "equipes",       element: <DashboardEquipesPage /> },
+			{ path: "tournois",      element: <DashboardTournoisPage /> },
+			{ path: "classements",     element: <DashboardClassementsPage /> },
+			{ path: "messages",        element: <DashboardMessagesPage /> },
+			{ path: "parametres",      element: <DashboardParametresPage /> },
+			{ path: "nouveau-tournoi", element: <DashboardNewTournamentPage /> },
 		],
 	},
 
