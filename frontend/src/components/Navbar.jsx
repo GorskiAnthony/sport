@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Button from "./Button";
+import { useAuth } from "../contexts/AuthContext";
 
 const NAV_LINKS = [
 	{ label: "Accueil",  to: "/" },
@@ -63,8 +64,42 @@ function Logo() {
 	);
 }
 
+function UserMenu({ user, logout }) {
+	const navigate = useNavigate();
+	const spaceHref = user.role === "organisateur" ? "/dashboard" : "/accueil";
+	const spaceLabel = user.role === "organisateur" ? "Mon dashboard" : "Mon espace";
+	const avatarColor = user.role === "organisateur"
+		? "bg-green-500/20 border-green-500/30 text-green-400"
+		: "bg-blue-500/20 border-blue-500/30 text-blue-400";
+
+	return (
+		<div className="flex items-center gap-2">
+			<Link
+				to={spaceHref}
+				className="text-sm text-slate-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+			>
+				{spaceLabel}
+			</Link>
+			<button
+				onClick={() => { logout(); navigate("/"); }}
+				className="text-xs text-slate-500 hover:text-red-400 transition-colors px-2 py-1 rounded"
+				aria-label="Se déconnecter"
+			>
+				Déconnexion
+			</button>
+			<div
+				className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold ${avatarColor}`}
+				aria-label={`Connecté en tant que ${user.name}`}
+			>
+				{user.initials}
+			</div>
+		</div>
+	);
+}
+
 function Navbar() {
 	const [searchOpen, setSearchOpen] = useState(false);
+	const { user, logout } = useAuth();
 
 	return (
 		<>
@@ -105,8 +140,14 @@ function Navbar() {
 								<circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
 							</svg>
 						</button>
-						<Button text="Se connecter" variant="outline" href="/connexion" />
-						<Button text="Créer un compte" variant="primary" href="/inscription" />
+						{user ? (
+							<UserMenu user={user} logout={logout} />
+						) : (
+							<>
+								<Button text="Se connecter" variant="outline" href="/connexion" />
+								<Button text="Créer un compte" variant="primary" href="/inscription" />
+							</>
+						)}
 					</div>
 				</nav>
 			</header>

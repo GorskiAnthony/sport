@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 /* ─── Icons ────────────────────────────────────────────────────── */
 const Icon = {
@@ -66,7 +66,7 @@ const NAV_BOTTOM = [
 ];
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */
-function Sidebar({ user }) {
+function Sidebar({ user, logout }) {
 	const navigate = useNavigate();
 
 	const linkClass = ({ isActive }) =>
@@ -126,11 +126,7 @@ function Sidebar({ user }) {
 			{/* Logout */}
 			<div className="px-3 pb-4 pt-2 border-t border-white/5">
 				<button
-					onClick={() => {
-						localStorage.removeItem("token");
-						localStorage.removeItem("user");
-						navigate("/connexion");
-					}}
+					onClick={() => { logout(); navigate("/"); }}
 					className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full"
 					aria-label="Se déconnecter"
 				>
@@ -178,20 +174,11 @@ function TopBar({ user }) {
 
 /* ─── Layout ───────────────────────────────────────────────────── */
 function SpectatorLayout() {
-	const [user, setUser] = useState(null);
-
-	useEffect(() => {
-		try {
-			const stored = localStorage.getItem("user");
-			if (stored) setUser(JSON.parse(stored));
-		} catch {
-			// ignore malformed storage
-		}
-	}, []);
+	const { user, logout } = useAuth();
 
 	return (
 		<div className="flex h-screen bg-[#0D1117] text-white overflow-hidden">
-			<Sidebar user={user} />
+			<Sidebar user={user} logout={logout} />
 			<div className="flex-1 flex flex-col overflow-hidden">
 				<TopBar user={user} />
 				<main id="spectateur-content" className="flex-1 overflow-y-auto">

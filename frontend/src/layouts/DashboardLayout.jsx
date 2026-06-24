@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import BreadcrumbContext, { BreadcrumbProvider } from "../contexts/BreadcrumbContext";
-import { getCurrentUser } from "../services/dashboardService";
+import { useAuth } from "../contexts/AuthContext";
 
 /* ─── Icons ────────────────────────────────────────────────────── */
 const Icon = {
@@ -64,7 +64,7 @@ const NAV = [
 ];
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */
-function Sidebar() {
+function Sidebar({ logout }) {
 	const navigate = useNavigate();
 
 	const linkClass = ({ isActive }) =>
@@ -113,7 +113,7 @@ function Sidebar() {
 			{/* Logout */}
 			<div className="px-3 pb-4 border-t border-white/5 pt-4">
 				<button
-					onClick={() => { localStorage.removeItem("token"); navigate("/connexion"); }}
+					onClick={() => { logout(); navigate("/"); }}
 					className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full"
 					aria-label="Se déconnecter"
 				>
@@ -165,15 +165,11 @@ function TopBar({ user }) {
 
 /* ─── Layout ───────────────────────────────────────────────────── */
 function DashboardLayoutInner() {
-	const [user, setUser] = useState(null);
-
-	useEffect(() => {
-		getCurrentUser().then(({ data }) => setUser(data));
-	}, []);
+	const { user, logout } = useAuth();
 
 	return (
 		<div className="flex h-screen bg-[#0D1117] text-white overflow-hidden">
-			<Sidebar />
+			<Sidebar logout={logout} />
 			<div className="flex-1 flex flex-col overflow-hidden">
 				<TopBar user={user} />
 				<main id="dashboard-content" className="flex-1 overflow-y-auto p-6">

@@ -7,10 +7,12 @@ import SocialAuthButtons from "../components/ui/SocialAuthButtons";
 import Button from "../components/Button";
 import { login } from "../services/authService";
 import { useToast } from "../contexts/ToastContext";
+import { useAuth } from "../contexts/AuthContext";
 
 function LoginPage() {
-	const navigate = useNavigate();
-	const toast = useToast();
+	const navigate  = useNavigate();
+	const toast     = useToast();
+	const { login: authLogin } = useAuth();
 	const [form, setForm] = useState({ email: "", password: "" });
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
@@ -38,8 +40,7 @@ function LoginPage() {
 		setLoading(true);
 		try {
 			const { data } = await login(form);
-			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			authLogin(data.user, data.token);
 			toast.success(`Bon retour, ${data.user.name} !`, "Connexion réussie");
 			setTimeout(() => {
 				navigate(data.user.role === "organisateur" ? "/dashboard" : "/accueil");
