@@ -1,24 +1,6 @@
 {
-	"name": "backend",
-	"version": "1.0.0",
-	"description": "API",
-	"keywords": [
-		"sport",
-		"tournois"
-	],
-	"homepage": "https://github.com/GorskiAnthony/sport#readme",
-	"bugs": {
-		"url": "https://github.com/GorskiAnthony/sport/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/GorskiAnthony/sport.git"
-	},
-	"license": "ISC",
-	"author": "Anthony gorski",
-	"type": "commonjs",
-	"main": "server.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	}
+  "name": "sport-backend",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Bookkeeping manifest for semantic-release-monorepo only — the real build is Maven (pom.xml). Do not add scripts/deps here."
 }

@@ -1,0 +1,12 @@
+# Root-level release tooling (semantic-release, commitlint)
+node_modules/
+*.log
+
+# Local env overrides
+.env
+
+# Archived legacy reference (not part of the project)
+/app/
+
+# macOS
+.DS_Store

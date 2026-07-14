@@ -1,0 +1,13 @@
+<app-page-header
+  badge="Espace organisateur"
+  title="Bienvenue,"
+  [highlight]="user()?.name"
+  subtitle="Votre tableau de bord est connecté à l'API. La gestion des tournois, équipes et matchs arrive dans une prochaine itération."
+/>
+
+<div class="bg-[#161B22] border border-white/10 rounded-2xl p-6 max-w-lg">
+  <p class="text-slate-400 text-sm">
+    Plan actuel :
+    <span class="text-green-400 font-semibold">{{ user()?.plan }}</span>
+  </p>
+</div>

@@ -1,0 +1,41 @@
+<app-auth-card title="Créer un compte" subtitle="Rejoignez la communauté Tournoi Center.">
+  <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de création de compte">
+    <fieldset class="mb-4">
+      <legend class="sr-only">Choisissez votre rôle</legend>
+      <div class="flex gap-3" role="group">
+        @for (r of roles; track r.id) {
+          <button
+            type="button"
+            (click)="selectRole(r.id)"
+            [attr.aria-pressed]="role() === r.id"
+            class="flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
+            [class]="role() === r.id ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-white/20 text-white hover:border-white/40'"
+          >
+            {{ r.label }}
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <div class="space-y-4">
+      <app-form-input id="register-name" label="Nom complet" type="text" placeholder="Votre nom" [(value)]="name" autoComplete="name" [required]="true" [error]="errors().name" />
+      <app-form-input id="register-email" label="Email" type="email" placeholder="votre@email.com" [(value)]="email" autoComplete="email" [required]="true" [error]="errors().email" />
+      <app-password-input id="register-password" label="Mot de passe" [(value)]="password" autoComplete="new-password" [required]="true" [error]="errors().password" />
+    </div>
+
+    <app-button
+      [text]="loading() ? 'Création…' : 'Créer mon compte'"
+      variant="primary"
+      type="submit"
+      [disabled]="loading()"
+      className="w-full mt-6 justify-center py-3"
+    />
+
+    <p class="text-slate-400 text-sm text-center mt-4">
+      Déjà un compte ?
+      <a routerLink="/login" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+        Se connecter
+      </a>
+    </p>
+  </form>
+</app-auth-card>

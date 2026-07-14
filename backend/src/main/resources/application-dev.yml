@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.tournoicenter: DEBUG
+    org.hibernate.SQL: DEBUG

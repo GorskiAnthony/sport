@@ -1,0 +1,51 @@
+# Compose file for production deploys (e.g. Dokploy).
+# Unlike docker-compose.yml (local dev), this pulls the pre-built, released
+# images from GHCR instead of building from source.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tournoi_center}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    image: ghcr.io/gorskianthony/sport-backend:${BACKEND_TAG:-latest}
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-tournoi_center}
+      DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_DAYS: ${JWT_EXPIRATION_DAYS:-7}
+      CLIENT_URL: ${CLIENT_URL}
+      SPRING_PROFILES_ACTIVE: prod
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_CLASSIC: ${STRIPE_PRICE_CLASSIC:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/gorskianthony/sport-frontend:${FRONTEND_TAG:-latest}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # mobile:
+  #   image: ghcr.io/gorskianthony/sport-mobile:${MOBILE_TAG:-latest}
+  #   Réservé — à activer une fois l'app mobile publiée.
+
+volumes:
+  postgres-data:

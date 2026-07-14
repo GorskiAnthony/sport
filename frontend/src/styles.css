@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@keyframes float {
+	0%, 100% { transform: translateY(0px) rotate(0deg); }
+	33%       { transform: translateY(-18px) rotate(8deg); }
+	66%       { transform: translateY(-8px) rotate(-5deg); }
+}
+
+@keyframes radar-ring {
+	0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0.7; }
+	100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+}
+
+@keyframes glow-pulse {
+	0%, 100% { text-shadow: 0 0 20px rgba(34,197,94,.4), 0 0 60px rgba(34,197,94,.2); }
+	50%       { text-shadow: 0 0 50px rgba(34,197,94,.8), 0 0 120px rgba(34,197,94,.4), 0 0 200px rgba(34,197,94,.2); }
+}
+
+@keyframes glitch-1 {
+	0%, 90%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+	92%            { clip-path: inset(8% 0 60% 0); transform: translate(-4px, 2px); }
+	94%            { clip-path: inset(50% 0 20% 0); transform: translate(4px, -2px); }
+	96%            { clip-path: inset(20% 0 70% 0); transform: translate(-2px, 1px); }
+	98%            { clip-path: inset(70% 0 5% 0);  transform: translate(2px, -1px); }
+}
+
+@keyframes glitch-2 {
+	0%, 88%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+	90%            { clip-path: inset(30% 0 40% 0); transform: translate(4px, -3px); }
+	93%            { clip-path: inset(60% 0 10% 0); transform: translate(-3px, 2px); }
+	97%            { clip-path: inset(10% 0 80% 0); transform: translate(2px, -1px); }
+}
+
+@keyframes fade-in-up {
+	from { opacity: 0; transform: translateY(24px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scan-line {
+	0%   { top: -2px; }
+	100% { top: 100%; }
+}
+
+@keyframes grid-drift {
+	0%   { background-position: 0 0; }
+	100% { background-position: 60px 60px; }
+}
+
+@keyframes toast-in {
+	from { opacity: 0; transform: translateX(calc(100% + 24px)); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+	from { opacity: 1; transform: translateX(0); max-height: 120px; margin-bottom: 8px; }
+	to   { opacity: 0; transform: translateX(calc(100% + 24px)); max-height: 0; margin-bottom: 0; }
+}
+
+@keyframes toast-progress {
+	from { width: 100%; }
+	to   { width: 0%; }
+}
+
+@keyframes spark-out {
+	0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+	100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
