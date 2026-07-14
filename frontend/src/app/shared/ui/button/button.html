@@ -1,0 +1,22 @@
+@if (routerLink()) {
+  <a [routerLink]="routerLink()" [class]="classes()">
+    {{ text() }}
+    @if (arrow()) {
+      <span aria-hidden="true">→</span>
+    }
+  </a>
+} @else if (href()) {
+  <a [href]="href()" [class]="classes()">
+    {{ text() }}
+    @if (arrow()) {
+      <span aria-hidden="true">→</span>
+    }
+  </a>
+} @else {
+  <button [type]="type()" [disabled]="disabled()" [class]="classes()" (click)="clicked.emit()">
+    {{ text() }}
+    @if (arrow()) {
+      <span aria-hidden="true">→</span>
+    }
+  </button>
+}

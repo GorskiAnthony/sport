@@ -1,0 +1,21 @@
+<div class="flex flex-col gap-1.5">
+  <label [for]="id()" class="text-slate-300 text-sm font-medium">{{ label() }}</label>
+  <div class="relative">
+    <input
+      [id]="id()"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [value]="value()"
+      (input)="onInput($event)"
+      [autocomplete]="autoComplete()"
+      [required]="required()"
+      [attr.aria-invalid]="error() ? true : null"
+      [attr.aria-describedby]="error() ? id() + '-error' : null"
+      class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-shadow pr-10"
+    />
+    <ng-content />
+  </div>
+  @if (error()) {
+    <p [id]="id() + '-error'" role="alert" class="text-red-400 text-xs">{{ error() }}</p>
+  }
+</div>
