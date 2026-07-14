@@ -25,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Explicit branch ref (not the default github.sha) so a job that was
+          # queued behind release-backend.yml picks up its version-bump commit
+          # instead of checking out the stale commit that originally triggered this run.
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
