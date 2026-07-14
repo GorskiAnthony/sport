@@ -2,7 +2,7 @@ name: Release backend
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
     paths:
       - 'backend/**'
   workflow_dispatch: {}

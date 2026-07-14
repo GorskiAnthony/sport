@@ -1,5 +1,5 @@
 {
-  "branches": ["main"],
+  "branches": ["main", { "name": "dev", "prerelease": true }],
   "tagFormat": "frontend-v${version}",
   "extends": "semantic-release-monorepo",
   "plugins": [
@@ -11,7 +11,7 @@
       "@semantic-release/exec",
       {
         "prepareCmd": "docker build -t $FRONTEND_IMAGE:${nextRelease.version} .",
-        "publishCmd": "docker push $FRONTEND_IMAGE:${nextRelease.version} && docker tag $FRONTEND_IMAGE:${nextRelease.version} $FRONTEND_IMAGE:latest && docker push $FRONTEND_IMAGE:latest"
+        "publishCmd": "docker push $FRONTEND_IMAGE:${nextRelease.version} && if [ \"${nextRelease.channel}\" = \"dev\" ]; then docker tag $FRONTEND_IMAGE:${nextRelease.version} $FRONTEND_IMAGE:dev && docker push $FRONTEND_IMAGE:dev; else docker tag $FRONTEND_IMAGE:${nextRelease.version} $FRONTEND_IMAGE:latest && docker push $FRONTEND_IMAGE:latest; fi"
       }
     ],
     [

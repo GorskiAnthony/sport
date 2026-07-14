@@ -2,7 +2,7 @@ name: Release frontend
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
     paths:
       - 'frontend/**'
   workflow_dispatch: {}

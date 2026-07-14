@@ -1,5 +1,5 @@
 {
-  "branches": ["main"],
+  "branches": ["main", { "name": "dev", "prerelease": true }],
   "tagFormat": "backend-v${version}",
   "extends": "semantic-release-monorepo",
   "plugins": [
@@ -10,7 +10,7 @@
       "@semantic-release/exec",
       {
         "prepareCmd": "mvn -B -ntp versions:set -DnewVersion=${nextRelease.version} -DgenerateBackupPoms=false && mvn -B -ntp -DskipTests package && docker build -t $BACKEND_IMAGE:${nextRelease.version} .",
-        "publishCmd": "docker push $BACKEND_IMAGE:${nextRelease.version} && docker tag $BACKEND_IMAGE:${nextRelease.version} $BACKEND_IMAGE:latest && docker push $BACKEND_IMAGE:latest"
+        "publishCmd": "docker push $BACKEND_IMAGE:${nextRelease.version} && if [ \"${nextRelease.channel}\" = \"dev\" ]; then docker tag $BACKEND_IMAGE:${nextRelease.version} $BACKEND_IMAGE:dev && docker push $BACKEND_IMAGE:dev; else docker tag $BACKEND_IMAGE:${nextRelease.version} $BACKEND_IMAGE:latest && docker push $BACKEND_IMAGE:latest; fi"
       }
     ],
     [

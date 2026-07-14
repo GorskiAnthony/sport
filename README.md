@@ -42,10 +42,15 @@ docker compose up --build
 
 Un service `mobile` est réservé (commenté) dans `docker-compose.yml`, à activer une fois l'app mobile initialisée.
 
+## Branches et releases
+
+- **`dev`** : branche d'intégration (par défaut). Chaque push y déclenche une **pre-release** (`backend-vX.Y.Z-dev.N` / `frontend-vX.Y.Z-dev.N`), image Docker taguée `:dev`.
+- **`main`** : branche stable. Une fois `dev` prête à être promue, ouvrir une PR `dev` → `main` : le merge déclenche une **release stable** (`backend-vX.Y.Z` / `frontend-vX.Y.Z`), image Docker taguée `:latest`.
+
 ## CI/CD
 
-- **CI** (`.github/workflows/ci.yml`) : sur chaque PR vers `main`, build + tests du/des paquet(s) modifié(s), et vérification du format des commits.
-- **Releases** (`.github/workflows/release-backend.yml`, `release-frontend.yml`) : sur push vers `main`, [semantic-release](https://semantic-release.gitbook.io/) (via `semantic-release-monorepo`) détermine la version suivante à partir des commits, met à jour le changelog et la version (`pom.xml` / `package.json`), crée un tag Git (`backend-vX.Y.Z` / `frontend-vX.Y.Z`) et une GitHub Release, et publie une image Docker sur `ghcr.io`.
+- **CI** (`.github/workflows/ci.yml`) : sur chaque PR vers `dev` ou `main`, build + tests du/des paquet(s) modifié(s), et vérification du format des commits.
+- **Releases** (`.github/workflows/release-backend.yml`, `release-frontend.yml`) : sur push vers `dev` ou `main`, [semantic-release](https://semantic-release.gitbook.io/) (via `semantic-release-monorepo`) détermine la version suivante à partir des commits, met à jour le changelog et la version (`pom.xml` / `package.json`), crée un tag Git et une GitHub Release, et publie une image Docker sur `ghcr.io`.
 
 ### Convention de commit
 
