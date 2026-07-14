@@ -1,0 +1,90 @@
+<header class="sticky top-0 z-50 bg-[#0D1117]/95 backdrop-blur border-b border-white/5">
+  <nav class="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6 h-16" aria-label="Navigation principale">
+    <a routerLink="/" aria-label="Tournoi Center — retour à l'accueil" class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+      <img src="/logo_white.png" alt="Tournoi Center" class="h-16 w-auto" />
+    </a>
+
+    <ul class="hidden md:flex items-center gap-1" role="list">
+      @for (link of navLinks; track link.path) {
+        <li>
+          <a
+            [routerLink]="link.path"
+            routerLinkActive="text-white after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-green-500 after:rounded-full"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+            class="relative px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors duration-200 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
+          >
+            {{ link.label }}
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div class="flex items-center gap-2">
+      @if (user(); as currentUser) {
+        <div class="flex items-center gap-2">
+          <a [routerLink]="spaceHref()" class="text-sm text-slate-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+            {{ spaceLabel() }}
+          </a>
+          <button (click)="logout()" class="text-xs text-slate-500 hover:text-red-400 transition-colors px-2 py-1 rounded" aria-label="Se déconnecter">
+            Déconnexion
+          </button>
+          <div class="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold" [class]="avatarColor()" [attr.aria-label]="'Connecté en tant que ' + currentUser.name">
+            {{ initials() }}
+          </div>
+        </div>
+      } @else {
+        <div class="hidden md:flex items-center gap-2">
+          <app-button text="Se connecter" variant="outline" routerLink="/login" />
+          <app-button text="Créer un compte" variant="primary" routerLink="/register" />
+        </div>
+      }
+
+      <button
+        (click)="toggleMobileMenu()"
+        class="md:hidden w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+        [attr.aria-label]="mobileMenuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+        [attr.aria-expanded]="mobileMenuOpen()"
+      >
+        @if (mobileMenuOpen()) {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        }
+      </button>
+    </div>
+  </nav>
+
+  @if (mobileMenuOpen()) {
+    <div class="md:hidden border-t border-white/5 bg-[#0D1117]/98 px-4 py-3">
+      <ul class="space-y-1" role="list">
+        @for (link of navLinks; track link.path) {
+          <li>
+            <a
+              [routerLink]="link.path"
+              routerLinkActive="text-white bg-white/5"
+              [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+              (click)="closeMobileMenu()"
+              class="block px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        }
+      </ul>
+      @if (!user()) {
+        <div class="mt-3 pt-3 border-t border-white/5 flex flex-col gap-2">
+          <a routerLink="/login" (click)="closeMobileMenu()" class="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-slate-300 border border-white/10 hover:bg-white/5 transition-colors">
+            Se connecter
+          </a>
+          <a routerLink="/register" (click)="closeMobileMenu()" class="block w-full px-4 py-2.5 rounded-lg text-sm text-center text-black bg-green-500 hover:bg-green-400 font-semibold transition-colors">
+            Créer un compte
+          </a>
+        </div>
+      }
+    </div>
+  }
+</header>

@@ -1,0 +1,14 @@
+<div class="max-w-2xl mb-10">
+  @if (badge()) {
+    <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">{{ badge() }}</p>
+  }
+  <h1 class="text-white text-3xl md:text-4xl font-extrabold leading-tight">
+    {{ title() }}
+    @if (highlight()) {
+      <span class="text-green-400">{{ highlight() }}</span>
+    }
+  </h1>
+  @if (subtitle()) {
+    <p class="mt-3 text-slate-400 text-sm leading-relaxed">{{ subtitle() }}</p>
+  }
+</div>

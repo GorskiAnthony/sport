@@ -1,0 +1,40 @@
+<main id="main-content" class="flex-1">
+  <section class="relative min-h-[520px] flex items-center" aria-label="Bienvenue sur Tournoi Center">
+    <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
+      <img src="/hero.png" alt="" class="w-full h-full object-cover object-center" />
+      <div class="absolute inset-0 bg-[#0D1117]/70"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full px-6 py-16">
+      <div class="max-w-xl">
+        <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-4">
+          La plateforme pour tous les tournois
+        </p>
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight text-white">
+          Organisez.<br />
+          Participez.<br />
+          <span class="text-green-400">Vivez la compétition.</span>
+        </h1>
+        <p class="mt-5 text-slate-300 text-base leading-relaxed max-w-sm">
+          La plateforme simple et complète pour gérer vos tournois de football, de la catégorie U15 et bien plus.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <app-button text="Créer un compte" variant="primary" routerLink="/register" [arrow]="true" />
+          <app-button text="Voir les tournois" variant="ghost" routerLink="/tournaments" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-6 py-20" aria-label="Fonctionnalités">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      @for (feature of features; track feature.title) {
+        <div class="bg-[#161B22] border border-white/10 rounded-2xl p-6">
+          <span class="text-3xl" aria-hidden="true">{{ feature.icon }}</span>
+          <h2 class="text-white text-lg font-bold mt-4">{{ feature.title }}</h2>
+          <p class="text-slate-400 text-sm mt-2 leading-relaxed">{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </section>
+</main>

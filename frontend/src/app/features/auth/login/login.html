@@ -1,0 +1,41 @@
+<app-auth-card title="Connexion" subtitle="Bon retour ! Connectez-vous à votre compte.">
+  <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de connexion">
+    <div class="space-y-4">
+      <app-form-input
+        id="login-email"
+        label="Email"
+        type="email"
+        placeholder="votre@email.com"
+        [(value)]="email"
+        autoComplete="email"
+        [required]="true"
+        [error]="errors().email"
+      />
+      <div>
+        <app-password-input
+          id="login-password"
+          label="Mot de passe"
+          [(value)]="password"
+          autoComplete="current-password"
+          [required]="true"
+          [error]="errors().password"
+        />
+      </div>
+    </div>
+
+    <app-button
+      [text]="loading() ? 'Connexion…' : 'Se connecter'"
+      variant="primary"
+      type="submit"
+      [disabled]="loading()"
+      className="w-full mt-6 justify-center py-3"
+    />
+
+    <p class="text-slate-400 text-sm text-center mt-4">
+      Pas encore de compte ?
+      <a routerLink="/register" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+        Créer un compte
+      </a>
+    </p>
+  </form>
+</app-auth-card>
