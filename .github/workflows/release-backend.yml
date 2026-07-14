@@ -8,7 +8,9 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: release-backend-${{ github.ref }}
+  # Shared with release-frontend.yml: both write version-bump commits and tags
+  # back to the same branch via @semantic-release/git, so they must not race.
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
