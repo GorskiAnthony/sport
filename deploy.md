@@ -7,13 +7,20 @@ et `sport-frontend`), via `docker-compose.prod.yml`.
 ## Vue d'ensemble
 
 ```
-Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80)  ─▶ backend (port 3000) ─▶ postgres (5432)
+Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─┬─▶ /api/*  → backend:3000 (réseau interne)
+                                                                       └─▶ le reste → SPA Angular
+                                                                              backend ─▶ postgres (5432)
 ```
 
 - **frontend** et **backend** : images publiées automatiquement par `.github/workflows/release-*.yml` à chaque
   release (voir README.md pour la stratégie de branches `dev`/`main`).
 - **postgres** : conteneur géré directement dans le compose (pas besoin du service "Database" natif de Dokploy).
 - Rien n'est buildé sur le serveur de prod — Dokploy ne fait que `docker pull` + `docker compose up`.
+- Le frontend appelle l'API en chemin relatif (`/api/...`) — nginx la relaie en interne vers le conteneur
+  `backend` (`proxy_pass` dans `frontend/nginx.conf`). Le navigateur ne parle donc jamais directement au
+  domaine du backend : pas de CORS à configurer côté navigateur, et le même build d'image fonctionne derrière
+  n'importe quel domaine sans reconstruction. Le domaine du backend reste utile pour un accès API direct
+  (Postman, future app mobile) mais n'est pas requis pour que le site fonctionne.
 
 ## Pré-requis
 
@@ -69,9 +76,10 @@ BACKEND_TAG=latest
 FRONTEND_TAG=latest
 ```
 
-**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend — c'est ce que le
-backend utilise pour la config CORS. Une valeur incorrecte se traduit par des erreurs CORS silencieuses dans le
-navigateur.
+**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le navigateur ne
+l'utilise plus pour CORS sur le parcours principal (proxifié par nginx), mais le backend s'en sert pour
+construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse ces
+redirections.
 
 Ne jamais committer ce fichier rempli — `.env.prod.example` (le template vide) est le seul versionné.
 
