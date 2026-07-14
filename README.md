@@ -42,6 +42,11 @@ docker compose up --build
 
 Un service `mobile` est réservé (commenté) dans `docker-compose.yml`, à activer une fois l'app mobile initialisée.
 
+## Production
+
+Voir [`deploy.md`](./deploy.md) — déploiement sur [Dokploy](https://dokploy.com/) via `docker-compose.prod.yml`
+et les images publiées sur `ghcr.io`.
+
 ## Branches et releases
 
 - **`dev`** : branche d'intégration (par défaut). Chaque push y déclenche une **pre-release** (`backend-vX.Y.Z-dev.N` / `frontend-vX.Y.Z-dev.N`), image Docker taguée `:dev`.
