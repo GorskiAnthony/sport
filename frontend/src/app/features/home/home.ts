@@ -15,6 +15,11 @@ export class HomePage {
       icon: '🏆',
     },
     {
+      title: 'Générez le tableau automatiquement',
+      description: 'Poule (round robin) ou élimination directe : les matchs sont générés pour vous, tour après tour.',
+      icon: '🔀',
+    },
+    {
       title: 'Suivez en direct',
       description: 'Scores, classements et statistiques mis à jour en temps réel.',
       icon: '📊',
