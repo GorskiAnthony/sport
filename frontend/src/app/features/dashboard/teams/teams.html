@@ -1,0 +1,135 @@
+<app-confirm-modal
+  [open]="!!pending()"
+  title="Supprimer l'équipe ?"
+  [description]="(pending()?.name ?? '') + ' sera définitivement supprimée.'"
+  confirmLabel="Supprimer"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="pending.set(null)"
+/>
+
+<div class="max-w-5xl">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="text-white text-2xl font-extrabold">Équipes</h1>
+    @if (tournaments().length > 0) {
+      <button type="button" (click)="openAdd()" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+        + Ajouter
+      </button>
+    }
+  </div>
+
+  @if (tournaments().length === 0) {
+    <p class="text-slate-500 text-sm text-center py-12">
+      Créez d'abord un tournoi pour pouvoir y ajouter des équipes.
+    </p>
+  } @else {
+    <div class="flex flex-col gap-1.5 mb-6 max-w-xs">
+      <label for="tournament-select" class="text-slate-400 text-xs">Tournoi</label>
+      <select
+        id="tournament-select"
+        [value]="selectedTournamentId()"
+        (change)="onTournamentChange($event)"
+        class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        @for (t of tournaments(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (panelOpen()) {
+      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 mb-6">
+        <h2 class="text-white font-semibold mb-4">{{ editId() !== null ? "Modifier l'équipe" : 'Nouvelle équipe' }}</h2>
+        <form (submit)="$event.preventDefault(); save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-center gap-3">
+            <label for="team-logo-input" class="w-14 h-14 rounded-xl bg-[#0D1117] border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden cursor-pointer hover:border-green-500/40 transition-colors">
+              @if (form().logo) {
+                <img [src]="form().logo" alt="Logo" class="w-full h-full object-cover" />
+              } @else {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-600" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              }
+            </label>
+            <div>
+              <label for="team-logo-input" class="text-xs text-green-400 hover:text-green-300 font-medium cursor-pointer">{{ form().logo ? 'Changer' : 'Choisir un logo' }}</label>
+            </div>
+            <input id="team-logo-input" type="file" accept="image/*" class="sr-only" (change)="onFileSelected($event)" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="team-name" class="text-slate-400 text-xs">Nom *</label>
+            <input id="team-name" [value]="form().name" (input)="updateField('name', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Paris FC" required />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="team-category" class="text-slate-400 text-xs">Catégorie</label>
+            <select id="team-category" [value]="form().category" (change)="updateField('category', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              @for (c of categories; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="team-contact" class="text-slate-400 text-xs">Contact</label>
+            <input id="team-contact" type="email" [value]="form().contact" (input)="updateField('contact', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="contact@club.fr" />
+          </div>
+          <div class="sm:col-span-2 flex gap-3 justify-end">
+            <button type="button" (click)="panelOpen.set(false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Annuler</button>
+            <button type="submit" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
+              {{ editId() !== null ? 'Enregistrer' : 'Ajouter' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" aria-label="Liste des équipes">
+          <thead>
+            <tr class="border-b border-white/5">
+              @for (h of ['Équipe', 'Catégorie', 'Contact', 'Actions']; track h) {
+                <th scope="col" class="text-left px-5 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+              @for (i of skeletons; track i) {
+                <tr class="border-b border-white/5 animate-pulse">
+                  @for (j of skeletons; track j) {
+                    <td class="px-5 py-4"><div class="h-4 bg-white/5 rounded"></div></td>
+                  }
+                </tr>
+              }
+            } @else {
+              @for (t of teams(); track t.id) {
+                <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      @if (t.logo) {
+                        <img [src]="t.logo" alt="" class="w-8 h-8 rounded-full object-cover" />
+                      } @else {
+                        <div class="w-8 h-8 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold">{{ t.name[0] }}</div>
+                      }
+                      <span class="text-white font-medium">{{ t.name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4"><span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="catStyles[t.category] ?? 'bg-slate-500/20 text-slate-300'">{{ t.category }}</span></td>
+                  <td class="px-5 py-4 text-slate-400">{{ t.contact ?? '—' }}</td>
+                  <td class="px-5 py-4">
+                    <div class="flex gap-1">
+                      <button type="button" (click)="openEdit(t)" aria-label="Modifier" class="w-7 h-7 flex items-center justify-center text-amber-400 hover:bg-amber-500/10 rounded transition-colors">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button type="button" (click)="pending.set(t)" aria-label="Supprimer" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

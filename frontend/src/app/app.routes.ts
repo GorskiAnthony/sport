@@ -17,6 +17,16 @@ export const routes: Routes = [
         canActivate: [roleRedirectGuard],
         loadComponent: () => import('./features/home/home').then((m) => m.HomePage),
       },
+      { path: 'about', loadComponent: () => import('./features/about/about').then((m) => m.AboutPage) },
+      { path: 'sports', loadComponent: () => import('./features/sports/sports').then((m) => m.SportsPage) },
+      { path: 'organizers', loadComponent: () => import('./features/organizers/organizers').then((m) => m.OrganizersPage) },
+      { path: 'pricing', loadComponent: () => import('./features/pricing/pricing').then((m) => m.PricingPage) },
+      { path: 'tournaments', loadComponent: () => import('./features/tournaments/tournaments').then((m) => m.TournamentsPage) },
+      { path: 'teams', loadComponent: () => import('./features/teams/teams').then((m) => m.TeamsPage) },
+      {
+        path: 't/:id',
+        loadComponent: () => import('./features/public-tournament/public-tournament').then((m) => m.PublicTournamentPage),
+      },
     ],
   },
   {
@@ -25,6 +35,16 @@ export const routes: Routes = [
     children: [
       { path: 'login', loadComponent: () => import('./features/auth/login/login').then((m) => m.LoginPage) },
       { path: 'register', loadComponent: () => import('./features/auth/register/register').then((m) => m.RegisterPage) },
+      {
+        path: 'register/tournament',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/create-tournament/create-tournament').then((m) => m.CreateTournamentPage),
+      },
+      {
+        path: 'register/add-team',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/add-team/add-team').then((m) => m.AddTeamPage),
+      },
     ],
   },
   {
@@ -35,6 +55,21 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./features/spectator/spectator-home/spectator-home').then((m) => m.SpectatorHomePage),
+      },
+      { path: 'tournaments', loadComponent: () => import('./features/tournaments/tournaments').then((m) => m.TournamentsPage) },
+      { path: 'sports', loadComponent: () => import('./features/sports/sports').then((m) => m.SportsPage) },
+      { path: 'teams', loadComponent: () => import('./features/teams/teams').then((m) => m.TeamsPage) },
+      {
+        path: 'standings',
+        loadComponent: () => import('./features/spectator/standings/standings').then((m) => m.SpectatorStandingsPage),
+      },
+      {
+        path: 'favorites',
+        loadComponent: () => import('./features/spectator/favorites/favorites').then((m) => m.SpectatorFavoritesPage),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./features/spectator/settings/settings').then((m) => m.SpectatorSettingsPage),
       },
     ],
   },
@@ -47,7 +82,42 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./features/dashboard/dashboard-home/dashboard-home').then((m) => m.DashboardHomePage),
       },
+      {
+        path: 'tournaments',
+        loadComponent: () =>
+          import('./features/dashboard/tournaments/tournaments').then((m) => m.DashboardTournamentsPage),
+      },
+      {
+        path: 'tournaments/new',
+        loadComponent: () =>
+          import('./features/dashboard/new-tournament/new-tournament').then((m) => m.DashboardNewTournamentPage),
+      },
+      {
+        path: 'teams',
+        loadComponent: () => import('./features/dashboard/teams/teams').then((m) => m.DashboardTeamsPage),
+      },
+      {
+        path: 'matches',
+        loadComponent: () => import('./features/dashboard/matches/matches').then((m) => m.DashboardMatchesPage),
+      },
+      {
+        path: 'matches/:id',
+        loadComponent: () =>
+          import('./features/dashboard/match-detail/match-detail').then((m) => m.DashboardMatchDetailPage),
+      },
+      {
+        path: 'standings',
+        loadComponent: () => import('./features/dashboard/standings/standings').then((m) => m.DashboardStandingsPage),
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./features/dashboard/messages/messages').then((m) => m.DashboardMessagesPage),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./features/dashboard/settings/settings').then((m) => m.DashboardSettingsPage),
+      },
     ],
   },
-  { path: '**', redirectTo: '' },
+  { path: '**', loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFoundPage) },
 ];

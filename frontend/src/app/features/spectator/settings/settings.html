@@ -1,0 +1,17 @@
+<div class="max-w-xl space-y-6">
+  <h1 class="text-white text-2xl font-extrabold">Paramètres</h1>
+  <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
+    <h2 class="text-white font-semibold">Profil</h2>
+    <div class="flex flex-col gap-1.5">
+      <label for="sp-name" class="text-slate-400 text-xs">Nom</label>
+      <input id="sp-name" [value]="name()" (input)="name.set($any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="sp-email" class="text-slate-400 text-xs">Email</label>
+      <input id="sp-email" [value]="user()?.email ?? ''" disabled class="w-full bg-[#0D1117] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed" />
+    </div>
+    <button type="button" (click)="save()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
+      Enregistrer
+    </button>
+  </div>
+</div>

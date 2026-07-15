@@ -1,0 +1,24 @@
+@if (open()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" (click)="cancelled.emit()" aria-hidden="true"></div>
+    <div class="relative bg-[#161B22] border border-white/10 rounded-xl p-6 max-w-sm w-full" role="alertdialog" aria-modal="true" [attr.aria-label]="title()">
+      <h2 class="text-white font-bold text-lg mb-2">{{ title() }}</h2>
+      @if (description()) {
+        <p class="text-slate-400 text-sm mb-6">{{ description() }}</p>
+      }
+      <div class="flex justify-end gap-3">
+        <button type="button" (click)="cancelled.emit()" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">
+          Annuler
+        </button>
+        <button
+          type="button"
+          (click)="confirmed.emit()"
+          class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
+          [class]="danger() ? 'bg-red-500 hover:bg-red-400 text-white' : 'bg-green-500 hover:bg-green-400 text-black'"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

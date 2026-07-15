@@ -1,0 +1,30 @@
+@if (loading()) {
+  <div class="flex-1 flex items-center justify-center">
+    <div class="w-8 h-8 rounded-full border-2 border-green-500/20 border-t-green-500 animate-spin" aria-label="Chargement…"></div>
+  </div>
+} @else if (!tournament()) {
+  <div class="flex-1 flex flex-col items-center justify-center text-center px-6">
+    <p class="text-slate-400 mb-4">Tournoi introuvable.</p>
+    <a routerLink="/tournaments" class="text-green-400 hover:text-green-300 text-sm">← Retour aux tournois</a>
+  </div>
+} @else {
+  <div class="flex-1 max-w-4xl mx-auto px-6 py-12">
+    <div class="bg-[#161B22] border border-white/5 rounded-2xl p-8">
+      <div class="flex items-center gap-4 mb-6">
+        <span class="text-5xl" aria-hidden="true">{{ icon(tournament()!.sport) }}</span>
+        <div>
+          <h1 class="text-white text-3xl font-extrabold">{{ tournament()!.name }}</h1>
+          <p class="text-slate-400">{{ tournament()!.category }} · {{ tournament()!.sport }}</p>
+        </div>
+      </div>
+      <dl class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @for (item of details; track item.label) {
+          <div class="bg-[#0D1117] rounded-xl p-4">
+            <dt class="text-slate-500 text-xs mb-1">{{ item.label }}</dt>
+            <dd class="text-white font-semibold text-sm">{{ item.value }}</dd>
+          </div>
+        }
+      </dl>
+    </div>
+  </div>
+}

@@ -1,0 +1,66 @@
+<app-confirm-modal
+  [open]="!!pending()"
+  title="Supprimer le tournoi ?"
+  [description]="(pending()?.name ?? '') + ' sera définitivement supprimé.'"
+  confirmLabel="Supprimer"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="pending.set(null)"
+/>
+
+@if (shareTarget(); as target) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" (click)="shareTarget.set(null)" aria-hidden="true"></div>
+    <div class="relative bg-[#161B22] border border-white/10 rounded-xl p-6 max-w-sm w-full">
+      <h2 class="text-white font-bold text-lg mb-2">Partager "{{ target.name }}"</h2>
+      <p class="text-slate-400 text-sm mb-4">Ce lien public permet à vos spectateurs de suivre le tournoi.</p>
+      <div class="flex items-center gap-2 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 mb-4">
+        <span class="text-slate-300 text-xs truncate flex-1">{{ shareUrl(target) }}</span>
+        <button type="button" (click)="copyShareLink(target)" class="text-green-400 hover:text-green-300 text-xs font-semibold flex-shrink-0">Copier</button>
+      </div>
+      <div class="flex justify-end">
+        <button type="button" (click)="shareTarget.set(null)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Fermer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="max-w-5xl">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="text-white text-2xl font-extrabold">Tournois</h1>
+    <a routerLink="/dashboard/tournaments/new" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+      + Nouveau tournoi
+    </a>
+  </div>
+
+  <div class="space-y-3">
+    @if (loading()) {
+      @for (i of skeletons; track i) {
+        <div class="bg-[#161B22] border border-white/5 rounded-xl h-20 animate-pulse"></div>
+      }
+    } @else if (tournaments().length === 0) {
+      <p class="text-slate-500 text-sm text-center py-12">
+        Aucun tournoi. <a routerLink="/dashboard/tournaments/new" class="text-green-400">Créer le premier →</a>
+      </p>
+    } @else {
+      @for (t of tournaments(); track t.id) {
+        <div class="bg-[#161B22] border border-white/5 rounded-xl px-5 py-4 flex items-center gap-4">
+          <span class="text-2xl flex-shrink-0" aria-hidden="true">{{ icon(t.sport) }}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
+            <p class="text-slate-500 text-xs">{{ dates(t) }} · {{ t.location }} · {{ t.teamsCount }}/{{ t.maxTeams }} équipes</p>
+          </div>
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full border" [class]="statusStyles[t.status]">{{ statusLabel(t.status) }}</span>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <button type="button" (click)="shareTarget.set(t)" aria-label="Partager" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
+            <button type="button" (click)="pending.set(t)" aria-label="Supprimer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
