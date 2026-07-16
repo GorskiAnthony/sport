@@ -34,17 +34,20 @@ public class BracketGenerationService {
     private final MatchRepository matchRepository;
     private final List<BracketGenerator> generators;
     private final SingleEliminationGenerator singleEliminationGenerator;
+    private final TournamentLiveService tournamentLiveService;
 
     public BracketGenerationService(TournamentRepository tournamentRepository,
                                      TeamRepository teamRepository,
                                      MatchRepository matchRepository,
                                      List<BracketGenerator> generators,
-                                     SingleEliminationGenerator singleEliminationGenerator) {
+                                     SingleEliminationGenerator singleEliminationGenerator,
+                                     TournamentLiveService tournamentLiveService) {
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
         this.matchRepository = matchRepository;
         this.generators = generators;
         this.singleEliminationGenerator = singleEliminationGenerator;
+        this.tournamentLiveService = tournamentLiveService;
     }
 
     @Transactional
@@ -68,7 +71,9 @@ public class BracketGenerationService {
         List<Match> matches = generator.generateInitialRound(tournament, teams);
         tournament.setFormat(format.name());
 
-        return matchRepository.saveAll(matches).stream().map(MatchResponse::from).toList();
+        List<MatchResponse> saved = matchRepository.saveAll(matches).stream().map(MatchResponse::from).toList();
+        tournamentLiveService.notifyTournamentChanged(tournamentId);
+        return saved;
     }
 
     @Transactional
@@ -105,11 +110,13 @@ public class BracketGenerationService {
         if (result.isComplete()) {
             tournament.setStatus(TournamentStatus.FINISHED);
             TeamResponse champion = result.champion() != null ? TeamResponse.from(result.champion()) : null;
+            tournamentLiveService.notifyTournamentChanged(tournamentId);
             return new BracketAdvanceResponse(List.of(), true, champion);
         }
 
         List<MatchResponse> saved = matchRepository.saveAll(result.nextRoundMatches()).stream()
                 .map(MatchResponse::from).toList();
+        tournamentLiveService.notifyTournamentChanged(tournamentId);
         return new BracketAdvanceResponse(saved, false, null);
     }
 

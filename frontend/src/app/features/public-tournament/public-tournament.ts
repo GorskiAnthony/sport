@@ -1,10 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TeamService } from '../../core/services/team.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { LiveUpdateService } from '../../core/services/live-update.service';
 import { TournamentDetail } from '../../core/models/tournament.model';
 import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
@@ -21,13 +22,17 @@ interface PhaseGroup {
   imports: [RouterLink],
   templateUrl: './public-tournament.html',
 })
-export class PublicTournamentPage implements OnInit {
+export class PublicTournamentPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly tournamentService = inject(TournamentService);
   private readonly teamService = inject(TeamService);
   private readonly toast = inject(ToastService);
+  private readonly liveUpdate = inject(LiveUpdateService);
   readonly auth = inject(AuthService);
+
+  private tournamentId = 0;
+  private unsubscribeLive: (() => void) | null = null;
 
   readonly tournament = signal<TournamentDetail | null>(null);
   readonly loading = signal(true);
@@ -56,16 +61,28 @@ export class PublicTournamentPage implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    // The URL uses a "{id}-{slug}" pretty link (e.g. /t/18-mon-tournoi) — the numeric id
+    // is authoritative and always leads, so parseInt stops at the first hyphen correctly.
+    const id = parseInt(this.route.snapshot.paramMap.get('id') ?? '', 10);
     if (!id) {
       this.loading.set(false);
       return;
     }
-    this.tournamentService.getById(id).subscribe({
+    this.tournamentId = id;
+    this.load(true);
+    this.unsubscribeLive = this.liveUpdate.subscribeToTournament(id, () => this.load(false));
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribeLive?.();
+  }
+
+  private load(initial: boolean): void {
+    this.tournamentService.getById(this.tournamentId).subscribe({
       next: (tournament) => {
         this.tournament.set(tournament);
         this.loading.set(false);
-        if (this.auth.isAuthenticated()) {
+        if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
         }
       },

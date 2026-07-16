@@ -6,6 +6,7 @@ import { TournamentSummary } from '../../../core/models/tournament.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { tournamentShareSlug } from '../../../shared/utils/slug';
 
 @Component({
   selector: 'app-dashboard-tournaments-page',
@@ -59,7 +60,7 @@ export class DashboardTournamentsPage implements OnInit {
   }
 
   shareUrl(t: TournamentSummary): string {
-    return `${window.location.origin}/t/${t.id}`;
+    return `${window.location.origin}/t/${tournamentShareSlug(t.id, t.name)}`;
   }
 
   copyShareLink(t: TournamentSummary): void {

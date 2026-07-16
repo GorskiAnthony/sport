@@ -38,6 +38,8 @@ class BracketGenerationServiceTest {
     private TeamRepository teamRepository;
     @Mock
     private MatchRepository matchRepository;
+    @Mock
+    private TournamentLiveService tournamentLiveService;
 
     private BracketGenerationService service;
 
@@ -46,7 +48,7 @@ class BracketGenerationServiceTest {
         service = new BracketGenerationService(
                 tournamentRepository, teamRepository, matchRepository,
                 List.of(new RoundRobinGenerator(), new SingleEliminationGenerator()),
-                new SingleEliminationGenerator());
+                new SingleEliminationGenerator(), tournamentLiveService);
     }
 
     private Tournament tournamentOwnedBy(Long organizerId) {

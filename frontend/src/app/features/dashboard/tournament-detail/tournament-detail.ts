@@ -13,6 +13,7 @@ import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { tournamentShareSlug } from '../../../shared/utils/slug';
 
 @Component({
   selector: 'app-dashboard-tournament-detail-page',
@@ -84,7 +85,8 @@ export class DashboardTournamentDetailPage implements OnInit {
   }
 
   shareUrl(): string {
-    return `${window.location.origin}/t/${this.tournamentId}`;
+    const name = this.tournament()?.name ?? '';
+    return `${window.location.origin}/t/${tournamentShareSlug(this.tournamentId, name)}`;
   }
 
   openShare(): void {

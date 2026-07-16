@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(jsonAuthErrorHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()
+                        .requestMatchers("/api/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()

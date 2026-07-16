@@ -31,14 +31,16 @@ public class MatchService {
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
     private final NotificationService notificationService;
+    private final TournamentLiveService tournamentLiveService;
     private final ObjectMapper objectMapper;
 
     public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
-                         NotificationService notificationService, ObjectMapper objectMapper) {
+                         NotificationService notificationService, TournamentLiveService tournamentLiveService, ObjectMapper objectMapper) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
         this.notificationService = notificationService;
+        this.tournamentLiveService = tournamentLiveService;
         this.objectMapper = objectMapper;
     }
 
@@ -92,6 +94,7 @@ public class MatchService {
             notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
             notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
         }
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
 
         return MatchResponse.from(match);
     }
@@ -110,6 +113,7 @@ public class MatchService {
         String message = String.format("Le match %s vs %s vient de commencer.", match.getHomeTeam().getName(), match.getAwayTeam().getName());
         notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
         notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
 
         return MatchResponse.from(match);
     }
@@ -130,6 +134,7 @@ public class MatchService {
         Tournament tournament = match.getTournament();
         String message = String.format("But de %s !", scoringTeam.getName());
         notificationService.notifyFollowers(scoringTeam, tournament, match, NotificationType.GOAL_SCORED, message);
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
 
         return MatchResponse.from(match);
     }
