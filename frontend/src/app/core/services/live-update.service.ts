@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Client } from '@stomp/stompjs';
+import { Client, IMessage } from '@stomp/stompjs';
 import { environment } from '../../../environments/environment';
+import { Notification } from '../models/notification.model';
 
 function toWebSocketUrl(apiUrl: string): string {
   if (apiUrl.startsWith('http')) {
@@ -21,6 +22,24 @@ export class LiveUpdateService {
 
     client.onConnect = () => {
       client.subscribe(`/topic/tournaments/${tournamentId}`, () => onUpdate());
+    };
+    client.activate();
+
+    return () => client.deactivate();
+  }
+
+  /** Subscribes to a signed-in spectator's personal notification stream (team-follow events);
+   *  call the returned function to unsubscribe. */
+  subscribeToUserNotifications(userId: number, onNotification: (notification: Notification) => void): () => void {
+    const client = new Client({
+      brokerURL: toWebSocketUrl(environment.apiUrl),
+      reconnectDelay: 3000,
+    });
+
+    client.onConnect = () => {
+      client.subscribe(`/topic/notifications/${userId}`, (message: IMessage) => {
+        onNotification(JSON.parse(message.body));
+      });
     };
     client.activate();
 
