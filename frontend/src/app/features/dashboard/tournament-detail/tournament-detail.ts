@@ -5,6 +5,7 @@ import { MatchService } from '../../../core/services/match.service';
 import { BracketService } from '../../../core/services/bracket.service';
 import { TournamentFormat } from '../../../core/models/bracket.model';
 import { TournamentDetail } from '../../../core/models/tournament.model';
+import { Team } from '../../../core/models/team.model';
 import { Match } from '../../../core/models/match.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
@@ -35,7 +36,10 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly generating = signal(false);
   readonly advancing = signal(false);
 
-  readonly editingMatchId = signal<number | null>(null);
+  /** Identifies the exact grid cell (row team id, col team id) being edited — not just the
+   *  match id, since round robin shows each match twice (mirrored), and only the clicked
+   *  cell should switch to edit mode, not its mirror. */
+  readonly editingCell = signal<{ rowTeamId: number; colTeamId: number } | null>(null);
   readonly homeInput = signal('');
   readonly awayInput = signal('');
   readonly savingScore = signal(false);
@@ -115,29 +119,50 @@ export class DashboardTournamentDetailPage implements OnInit {
     });
   }
 
-  startEdit(match: Match): void {
-    this.editingMatchId.set(match.id);
-    this.homeInput.set(match.homeScore !== null ? String(match.homeScore) : '');
-    this.awayInput.set(match.awayScore !== null ? String(match.awayScore) : '');
-  }
-
   cancelEdit(): void {
-    this.editingMatchId.set(null);
+    this.editingCell.set(null);
   }
 
-  saveScore(match: Match): void {
-    const homeScore = Number(this.homeInput());
-    const awayScore = Number(this.awayInput());
-    if (Number.isNaN(homeScore) || Number.isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
+  isEditingCell(rowTeam: Team, colTeam: Team): boolean {
+    const cell = this.editingCell();
+    return cell !== null && cell.rowTeamId === rowTeam.id && cell.colTeamId === colTeam.id;
+  }
+
+  /** The match connecting two teams, regardless of which one is stored as home/away. */
+  matchBetween(a: Team, b: Team): Match | undefined {
+    return this.tournament()?.matches.find(
+      (m) => (m.homeTeam.id === a.id && m.awayTeam.id === b.id) || (m.homeTeam.id === b.id && m.awayTeam.id === a.id),
+    );
+  }
+
+  scoreFor(match: Match, team: Team): number | null {
+    return match.homeTeam.id === team.id ? match.homeScore : match.awayScore;
+  }
+
+  startGridEdit(match: Match, rowTeam: Team, colTeam: Team): void {
+    const rowIsHome = match.homeTeam.id === rowTeam.id;
+    this.editingCell.set({ rowTeamId: rowTeam.id, colTeamId: colTeam.id });
+    this.homeInput.set(this.scoreOrEmpty(rowIsHome ? match.homeScore : match.awayScore));
+    this.awayInput.set(this.scoreOrEmpty(rowIsHome ? match.awayScore : match.homeScore));
+  }
+
+  saveGridScore(match: Match, rowTeam: Team): void {
+    const rowScore = Number(this.homeInput());
+    const colScore = Number(this.awayInput());
+    if (Number.isNaN(rowScore) || Number.isNaN(colScore) || rowScore < 0 || colScore < 0) {
       this.toast.error('Merci de saisir un score valide.');
       return;
     }
+
+    const rowIsHome = match.homeTeam.id === rowTeam.id;
+    const homeScore = rowIsHome ? rowScore : colScore;
+    const awayScore = rowIsHome ? colScore : rowScore;
 
     this.savingScore.set(true);
     this.matchService.updateScore(match.id, { homeScore, awayScore }).subscribe({
       next: () => {
         this.savingScore.set(false);
-        this.editingMatchId.set(null);
+        this.editingCell.set(null);
         this.load();
       },
       error: () => {
@@ -145,5 +170,9 @@ export class DashboardTournamentDetailPage implements OnInit {
         this.toast.error('Une erreur est survenue.');
       },
     });
+  }
+
+  private scoreOrEmpty(score: number | null): string {
+    return score !== null ? String(score) : '';
   }
 }
