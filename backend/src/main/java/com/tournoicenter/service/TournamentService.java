@@ -7,6 +7,7 @@ import com.tournoicenter.dto.tournament.TournamentRequest;
 import com.tournoicenter.dto.tournament.TournamentSummaryResponse;
 import com.tournoicenter.exception.ForbiddenException;
 import com.tournoicenter.exception.ResourceNotFoundException;
+import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import com.tournoicenter.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,14 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
     private final PlanLimitService planLimitService;
+    private final MatchRepository matchRepository;
 
-    public TournamentService(TournamentRepository tournamentRepository, UserRepository userRepository, PlanLimitService planLimitService) {
+    public TournamentService(TournamentRepository tournamentRepository, UserRepository userRepository,
+                              PlanLimitService planLimitService, MatchRepository matchRepository) {
         this.tournamentRepository = tournamentRepository;
         this.userRepository = userRepository;
         this.planLimitService = planLimitService;
+        this.matchRepository = matchRepository;
     }
 
     @Transactional(readOnly = true)
@@ -38,9 +42,11 @@ public class TournamentService {
                 .map(TournamentSummaryResponse::from).toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TournamentDetailResponse findById(Long id) {
-        return TournamentDetailResponse.from(getOrThrow(id));
+        Tournament tournament = getOrThrow(id);
+        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(id));
+        return TournamentDetailResponse.from(tournament);
     }
 
     @Transactional

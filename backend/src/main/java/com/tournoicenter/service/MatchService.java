@@ -70,6 +70,9 @@ public class MatchService {
         match.setAwayScore(request.awayScore());
         match.setStatus(MatchStatus.FINISHED);
 
+        Tournament tournament = match.getTournament();
+        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
+
         return MatchResponse.from(match);
     }
 
