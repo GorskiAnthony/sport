@@ -116,7 +116,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
 
   toggleFollow(teamId: number): void {
     if (!this.auth.isAuthenticated()) {
-      this.router.navigate(['/register'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(['/register'], { queryParams: { role: 'SPECTATOR', returnUrl: this.router.url } });
       return;
     }
 

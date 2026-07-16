@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Role } from '../../../core/models/user.model';
 import { ToastService } from '../../../core/services/toast.service';
@@ -30,9 +30,16 @@ export class RegisterPage {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly roles = ROLES;
-  readonly role = signal<Role>('ORGANIZER');
+  private readonly requestedRole = this.route.snapshot.queryParamMap.get('role');
+  readonly role = signal<Role>(this.requestedRole === 'SPECTATOR' ? 'SPECTATOR' : 'ORGANIZER');
+  readonly subtitle = signal(
+    this.requestedRole === 'SPECTATOR'
+      ? 'Créez un compte spectateur gratuit pour suivre vos équipes favorites et être notifié de leurs matchs.'
+      : 'Rejoignez la communauté Tournoi Center.',
+  );
   readonly name = signal('');
   readonly email = signal('');
   readonly password = signal('');

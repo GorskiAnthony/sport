@@ -1,4 +1,4 @@
-<app-auth-card title="Créer un compte" subtitle="Rejoignez la communauté Tournoi Center.">
+<app-auth-card title="Créer un compte" [subtitle]="subtitle()">
   <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de création de compte">
     <fieldset class="mb-4">
       <legend class="sr-only">Choisissez votre rôle</legend>
