@@ -30,7 +30,7 @@ public class BracketController {
     public ApiResponse<List<MatchResponse>> generate(@AuthenticationPrincipal JwtPrincipal principal,
                                                        @PathVariable Long tournamentId,
                                                        @Valid @RequestBody BracketGenerationRequest request) {
-        return ApiResponse.of(bracketGenerationService.generate(tournamentId, principal.userId(), request.format()));
+        return ApiResponse.of(bracketGenerationService.generate(tournamentId, principal.userId(), request.format(), request.groupCount()));
     }
 
     @PostMapping("/advance")
