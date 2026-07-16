@@ -51,7 +51,13 @@
           <app-form-select id="nt-sport" label="Sport" [options]="sports" [(value)]="sport" [required]="true" [error]="errors().sport" />
           <app-form-select id="nt-cat" label="Catégorie" [options]="categories" [(value)]="category" [required]="true" [error]="errors().category" />
         </div>
-        <app-form-select id="nt-format" label="Format" [options]="formats" [(value)]="format" />
+        <div class="flex flex-col gap-1.5">
+          <label class="text-slate-300 text-sm font-medium">Format <span class="text-red-400 ml-0.5">*</span></label>
+          <app-format-picker [(value)]="format" />
+          @if (errors().format) {
+            <p role="alert" class="text-red-400 text-xs">{{ errors().format }}</p>
+          }
+        </div>
         <app-form-input id="nt-location" label="Lieu" placeholder="Lyon, France" [(value)]="location" />
         <div class="grid grid-cols-2 gap-4">
           <app-form-input id="nt-start" label="Début" type="date" [(value)]="startDate" [required]="true" [error]="errors().startDate" />
@@ -66,7 +72,7 @@
 
     @if (step() === 2) {
       <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
-        <p class="text-slate-400 text-sm">Ajoutez les équipes participantes (optionnel, vous pourrez en ajouter plus tard).</p>
+        <p class="text-slate-400 text-sm">Ajoutez au moins 2 équipes pour générer automatiquement le tableau des matchs (vous pourrez en ajouter d'autres plus tard).</p>
         @for (row of teams(); track $index) {
           <div class="grid grid-cols-3 gap-3 items-end">
             <input

@@ -93,6 +93,11 @@ export const routes: Routes = [
           import('./features/dashboard/new-tournament/new-tournament').then((m) => m.DashboardNewTournamentPage),
       },
       {
+        path: 'tournaments/:id/edit',
+        loadComponent: () =>
+          import('./features/dashboard/edit-tournament/edit-tournament').then((m) => m.DashboardEditTournamentPage),
+      },
+      {
         path: 'teams',
         loadComponent: () => import('./features/dashboard/teams/teams').then((m) => m.DashboardTeamsPage),
       },

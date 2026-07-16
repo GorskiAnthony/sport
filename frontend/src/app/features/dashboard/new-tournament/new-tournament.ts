@@ -3,17 +3,21 @@ import { forkJoin } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TeamService } from '../../../core/services/team.service';
+import { BracketService } from '../../../core/services/bracket.service';
+import { TournamentFormat } from '../../../core/models/bracket.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
+import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 
 interface FormErrors {
   name?: string;
   sport?: string;
   category?: string;
+  format?: string;
   startDate?: string;
   endDate?: string;
 }
@@ -48,31 +52,24 @@ const CATEGORIES: FormSelectOption[] = [
   { value: 'senior', label: 'Senior' },
 ];
 
-const FORMATS: FormSelectOption[] = [
-  { value: 'groupes_elimination', label: 'Phase de groupes + Élimination' },
-  { value: 'elimination', label: 'Élimination directe' },
-  { value: 'poule', label: 'Poule unique' },
-  { value: 'championnat', label: 'Championnat' },
-];
-
 const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
 
 @Component({
   selector: 'app-dashboard-new-tournament-page',
   standalone: true,
-  imports: [RouterLink, Button, FormInput, FormSelect, ConfirmModal],
+  imports: [RouterLink, Button, FormInput, FormSelect, FormatPicker, ConfirmModal],
   templateUrl: './new-tournament.html',
 })
 export class DashboardNewTournamentPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
   private readonly teamService = inject(TeamService);
+  private readonly bracketService = inject(BracketService);
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
   readonly sports = SPORTS;
   readonly categories = CATEGORIES;
-  readonly formats = FORMATS;
   readonly teamCategories = TEAM_CATEGORIES;
 
   readonly step = signal<1 | 2>(1);
@@ -84,7 +81,7 @@ export class DashboardNewTournamentPage implements OnInit {
   readonly name = signal('');
   readonly sport = signal('');
   readonly category = signal('');
-  readonly format = signal('');
+  readonly format = signal<TournamentFormat | null>(null);
   readonly location = signal('');
   readonly startDate = signal('');
   readonly endDate = signal('');
@@ -110,6 +107,7 @@ export class DashboardNewTournamentPage implements OnInit {
     if (!this.name().trim()) next.name = 'Requis.';
     if (!this.sport()) next.sport = 'Requis.';
     if (!this.category()) next.category = 'Requis.';
+    if (!this.format()) next.format = 'Choisissez un format.';
     if (!this.startDate()) next.startDate = 'Requis.';
     if (!this.endDate()) next.endDate = 'Requis.';
     else if (this.endDate() < this.startDate()) next.endDate = 'Doit être après le début.';
@@ -129,7 +127,6 @@ export class DashboardNewTournamentPage implements OnInit {
         name: this.name(),
         sport: this.sport(),
         category: this.category(),
-        format: this.format() || undefined,
         location: this.location(),
         startDate: this.startDate(),
         endDate: this.endDate(),
@@ -163,11 +160,15 @@ export class DashboardNewTournamentPage implements OnInit {
 
   finish(): void {
     const tournamentId = this.createdTournamentId();
-    if (!tournamentId) return;
+    const format = this.format();
+    if (!tournamentId || !format) return;
 
     const rowsToCreate = this.teams().filter((t) => t.name.trim());
     if (rowsToCreate.length === 0) {
-      this.toast.success('Tournoi créé !', 'Succès');
+      this.toast.info(
+        'Ajoutez au moins 2 équipes pour générer le tableau automatiquement (possible depuis la liste des tournois).',
+        'Tournoi créé',
+      );
       this.router.navigate(['/dashboard/tournaments']);
       return;
     }
@@ -179,9 +180,30 @@ export class DashboardNewTournamentPage implements OnInit {
       ),
     ).subscribe({
       next: () => {
-        this.finishing.set(false);
-        this.toast.success('Tournoi et équipes créés !', 'Succès');
-        this.router.navigate(['/dashboard/tournaments']);
+        if (rowsToCreate.length < 2) {
+          this.finishing.set(false);
+          this.toast.info(
+            'Tournoi et équipe créés. Ajoutez au moins 2 équipes pour générer le tableau automatiquement.',
+            'Tournoi créé',
+          );
+          this.router.navigate(['/dashboard/tournaments']);
+          return;
+        }
+
+        this.bracketService.generate(tournamentId, format).subscribe({
+          next: () => {
+            this.finishing.set(false);
+            this.toast.success('Tournoi créé et tableau généré !', 'Succès');
+            this.router.navigate(['/dashboard/tournaments']);
+          },
+          error: () => {
+            this.finishing.set(false);
+            this.toast.error(
+              "Les équipes ont été ajoutées, mais la génération du tableau a échoué. Réessayez depuis la liste des tournois.",
+            );
+            this.router.navigate(['/dashboard/tournaments']);
+          },
+        });
       },
       error: () => {
         this.finishing.set(false);
