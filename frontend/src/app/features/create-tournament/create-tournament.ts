@@ -5,6 +5,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { Button } from '../../shared/ui/button/button';
 import { FormInput } from '../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../shared/ui/form-select/form-select';
+import { todayIsoDate } from '../../shared/utils/today';
 
 interface FormErrors {
   name?: string;
@@ -60,7 +61,7 @@ export class CreateTournamentPage {
   readonly category = signal('');
   readonly format = signal('');
   readonly location = signal('');
-  readonly startDate = signal('');
+  readonly startDate = signal(todayIsoDate());
   readonly endDate = signal('');
   readonly maxTeams = signal('');
   readonly description = signal('');

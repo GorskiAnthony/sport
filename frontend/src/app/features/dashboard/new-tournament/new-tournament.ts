@@ -12,6 +12,7 @@ import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
+import { todayIsoDate } from '../../../shared/utils/today';
 
 interface FormErrors {
   name?: string;
@@ -83,7 +84,7 @@ export class DashboardNewTournamentPage implements OnInit {
   readonly category = signal('');
   readonly format = signal<TournamentFormat | null>(null);
   readonly location = signal('');
-  readonly startDate = signal('');
+  readonly startDate = signal(todayIsoDate());
   readonly endDate = signal('');
   readonly maxTeams = signal('');
   readonly description = signal('');
