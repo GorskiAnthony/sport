@@ -1,0 +1,38 @@
+<div class="min-h-screen bg-[#0D1117] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-lg">
+    <h1 class="text-white text-2xl font-extrabold mb-2 text-center">Ajouter une équipe</h1>
+    <p class="text-slate-400 text-sm text-center mb-8">Renseignez les informations de l'équipe.</p>
+
+    <div class="bg-[#161B22] border border-white/5 rounded-2xl p-6">
+      <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire d'ajout d'équipe" class="space-y-4">
+        <div class="flex items-center gap-4 mb-2">
+          <label
+            for="team-logo-input"
+            class="w-16 h-16 rounded-xl bg-[#0D1117] border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer hover:border-green-500/40 transition-colors overflow-hidden"
+          >
+            @if (logo()) {
+              <img [src]="logo()" alt="Logo" class="w-full h-full object-cover" />
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-600" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+              </svg>
+            }
+          </label>
+          <div>
+            <label for="team-logo-input" class="text-xs text-green-400 hover:text-green-300 font-medium transition-colors cursor-pointer">
+              {{ logo() ? 'Changer le logo' : 'Choisir un logo' }}
+            </label>
+            <p class="text-slate-600 text-[10px] mt-0.5">PNG, JPG · max 2 Mo</p>
+          </div>
+          <input id="team-logo-input" type="file" accept="image/*" class="sr-only" (change)="onFileSelected($event)" />
+        </div>
+
+        <app-form-input id="t-name" label="Nom de l'équipe" placeholder="Paris FC" [(value)]="name" [required]="true" />
+        <app-form-input id="t-club" label="Club" placeholder="Football Club de Paris" [(value)]="club" />
+        <app-form-select id="t-cat" label="Catégorie" [options]="categories" [(value)]="category" />
+        <app-form-input id="t-contact" label="Contact" type="email" placeholder="contact@club.fr" [(value)]="contact" />
+        <app-button [text]="loading() ? 'Ajout…' : 'Ajouter l\'équipe'" variant="primary" type="submit" [disabled]="loading()" className="w-full justify-center py-3" />
+      </form>
+    </div>
+  </div>
+</div>

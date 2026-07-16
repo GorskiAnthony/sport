@@ -1,4 +1,4 @@
-<app-auth-card title="Créer un compte" subtitle="Rejoignez la communauté Tournoi Center.">
+<app-auth-card title="Créer un compte" [subtitle]="subtitle()">
   <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de création de compte">
     <fieldset class="mb-4">
       <legend class="sr-only">Choisissez votre rôle</legend>
@@ -33,7 +33,7 @@
 
     <p class="text-slate-400 text-sm text-center mt-4">
       Déjà un compte ?
-      <a routerLink="/login" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+      <a routerLink="/login" [queryParams]="queryParams" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
         Se connecter
       </a>
     </p>

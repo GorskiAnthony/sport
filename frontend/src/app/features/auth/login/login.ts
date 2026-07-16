@@ -1,12 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthCard } from '../../../shared/ui/auth-card/auth-card';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { PasswordInput } from '../../../shared/ui/password-input/password-input';
+import { sanitizeReturnUrl } from '../../../shared/utils/safe-return-url';
 
 interface FormErrors {
   email?: string;
@@ -23,6 +24,10 @@ export class LoginPage {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  readonly queryParams = this.route.snapshot.queryParams;
+  private readonly returnUrl = sanitizeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
 
   readonly email = signal('');
   readonly password = signal('');
@@ -49,7 +54,11 @@ export class LoginPage {
       next: (response) => {
         this.toast.success(`Bon retour, ${response.user.name} !`, 'Connexion réussie');
         this.loading.set(false);
-        this.router.navigate([response.user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
+        if (this.returnUrl) {
+          this.router.navigateByUrl(this.returnUrl);
+        } else {
+          this.router.navigate([response.user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

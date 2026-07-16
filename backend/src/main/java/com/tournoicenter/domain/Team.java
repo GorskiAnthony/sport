@@ -20,7 +20,7 @@ public class Team {
     @Column
     private String club;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String logo;
 
     @Column(nullable = false)

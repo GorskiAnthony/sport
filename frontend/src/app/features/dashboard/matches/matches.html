@@ -1,0 +1,134 @@
+<app-confirm-modal
+  [open]="!!pending()"
+  title="Supprimer le match ?"
+  [description]="(pending()?.homeTeam?.name ?? '') + ' – ' + (pending()?.awayTeam?.name ?? '') + ' sera supprimé.'"
+  confirmLabel="Supprimer"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="pending.set(null)"
+/>
+
+<div class="max-w-5xl">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="text-white text-2xl font-extrabold">Matchs</h1>
+    @if (tournaments().length > 0) {
+      <button type="button" (click)="openAdd()" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+        + Ajouter un match
+      </button>
+    }
+  </div>
+
+  @if (tournaments().length === 0) {
+    <p class="text-slate-500 text-sm text-center py-12">Créez d'abord un tournoi pour pouvoir y ajouter des matchs.</p>
+  } @else {
+    <div class="flex flex-col gap-1.5 mb-6 max-w-xs">
+      <label for="match-tournament-select" class="text-slate-400 text-xs">Tournoi</label>
+      <select
+        id="match-tournament-select"
+        [value]="selectedTournamentId()"
+        (change)="onTournamentChange($event)"
+        class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        @for (t of tournaments(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (panelOpen()) {
+      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 mb-6">
+        <h2 class="text-white font-semibold mb-4">Nouveau match</h2>
+        <form (submit)="$event.preventDefault(); save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="m-home" class="text-slate-400 text-xs">Équipe à domicile *</label>
+            <select id="m-home" [value]="form().homeTeamId" (change)="updateField('homeTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Choisir…</option>
+              @for (team of teams(); track team.id) {
+                <option [value]="team.id">{{ team.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="m-away" class="text-slate-400 text-xs">Équipe à l'extérieur *</label>
+            <select id="m-away" [value]="form().awayTeamId" (change)="updateField('awayTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="">Choisir…</option>
+              @for (team of teams(); track team.id) {
+                <option [value]="team.id">{{ team.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="m-phase" class="text-slate-400 text-xs">Phase *</label>
+            <input id="m-phase" [value]="form().phase" (input)="updateField('phase', $any($event.target).value)" placeholder="Poule A, 1/4 de finale…" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="m-date" class="text-slate-400 text-xs">Date *</label>
+            <input id="m-date" type="datetime-local" [value]="form().date" (change)="updateField('date', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <div class="flex flex-col gap-1.5 sm:col-span-2">
+            <label for="m-venue" class="text-slate-400 text-xs">Lieu</label>
+            <input id="m-venue" [value]="form().venue" (input)="updateField('venue', $any($event.target).value)" placeholder="Stade municipal" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <div class="sm:col-span-2 flex gap-3 justify-end">
+            <button type="button" (click)="panelOpen.set(false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Annuler</button>
+            <button type="submit" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">Créer</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[560px]" aria-label="Liste des matchs">
+          <thead>
+            <tr class="border-b border-white/5">
+              @for (h of ['Équipe 1', 'Équipe 2', 'Date', 'Résultat', 'Actions']; track h) {
+                <th scope="col" class="text-left px-5 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+              @for (i of skeletons; track i) {
+                <tr class="border-b border-white/5 last:border-0 animate-pulse">
+                  @for (j of skeletons; track j) {
+                    <td class="px-5 py-4"><div class="h-4 bg-white/5 rounded"></div></td>
+                  }
+                </tr>
+              }
+            } @else {
+              @for (m of matches(); track m.id) {
+                <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                  <td class="px-5 py-4 text-slate-300">{{ m.homeTeam.name }}</td>
+                  <td class="px-5 py-4 text-slate-300">{{ m.awayTeam.name }}</td>
+                  <td class="px-5 py-4 text-slate-400 text-xs">{{ m.date | date: 'dd/MM/yy HH:mm' }}</td>
+                  <td class="px-5 py-4">
+                    @if (m.homeScore !== null && m.awayScore !== null) {
+                      <span class="font-mono text-sm">
+                        <span [class]="m.homeScore === m.awayScore ? 'text-slate-300' : m.homeScore > m.awayScore ? 'text-green-400 font-bold' : 'text-red-400'">{{ m.homeScore }}</span>
+                        <span class="text-slate-500 mx-1">–</span>
+                        <span [class]="m.homeScore === m.awayScore ? 'text-slate-300' : m.awayScore > m.homeScore ? 'text-green-400 font-bold' : 'text-red-400'">{{ m.awayScore }}</span>
+                      </span>
+                    } @else {
+                      <span class="text-slate-500 text-xs">—</span>
+                    }
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-2">
+                      <a [routerLink]="['/dashboard/matches', m.id]" aria-label="Détail" class="w-7 h-7 flex items-center justify-center bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20 transition-colors">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </a>
+                      <button type="button" (click)="pending.set(m)" aria-label="Supprimer" class="w-7 h-7 flex items-center justify-center bg-slate-500/10 text-slate-400 rounded hover:bg-red-500/20 hover:text-red-400 transition-colors">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

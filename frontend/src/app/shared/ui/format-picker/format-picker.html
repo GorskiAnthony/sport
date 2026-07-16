@@ -1,0 +1,29 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Format du tournoi">
+  @for (option of options; track option.id) {
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="value() === option.id"
+      (click)="select(option.id)"
+      class="text-left bg-[#161B22] border rounded-xl p-4 transition-colors"
+      [class]="value() === option.id ? 'border-green-500/50 shadow-[0_0_24px_-8px_rgba(34,197,94,0.3)]' : 'border-white/5 hover:border-white/10'"
+    >
+      <span class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-3" aria-hidden="true">
+        @if (option.id === 'ROUND_ROBIN') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+          </svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="9" y2="6" /><line x1="3" y1="18" x2="9" y2="18" />
+            <line x1="9" y1="6" x2="9" y2="18" /><line x1="9" y1="12" x2="15" y2="12" />
+            <line x1="15" y1="9" x2="21" y2="9" />
+          </svg>
+        }
+      </span>
+      <p class="text-white font-semibold text-sm mb-1">{{ option.title }}</p>
+      <p class="text-slate-400 text-xs leading-relaxed">{{ option.description }}</p>
+    </button>
+  }
+</div>

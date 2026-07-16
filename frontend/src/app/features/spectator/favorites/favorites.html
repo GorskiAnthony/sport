@@ -1,0 +1,30 @@
+<div class="space-y-6">
+  <h1 class="text-white text-2xl font-extrabold">Mes favoris</h1>
+
+  @if (loading()) {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl h-24 animate-pulse"></div>
+  } @else if (teams().length === 0) {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl p-12 text-center">
+      <span class="text-4xl mb-4 block" aria-hidden="true">⭐</span>
+      <p class="text-white font-semibold mb-2">Aucune équipe suivie</p>
+      <p class="text-slate-500 text-sm">Suivez une équipe depuis la page publique d'un tournoi pour être notifié de ses matchs.</p>
+    </div>
+  } @else {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+      <ul class="divide-y divide-white/5">
+        @for (team of teams(); track team.id) {
+          <li class="px-5 py-4 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-white font-semibold text-sm">{{ team.name }}</p>
+              <p class="text-slate-500 text-xs">{{ team.category }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <a [routerLink]="['/t', team.tournamentId]" class="text-green-400 hover:text-green-300 text-xs font-semibold">Voir le tournoi</a>
+              <button type="button" (click)="unfollow(team)" class="text-slate-500 hover:text-red-400 text-xs font-semibold">Ne plus suivre</button>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

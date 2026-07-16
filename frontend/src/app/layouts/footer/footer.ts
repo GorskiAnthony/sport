@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 interface FooterLink {
   label: string;
@@ -8,14 +9,15 @@ interface FooterLink {
 @Component({
   selector: 'app-footer',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './footer.html',
 })
 export class Footer {
   readonly plateforme: FooterLink[] = [
-    { label: 'Mes tournois', href: '#mes-tournois' },
-    { label: 'Équipes', href: '#equipes' },
-    { label: 'Organisateurs', href: '#organisateurs' },
-    { label: 'Tarifs', href: '#tarifs' },
+    { label: 'Tournois', href: '/tournaments' },
+    { label: 'Équipes', href: '/teams' },
+    { label: 'Organisateurs', href: '/organizers' },
+    { label: 'Tarifs', href: '/pricing' },
   ];
 
   readonly ressources: FooterLink[] = [

@@ -1,0 +1,43 @@
+<div class="max-w-xl space-y-6">
+  <h1 class="text-white text-2xl font-extrabold">Paramètres</h1>
+
+  <section class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+    <h2 class="text-white font-semibold mb-4">Profil</h2>
+    <form (submit)="$event.preventDefault(); saveProfile()" class="space-y-4">
+      <div class="flex flex-col gap-1.5">
+        <label for="s-name" class="text-slate-400 text-xs">Nom</label>
+        <input id="s-name" [value]="name()" (input)="name.set($any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="s-email" class="text-slate-400 text-xs">Email</label>
+        <input id="s-email" [value]="user()?.email ?? ''" disabled class="w-full bg-[#0D1117] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed" />
+      </div>
+      <button type="submit" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
+        Enregistrer
+      </button>
+    </form>
+  </section>
+
+  <section class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+    <h2 class="text-white font-semibold mb-4">Abonnement</h2>
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-white font-medium">Plan actuel</p>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded border mt-1 inline-block" [class]="planBadgeClass()">{{ planLabel() }}</span>
+      </div>
+      <a routerLink="/pricing" class="text-sm text-green-400 hover:text-green-300 transition-colors font-medium">
+        Changer de plan →
+      </a>
+    </div>
+    @if (user()?.plan !== 'FREE') {
+      <button
+        type="button"
+        (click)="openBillingPortal()"
+        [disabled]="portalLoading()"
+        class="text-sm text-slate-400 hover:text-white transition-colors underline underline-offset-2 disabled:opacity-50"
+      >
+        {{ portalLoading() ? 'Ouverture…' : 'Gérer la facturation' }}
+      </button>
+    }
+  </section>
+</div>

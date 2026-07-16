@@ -56,10 +56,13 @@ public class SecurityConfig {
                         .accessDeniedHandler(jsonAuthErrorHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()
+                        .requestMatchers("/api/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/teams/followed").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/teams/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
                         .anyRequest().authenticated())

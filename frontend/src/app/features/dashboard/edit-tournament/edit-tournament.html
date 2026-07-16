@@ -1,0 +1,42 @@
+@if (loadingInitial()) {
+  <div class="max-w-2xl space-y-4 animate-pulse">
+    <div class="bg-[#161B22] h-8 w-48 rounded"></div>
+    <div class="bg-[#161B22] h-64 rounded-xl"></div>
+  </div>
+} @else if (notFound()) {
+  <p class="text-slate-500">Tournoi introuvable. <a routerLink="/dashboard/tournaments" class="text-green-400">← Retour aux tournois</a></p>
+} @else {
+  <div class="max-w-2xl">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-white text-2xl font-extrabold">Modifier le tournoi</h1>
+      <a routerLink="/dashboard/tournaments" class="text-slate-500 hover:text-white text-sm transition-colors">Annuler</a>
+    </div>
+
+    <form (submit)="$event.preventDefault(); submit()" class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
+      <app-form-input id="et-name" label="Nom du tournoi" [(value)]="name" [required]="true" [error]="errors().name" />
+      <div class="grid grid-cols-2 gap-4">
+        <app-form-select id="et-sport" label="Sport" [options]="sports" [(value)]="sport" [required]="true" [error]="errors().sport" />
+        <app-form-select id="et-cat" label="Catégorie" [options]="categories" [(value)]="category" [required]="true" [error]="errors().category" />
+      </div>
+      <app-form-input id="et-location" label="Lieu" [(value)]="location" />
+      <div class="grid grid-cols-2 gap-4">
+        <app-form-input id="et-start" label="Début" type="date" [(value)]="startDate" [required]="true" [error]="errors().startDate" />
+        <app-form-input id="et-end" label="Fin" type="date" [(value)]="endDate" [required]="true" [error]="errors().endDate" />
+      </div>
+      <app-form-input id="et-max" label="Nb max d'équipes" type="number" [(value)]="maxTeams" />
+      <div class="flex flex-col gap-1.5">
+        <label for="et-desc" class="text-slate-300 text-sm font-medium">Description</label>
+        <textarea
+          id="et-desc"
+          rows="3"
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+          class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+        ></textarea>
+      </div>
+      <div class="flex justify-end">
+        <app-button [text]="saving() ? 'Enregistrement…' : 'Enregistrer'" variant="primary" type="submit" [disabled]="saving()" />
+      </div>
+    </form>
+  </div>
+}

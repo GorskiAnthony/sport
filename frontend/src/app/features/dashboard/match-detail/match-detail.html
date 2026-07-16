@@ -1,0 +1,50 @@
+@if (loading()) {
+  <div class="animate-pulse space-y-4">
+    @for (i of [1, 2, 3]; track i) {
+      <div class="bg-[#161B22] h-24 rounded-xl"></div>
+    }
+  </div>
+} @else if (!match()) {
+  <p class="text-slate-500">Match introuvable. <a routerLink="/dashboard/matches" class="text-green-400">← Retour aux matchs</a></p>
+} @else {
+  <div class="max-w-3xl space-y-5">
+    <div class="bg-[#161B22] border border-white/5 rounded-xl text-center py-8 px-5">
+      <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">{{ match()!.phase }}</p>
+      <p class="text-slate-500 text-xs mb-6">{{ match()!.date | date: 'dd/MM/yyyy HH:mm' }} @if (match()!.venue) { · {{ match()!.venue }} }</p>
+      <div class="flex items-center justify-center gap-8">
+        <div class="text-center w-28">
+          <p class="text-white text-sm font-semibold">{{ match()!.homeTeam.name }}</p>
+        </div>
+        <div class="text-center">
+          <div class="flex items-center gap-4">
+            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.homeScore ?? '–' }}</span>
+            <span class="text-slate-500 text-3xl">–</span>
+            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.awayScore ?? '–' }}</span>
+          </div>
+          <span class="inline-block mt-2 text-xs px-2.5 py-1 rounded-full bg-slate-500/20 text-slate-400">{{ statusLabel(match()!.status) }}</span>
+        </div>
+        <div class="text-center w-28">
+          <p class="text-white text-sm font-semibold">{{ match()!.awayTeam.name }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+      <h2 class="text-white text-sm font-semibold mb-4">Modifier le score</h2>
+      <form (submit)="$event.preventDefault(); saveScore()" class="flex items-end gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="home-score" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
+          <input id="home-score" type="number" min="0" [value]="homeScoreInput()" (input)="homeScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+        <span class="text-slate-500 pb-2">–</span>
+        <div class="flex flex-col gap-1.5">
+          <label for="away-score" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
+          <input id="away-score" type="number" min="0" [value]="awayScoreInput()" (input)="awayScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+        <button type="submit" [disabled]="saving()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </form>
+    </div>
+  </div>
+}

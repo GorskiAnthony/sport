@@ -2,8 +2,10 @@ package com.tournoicenter.service;
 
 import com.tournoicenter.domain.Match;
 import com.tournoicenter.domain.MatchStatus;
+import com.tournoicenter.domain.NotificationType;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
+import com.tournoicenter.dto.match.MatchGoalRequest;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -14,8 +16,13 @@ import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MatchService {
@@ -23,11 +30,18 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
+    private final NotificationService notificationService;
+    private final TournamentLiveService tournamentLiveService;
+    private final ObjectMapper objectMapper;
 
-    public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository) {
+    public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
+                         NotificationService notificationService, TournamentLiveService tournamentLiveService, ObjectMapper objectMapper) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
+        this.notificationService = notificationService;
+        this.tournamentLiveService = tournamentLiveService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
@@ -66,11 +80,70 @@ public class MatchService {
         Match match = getOrThrow(id);
         requireOwner(match, requesterId);
 
+        boolean wasFinished = match.getStatus() == MatchStatus.FINISHED;
         match.setHomeScore(request.homeScore());
         match.setAwayScore(request.awayScore());
         match.setStatus(MatchStatus.FINISHED);
 
+        Tournament tournament = match.getTournament();
+        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
+
+        if (!wasFinished) {
+            String message = String.format("Le match %s vs %s est terminé (%d - %d).",
+                    match.getHomeTeam().getName(), match.getAwayTeam().getName(), request.homeScore(), request.awayScore());
+            notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
+            notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
+        }
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
+
         return MatchResponse.from(match);
+    }
+
+    @Transactional
+    public MatchResponse start(Long id, Long requesterId) {
+        Match match = getOrThrow(id);
+        requireOwner(match, requesterId);
+
+        if (match.getStatus() != MatchStatus.SCHEDULED) {
+            return MatchResponse.from(match);
+        }
+        match.setStatus(MatchStatus.ONGOING);
+
+        Tournament tournament = match.getTournament();
+        String message = String.format("Le match %s vs %s vient de commencer.", match.getHomeTeam().getName(), match.getAwayTeam().getName());
+        notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
+        notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
+
+        return MatchResponse.from(match);
+    }
+
+    @Transactional
+    public MatchResponse addGoal(Long id, Long requesterId, MatchGoalRequest request) {
+        Match match = getOrThrow(id);
+        requireOwner(match, requesterId);
+
+        Team scoringTeam = teamRepository.findById(request.teamId())
+                .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+        if (!scoringTeam.getId().equals(match.getHomeTeam().getId()) && !scoringTeam.getId().equals(match.getAwayTeam().getId())) {
+            throw new ForbiddenException();
+        }
+
+        appendGoalEvent(match, scoringTeam);
+
+        Tournament tournament = match.getTournament();
+        String message = String.format("But de %s !", scoringTeam.getName());
+        notificationService.notifyFollowers(scoringTeam, tournament, match, NotificationType.GOAL_SCORED, message);
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
+
+        return MatchResponse.from(match);
+    }
+
+    private void appendGoalEvent(Match match, Team scoringTeam) {
+        List<Map<String, Object>> events = new ArrayList<>(
+                objectMapper.readValue(match.getEvents(), new TypeReference<List<Map<String, Object>>>() {}));
+        events.add(Map.of("type", "GOAL", "teamId", scoringTeam.getId(), "at", Instant.now().toString()));
+        match.setEvents(objectMapper.writeValueAsString(events));
     }
 
     @Transactional

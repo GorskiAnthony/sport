@@ -1,0 +1,41 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between gap-3">
+    <h1 class="text-white text-2xl font-extrabold">Notifications</h1>
+    @if (notifications().length > 0) {
+      <button type="button" (click)="markAllRead()" class="text-green-400 hover:text-green-300 text-xs font-semibold">Tout marquer comme lu</button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl h-24 animate-pulse"></div>
+  } @else if (notifications().length === 0) {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl p-12 text-center">
+      <span class="text-4xl mb-4 block" aria-hidden="true">🔔</span>
+      <p class="text-white font-semibold mb-2">Aucune notification</p>
+      <p class="text-slate-500 text-sm">
+        Suivez une <a routerLink="/home/favorites" class="text-green-400 hover:text-green-300">équipe favorite</a> pour être notifié du début et de la fin de ses matchs, et de ses buts.
+      </p>
+    </div>
+  } @else {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+      <ul class="divide-y divide-white/5">
+        @for (notification of notifications(); track notification.id) {
+          <li
+            (click)="markRead(notification)"
+            class="px-5 py-4 flex items-start gap-3 cursor-pointer transition-colors"
+            [class]="notification.read ? 'hover:bg-white/[0.02]' : 'bg-green-500/[0.04] hover:bg-green-500/[0.07]'"
+          >
+            <span class="text-xl flex-shrink-0" aria-hidden="true">{{ icon(notification.type) }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm" [class]="notification.read ? 'text-slate-300' : 'text-white font-medium'">{{ notification.message }}</p>
+              <p class="text-slate-500 text-xs mt-1">{{ notification.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            @if (!notification.read) {
+              <span class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 mt-1.5" aria-hidden="true"></span>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

@@ -33,7 +33,7 @@
 
     <p class="text-slate-400 text-sm text-center mt-4">
       Pas encore de compte ?
-      <a routerLink="/register" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+      <a routerLink="/register" [queryParams]="queryParams" class="text-green-400 hover:text-green-300 transition-colors font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
         Créer un compte
       </a>
     </p>

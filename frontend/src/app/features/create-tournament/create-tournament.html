@@ -1,0 +1,24 @@
+<div class="min-h-screen bg-[#0D1117] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-lg">
+    <h1 class="text-white text-2xl font-extrabold mb-2 text-center">Créer un tournoi</h1>
+    <p class="text-slate-400 text-sm text-center mb-8">Configurez votre tournoi en quelques secondes.</p>
+
+    <div class="bg-[#161B22] border border-white/5 rounded-2xl p-6">
+      <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de création de tournoi" class="space-y-4">
+        <app-form-input id="t-name" label="Nom du tournoi" placeholder="Challenge U15 Lyon 2024" [(value)]="name" [required]="true" [error]="errors().name" />
+        <div class="grid grid-cols-2 gap-4">
+          <app-form-select id="t-sport" label="Sport" [options]="sports" [(value)]="sport" [required]="true" [error]="errors().sport" />
+          <app-form-select id="t-cat" label="Catégorie" [options]="categories" [(value)]="category" [required]="true" [error]="errors().category" />
+        </div>
+        <app-form-select id="t-format" label="Format" [options]="formats" [(value)]="format" />
+        <app-form-input id="t-location" label="Lieu" placeholder="Lyon, France" [(value)]="location" />
+        <div class="grid grid-cols-2 gap-4">
+          <app-form-input id="t-start" label="Date de début" type="date" [(value)]="startDate" [required]="true" [error]="errors().startDate" />
+          <app-form-input id="t-end" label="Date de fin" type="date" [(value)]="endDate" [required]="true" [error]="errors().endDate" />
+        </div>
+        <app-form-input id="t-max" label="Nombre max d'équipes" type="number" placeholder="14" [(value)]="maxTeams" />
+        <app-button [text]="loading() ? 'Création…' : 'Créer le tournoi'" variant="primary" type="submit" [disabled]="loading()" className="w-full justify-center py-3" />
+      </form>
+    </div>
+  </div>
+</div>

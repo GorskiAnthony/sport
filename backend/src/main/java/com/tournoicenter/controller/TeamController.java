@@ -4,6 +4,7 @@ import com.tournoicenter.dto.ApiResponse;
 import com.tournoicenter.dto.team.TeamRequest;
 import com.tournoicenter.dto.team.TeamResponse;
 import com.tournoicenter.security.JwtPrincipal;
+import com.tournoicenter.service.TeamFollowService;
 import com.tournoicenter.service.TeamService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,9 +18,33 @@ import java.util.Map;
 public class TeamController {
 
     private final TeamService teamService;
+    private final TeamFollowService teamFollowService;
 
-    public TeamController(TeamService teamService) {
+    public TeamController(TeamService teamService, TeamFollowService teamFollowService) {
         this.teamService = teamService;
+        this.teamFollowService = teamFollowService;
+    }
+
+    @GetMapping("/followed")
+    public ApiResponse<List<TeamResponse>> findFollowed(@AuthenticationPrincipal JwtPrincipal principal) {
+        return ApiResponse.of(teamFollowService.findFollowed(principal.userId()));
+    }
+
+    @GetMapping("/{id}/follow")
+    public ApiResponse<Map<String, Boolean>> isFollowing(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
+        return ApiResponse.of(teamFollowService.isFollowing(principal.userId(), id));
+    }
+
+    @PostMapping("/{id}/follow")
+    public ApiResponse<Map<String, Boolean>> follow(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
+        teamFollowService.follow(principal.userId(), id);
+        return ApiResponse.of(Map.of("following", true));
+    }
+
+    @DeleteMapping("/{id}/follow")
+    public ApiResponse<Map<String, Boolean>> unfollow(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
+        teamFollowService.unfollow(principal.userId(), id);
+        return ApiResponse.of(Map.of("following", false));
     }
 
     @GetMapping("/tournament/{tournamentId}")
