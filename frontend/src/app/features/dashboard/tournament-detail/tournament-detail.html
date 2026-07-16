@@ -121,13 +121,13 @@
                               @if (match.status === 'ONGOING') {
                                 <button type="button" (click)="addGoal(match, row)" [attr.aria-label]="'But ' + row.name" class="text-[9px] leading-none">⚽</button>
                               }
-                              <input type="number" min="0" [value]="homeInput()" (input)="homeInput.set($any($event.target).value)" class="w-8 bg-white/5 border border-white/10 rounded px-1 py-0.5 text-xs text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500" />
+                              <input type="number" min="0" [value]="homeInput()" (input)="homeInput.set($any($event.target).value)" class="w-10 bg-white/5 border border-white/10 rounded px-1 py-1 text-sm font-semibold text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
                             </div>
                             <div class="flex items-center gap-1">
                               @if (match.status === 'ONGOING') {
                                 <button type="button" (click)="addGoal(match, col)" [attr.aria-label]="'But ' + col.name" class="text-[9px] leading-none">⚽</button>
                               }
-                              <input type="number" min="0" [value]="awayInput()" (input)="awayInput.set($any($event.target).value)" class="w-8 bg-white/5 border border-white/10 rounded px-1 py-0.5 text-xs text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500" />
+                              <input type="number" min="0" [value]="awayInput()" (input)="awayInput.set($any($event.target).value)" class="w-10 bg-white/5 border border-white/10 rounded px-1 py-1 text-sm font-semibold text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
                             </div>
                             <div class="flex gap-1.5">
                               <button type="button" (click)="saveGridScore(match, row)" [disabled]="savingScore()" class="text-green-400 hover:text-green-300 text-[10px] font-semibold disabled:opacity-50">✓</button>
