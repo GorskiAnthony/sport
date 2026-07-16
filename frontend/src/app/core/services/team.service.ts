@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { Team, TeamRequest } from '../models/team.model';
+import { FollowedTeam, Team, TeamRequest } from '../models/team.model';
 
 @Injectable({ providedIn: 'root' })
 export class TeamService {
@@ -39,6 +39,12 @@ export class TeamService {
 
   getFollowed(): Observable<Team[]> {
     return this.http.get<ApiResponse<Team[]>>(`${this.baseUrl}/followed`).pipe(map((res) => res.data));
+  }
+
+  getFollowedEnriched(): Observable<FollowedTeam[]> {
+    return this.http
+      .get<ApiResponse<FollowedTeam[]>>(`${this.baseUrl}/followed/enriched`)
+      .pipe(map((res) => res.data));
   }
 
   isFollowing(id: number): Observable<{ following: boolean }> {

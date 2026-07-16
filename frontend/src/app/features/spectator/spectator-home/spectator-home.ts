@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
-import { TournamentSummary } from '../../../core/models/tournament.model';
+import { NotificationService } from '../../../core/services/notification.service';
+import { RecentTournament, TournamentSummary } from '../../../core/models/tournament.model';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 
 @Component({
@@ -12,10 +13,13 @@ import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/lab
 })
 export class SpectatorHomePage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
+  private readonly notificationService = inject(NotificationService);
 
   readonly loading = signal(true);
   readonly live = signal<TournamentSummary[]>([]);
   readonly featured = signal<TournamentSummary[]>([]);
+  readonly recentlyViewed = signal<RecentTournament[]>([]);
+  readonly unreadCount = this.notificationService.unreadCount;
 
   readonly sports = [
     { id: 'football', label: 'Football', icon: '⚽' },
@@ -34,6 +38,11 @@ export class SpectatorHomePage implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+
+    this.tournamentService.getRecentlyViewed().subscribe({
+      next: (recent) => this.recentlyViewed.set(recent),
+      error: () => {}, // non-critical section, fail silently
     });
   }
 

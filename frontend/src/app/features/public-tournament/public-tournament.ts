@@ -111,6 +111,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
         this.loading.set(false);
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
+          this.tournamentService.recordView(this.tournamentId).subscribe({ error: () => {} });
         }
       },
       error: () => this.loading.set(false),

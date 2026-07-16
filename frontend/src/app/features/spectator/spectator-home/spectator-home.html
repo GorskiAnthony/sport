@@ -1,4 +1,27 @@
 <div class="space-y-10">
+  @if (unreadCount() > 0) {
+    <a routerLink="/home/notifications" class="block bg-green-500/10 border border-green-500/20 rounded-xl px-5 py-3 text-sm text-green-400 hover:border-green-500/40 transition-colors">
+      🔔 {{ unreadCount() }} notification{{ unreadCount() > 1 ? 's' : '' }} non lue{{ unreadCount() > 1 ? 's' : '' }}
+    </a>
+  }
+
+  @if (recentlyViewed().length > 0) {
+    <section aria-labelledby="recent-title">
+      <h2 id="recent-title" class="text-white text-xl font-bold mb-4">Récemment consultés</h2>
+      <ul class="grid grid-cols-1 md:grid-cols-3 gap-5" role="list">
+        @for (r of recentlyViewed(); track r.tournament.id) {
+          <li>
+            <a [routerLink]="['/t', r.tournament.id]" class="block bg-[#161B22] border border-white/5 rounded-xl p-5 hover:border-green-500/30 transition-colors">
+              <p class="text-white font-semibold">{{ r.tournament.name }}</p>
+              <p class="text-slate-400 text-xs mt-1">{{ icon(r.tournament.sport) }} {{ r.tournament.sport }} · {{ r.tournament.category }}</p>
+              <span class="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ statusLabel(r.tournament.status) }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   <section aria-labelledby="live-title">
     <h1 id="live-title" class="text-white text-2xl font-extrabold mb-5">
       Tournois en direct <span class="text-green-400">·</span> Live

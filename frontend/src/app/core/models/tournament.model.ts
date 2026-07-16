@@ -29,6 +29,12 @@ export interface TournamentDetail
   matches: Match[];
 }
 
+export interface RecentTournament {
+  tournament: TournamentSummary;
+  firstViewedAt: string;
+  lastViewedAt: string;
+}
+
 export interface TournamentRequest {
   name: string;
   sport: string;

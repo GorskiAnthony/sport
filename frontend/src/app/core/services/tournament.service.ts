@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { TournamentDetail, TournamentRequest, TournamentSummary } from '../models/tournament.model';
+import { RecentTournament, TournamentDetail, TournamentRequest, TournamentSummary } from '../models/tournament.model';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -44,6 +44,18 @@ export class TournamentService {
   delete(id: number): Observable<{ success: boolean }> {
     return this.http
       .delete<ApiResponse<{ success: boolean }>>(`${this.baseUrl}/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
+  recordView(id: number): Observable<void> {
+    return this.http
+      .post<ApiResponse<{ recorded: boolean }>>(`${this.baseUrl}/${id}/view`, {})
+      .pipe(map(() => undefined));
+  }
+
+  getRecentlyViewed(): Observable<RecentTournament[]> {
+    return this.http
+      .get<ApiResponse<RecentTournament[]>>(`${this.baseUrl}/recent`)
       .pipe(map((res) => res.data));
   }
 }
