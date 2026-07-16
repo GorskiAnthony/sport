@@ -8,28 +8,6 @@
   (cancelled)="pending.set(null)"
 />
 
-@if (generateTarget(); as target) {
-  <div class="fixed inset-0 z-[60] flex items-center justify-center px-4">
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" (click)="generateTarget.set(null)" aria-hidden="true"></div>
-    <div class="relative bg-[#161B22] border border-white/10 rounded-xl p-6 max-w-md w-full">
-      <h2 class="text-white font-bold text-lg mb-1">Générer le tableau de "{{ target.name }}"</h2>
-      <p class="text-slate-400 text-sm mb-4">Choisissez un format. Les matchs seront créés automatiquement.</p>
-      <app-format-picker [(value)]="chosenFormat" />
-      <div class="flex justify-end gap-3 mt-5">
-        <button type="button" (click)="generateTarget.set(null)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Annuler</button>
-        <button
-          type="button"
-          (click)="confirmGenerate()"
-          [disabled]="!chosenFormat() || generating()"
-          class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50"
-        >
-          {{ generating() ? 'Génération…' : 'Générer' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
 @if (shareTarget(); as target) {
   <div class="fixed inset-0 z-[60] flex items-center justify-center px-4">
     <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" (click)="shareTarget.set(null)" aria-hidden="true"></div>
@@ -66,7 +44,7 @@
       </p>
     } @else {
       @for (t of tournaments(); track t.id) {
-        <div class="bg-[#161B22] border border-white/5 rounded-xl px-5 py-4 flex items-center gap-4">
+        <div (click)="goToDetail(t)" class="cursor-pointer bg-[#161B22] border border-white/5 hover:border-green-500/30 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors">
           <span class="text-2xl flex-shrink-0" aria-hidden="true">{{ icon(t.sport) }}</span>
           <div class="flex-1 min-w-0">
             <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
@@ -74,33 +52,14 @@
           </div>
           <span class="text-xs font-medium px-2 py-0.5 rounded-full border" [class]="statusStyles[t.status]">{{ statusLabel(t.status) }}</span>
 
-          @if (!t.format && t.teamsCount >= 2) {
-            <button type="button" (click)="openGenerate(t)" class="text-xs font-semibold text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/50 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
-              Générer le tableau
-            </button>
-          } @else if (!t.format) {
-            <span class="text-xs text-slate-600 flex-shrink-0">Ajoutez 2 équipes</span>
-          } @else if (t.format === 'SINGLE_ELIMINATION' && t.status !== 'FINISHED') {
-            <button
-              type="button"
-              (click)="advanceRound(t)"
-              [disabled]="advancingId() === t.id"
-              class="text-xs font-semibold text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/50 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50"
-            >
-              {{ advancingId() === t.id ? '…' : 'Tour suivant →' }}
-            </button>
-          } @else {
-            <span class="text-xs text-slate-600 flex-shrink-0">Tableau généré</span>
-          }
-
           <div class="flex items-center gap-1 flex-shrink-0">
-            <a [routerLink]="['/dashboard/tournaments', t.id, 'edit']" aria-label="Modifier" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+            <a [routerLink]="['/dashboard/tournaments', t.id, 'edit']" (click)="$event.stopPropagation()" aria-label="Modifier" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </a>
-            <button type="button" (click)="shareTarget.set(t)" aria-label="Partager" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors">
+            <button type="button" (click)="$event.stopPropagation(); shareTarget.set(t)" aria-label="Partager" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </button>
-            <button type="button" (click)="pending.set(t)" aria-label="Supprimer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+            <button type="button" (click)="$event.stopPropagation(); pending.set(t)" aria-label="Supprimer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
             </button>
           </div>

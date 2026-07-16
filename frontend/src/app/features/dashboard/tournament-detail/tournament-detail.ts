@@ -1,0 +1,149 @@
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TournamentService } from '../../../core/services/tournament.service';
+import { MatchService } from '../../../core/services/match.service';
+import { BracketService } from '../../../core/services/bracket.service';
+import { TournamentFormat } from '../../../core/models/bracket.model';
+import { TournamentDetail } from '../../../core/models/tournament.model';
+import { Match } from '../../../core/models/match.model';
+import { ToastService } from '../../../core/services/toast.service';
+import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
+import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
+import { computeStandings, Standing } from '../../../shared/utils/standings';
+import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+
+@Component({
+  selector: 'app-dashboard-tournament-detail-page',
+  standalone: true,
+  imports: [RouterLink, FormatPicker, BracketTree],
+  templateUrl: './tournament-detail.html',
+})
+export class DashboardTournamentDetailPage implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly tournamentService = inject(TournamentService);
+  private readonly matchService = inject(MatchService);
+  private readonly bracketService = inject(BracketService);
+  private readonly toast = inject(ToastService);
+
+  private readonly tournamentId = Number(this.route.snapshot.paramMap.get('id'));
+
+  readonly tournament = signal<TournamentDetail | null>(null);
+  readonly loading = signal(true);
+  readonly notFound = signal(false);
+
+  readonly chosenFormat = signal<TournamentFormat | null>(null);
+  readonly generating = signal(false);
+  readonly advancing = signal(false);
+
+  readonly editingMatchId = signal<number | null>(null);
+  readonly homeInput = signal('');
+  readonly awayInput = signal('');
+  readonly savingScore = signal(false);
+
+  readonly standings = computed<Standing[]>(() => {
+    const t = this.tournament();
+    return t ? computeStandings(t) : [];
+  });
+
+  ngOnInit(): void {
+    if (!this.tournamentId) {
+      this.notFound.set(true);
+      this.loading.set(false);
+      return;
+    }
+    this.load();
+  }
+
+  load(): void {
+    this.tournamentService.getById(this.tournamentId).subscribe({
+      next: (tournament) => {
+        this.tournament.set(tournament);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.notFound.set(true);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  icon(sport: string): string {
+    return SPORT_ICONS[sport] ?? '🏆';
+  }
+
+  statusLabel(status: string): string {
+    return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
+  }
+
+  generateBracket(): void {
+    const format = this.chosenFormat();
+    if (!format) {
+      this.toast.error('Choisissez un format.');
+      return;
+    }
+
+    this.generating.set(true);
+    this.bracketService.generate(this.tournamentId, format).subscribe({
+      next: () => {
+        this.generating.set(false);
+        this.toast.success('Le tableau a été généré.', 'Tableau généré');
+        this.load();
+      },
+      error: () => {
+        this.generating.set(false);
+        this.toast.error('Une erreur est survenue lors de la génération.', 'Erreur');
+      },
+    });
+  }
+
+  advanceRound(): void {
+    this.advancing.set(true);
+    this.bracketService.advance(this.tournamentId).subscribe({
+      next: (result) => {
+        this.advancing.set(false);
+        if (result.tournamentComplete) {
+          this.toast.success(`🏆 Champion : ${result.champion?.name ?? '—'}`, 'Tournoi terminé');
+        } else {
+          this.toast.success('Le tour suivant a été généré.', 'Tour suivant');
+        }
+        this.load();
+      },
+      error: () => {
+        this.advancing.set(false);
+        this.toast.error("Le tour en cours n'est pas terminé ou une erreur est survenue.", 'Erreur');
+      },
+    });
+  }
+
+  startEdit(match: Match): void {
+    this.editingMatchId.set(match.id);
+    this.homeInput.set(match.homeScore !== null ? String(match.homeScore) : '');
+    this.awayInput.set(match.awayScore !== null ? String(match.awayScore) : '');
+  }
+
+  cancelEdit(): void {
+    this.editingMatchId.set(null);
+  }
+
+  saveScore(match: Match): void {
+    const homeScore = Number(this.homeInput());
+    const awayScore = Number(this.awayInput());
+    if (Number.isNaN(homeScore) || Number.isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
+      this.toast.error('Merci de saisir un score valide.');
+      return;
+    }
+
+    this.savingScore.set(true);
+    this.matchService.updateScore(match.id, { homeScore, awayScore }).subscribe({
+      next: () => {
+        this.savingScore.set(false);
+        this.editingMatchId.set(null);
+        this.load();
+      },
+      error: () => {
+        this.savingScore.set(false);
+        this.toast.error('Une erreur est survenue.');
+      },
+    });
+  }
+}

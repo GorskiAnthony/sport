@@ -1,0 +1,155 @@
+@if (loading()) {
+  <div class="max-w-5xl space-y-4 animate-pulse">
+    <div class="bg-[#161B22] h-16 rounded-xl"></div>
+    <div class="bg-[#161B22] h-64 rounded-xl"></div>
+  </div>
+} @else if (notFound() || !tournament()) {
+  <p class="text-slate-500">Tournoi introuvable. <a routerLink="/dashboard/tournaments" class="text-green-400">← Retour aux tournois</a></p>
+} @else {
+  <div class="max-w-5xl space-y-6">
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+      <a routerLink="/dashboard/tournaments" class="text-slate-500 hover:text-white text-sm transition-colors">← Tournois</a>
+      <a [routerLink]="['/dashboard/tournaments', tournament()!.id, 'edit']" class="text-slate-500 hover:text-white text-sm transition-colors">Modifier le tournoi</a>
+    </div>
+
+    <div class="bg-[#161B22] border border-white/5 rounded-xl px-5 py-4 flex items-center gap-4 flex-wrap">
+      <span class="text-3xl flex-shrink-0" aria-hidden="true">{{ icon(tournament()!.sport) }}</span>
+      <div class="flex-1 min-w-0">
+        <h1 class="text-white font-extrabold text-xl truncate">{{ tournament()!.name }}</h1>
+        <p class="text-slate-500 text-xs">
+          {{ tournament()!.startDate }} – {{ tournament()!.endDate }} · {{ tournament()!.location }} ·
+          {{ tournament()!.teams.length }}/{{ tournament()!.maxTeams }} équipes
+        </p>
+      </div>
+      <span class="text-xs font-medium px-2 py-0.5 rounded-full border bg-white/5 border-white/10 text-slate-300">{{ statusLabel(tournament()!.status) }}</span>
+    </div>
+
+    @if (tournament()!.status === 'FINISHED') {
+      <div class="bg-green-500/10 border border-green-500/30 rounded-xl px-5 py-4 text-center">
+        <p class="text-white font-bold">🏆 Tournoi terminé</p>
+      </div>
+    }
+
+    @if (!tournament()!.format) {
+      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+        <h2 class="text-white font-semibold mb-1">Générer le tableau</h2>
+        @if (tournament()!.teams.length < 2) {
+          <p class="text-slate-500 text-sm">Ajoutez au moins 2 équipes pour pouvoir générer le tableau des matchs.</p>
+        } @else {
+          <p class="text-slate-400 text-sm mb-4">Choisissez un format. Les matchs seront créés automatiquement.</p>
+          <app-format-picker [(value)]="chosenFormat" />
+          <button
+            type="button"
+            (click)="generateBracket()"
+            [disabled]="!chosenFormat() || generating()"
+            class="mt-4 px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors disabled:opacity-50"
+          >
+            {{ generating() ? 'Génération…' : 'Générer le tableau' }}
+          </button>
+        }
+      </div>
+    } @else if (tournament()!.format === 'SINGLE_ELIMINATION') {
+      @if (tournament()!.status !== 'FINISHED') {
+        <div class="flex justify-end">
+          <button
+            type="button"
+            (click)="advanceRound()"
+            [disabled]="advancing()"
+            class="px-4 py-2 text-sm font-semibold text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/50 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {{ advancing() ? '…' : 'Tour suivant →' }}
+          </button>
+        </div>
+      }
+      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+        <app-bracket-tree [teams]="tournament()!.teams" [matches]="tournament()!.matches" (scoreUpdated)="load()" />
+      </div>
+    } @else {
+      <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" aria-label="Liste des matchs">
+            <thead>
+              <tr class="border-b border-white/5">
+                @for (h of ['Équipe 1', 'Équipe 2', 'Résultat', '']; track h) {
+                  <th scope="col" class="text-left px-5 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">{{ h }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of tournament()!.matches; track m.id) {
+                <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                  <td class="px-5 py-4 text-slate-300">{{ m.homeTeam.name }}</td>
+                  <td class="px-5 py-4 text-slate-300">{{ m.awayTeam.name }}</td>
+                  @if (editingMatchId() === m.id) {
+                    <td class="px-5 py-4" colspan="2">
+                      <div class="flex items-center gap-2">
+                        <input type="number" min="0" [value]="homeInput()" (input)="homeInput.set($any($event.target).value)" class="w-14 bg-[#0D1117] border border-white/10 rounded px-2 py-1 text-sm text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500" />
+                        <span class="text-slate-500">–</span>
+                        <input type="number" min="0" [value]="awayInput()" (input)="awayInput.set($any($event.target).value)" class="w-14 bg-[#0D1117] border border-white/10 rounded px-2 py-1 text-sm text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500" />
+                        <button type="button" (click)="saveScore(m)" [disabled]="savingScore()" class="text-green-400 hover:text-green-300 text-xs font-semibold disabled:opacity-50">✓ OK</button>
+                        <button type="button" (click)="cancelEdit()" class="text-slate-500 hover:text-white text-xs">Annuler</button>
+                      </div>
+                    </td>
+                  } @else {
+                    <td class="px-5 py-4">
+                      @if (m.homeScore !== null && m.awayScore !== null) {
+                        <span class="font-mono text-sm">
+                          <span [class]="m.homeScore === m.awayScore ? 'text-slate-300' : m.homeScore > m.awayScore ? 'text-green-400 font-bold' : 'text-red-400'">{{ m.homeScore }}</span>
+                          <span class="text-slate-500 mx-1">–</span>
+                          <span [class]="m.homeScore === m.awayScore ? 'text-slate-300' : m.awayScore > m.homeScore ? 'text-green-400 font-bold' : 'text-red-400'">{{ m.awayScore }}</span>
+                        </span>
+                      } @else {
+                        <span class="text-slate-500 text-xs">—</span>
+                      }
+                    </td>
+                    <td class="px-5 py-4">
+                      <button type="button" (click)="startEdit(m)" class="text-amber-400 hover:text-amber-300 text-xs font-semibold">Modifier</button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+        <div class="px-5 py-3 border-b border-white/5">
+          <h2 class="text-white text-sm font-semibold">Classement</h2>
+        </div>
+        @if (standings().length === 0) {
+          <p class="px-5 py-8 text-slate-500 text-sm text-center">Aucune équipe inscrite.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm" aria-label="Classement">
+              <thead>
+                <tr class="border-b border-white/5">
+                  @for (h of ['#', 'Équipe', 'J', 'V', 'N', 'D', 'BP', 'BC', 'Pts']; track h) {
+                    <th scope="col" class="text-left px-4 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider" [class.text-green-400]="h === 'Pts'">{{ h }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of standings(); track row.name; let i = $index) {
+                  <tr class="border-b border-white/5 last:border-0">
+                    <td class="px-4 py-3">
+                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" [class]="i < 3 ? 'bg-green-600' : 'bg-white/5'">{{ i + 1 }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-white font-medium">{{ row.name }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.j }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.v }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.n }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.d }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.bp }}</td>
+                    <td class="px-4 py-3 text-slate-400">{{ row.bc }}</td>
+                    <td class="px-4 py-3 text-green-400 font-bold">{{ row.pts }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
