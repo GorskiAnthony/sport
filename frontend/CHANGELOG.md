@@ -1,3 +1,5 @@
+## [frontend-v1.8.0](https://github.com/GorskiAnthony/sport/compare/frontend-v1.7.0...frontend-v1.8.0) (2026-07-16)
+
 ## [frontend-v1.7.0](https://github.com/GorskiAnthony/sport/compare/frontend-v1.6.0...frontend-v1.7.0) (2026-07-16)
 
 ## [frontend-v1.6.0](https://github.com/GorskiAnthony/sport/compare/frontend-v1.5.0...frontend-v1.6.0) (2026-07-16)
