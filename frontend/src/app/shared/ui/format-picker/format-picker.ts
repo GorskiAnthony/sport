@@ -18,6 +18,11 @@ const OPTIONS: FormatOption[] = [
     title: 'Élimination directe',
     description: 'Élimination immédiate après une défaite.',
   },
+  {
+    id: 'GROUP_KNOCKOUT',
+    title: 'Phase de groupes + Élimination',
+    description: 'Poules puis élimination directe pour les qualifiés.',
+  },
 ];
 
 @Component({

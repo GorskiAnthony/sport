@@ -1,4 +1,5 @@
-import { TournamentDetail } from '../../core/models/tournament.model';
+import { Match } from '../../core/models/match.model';
+import { Team } from '../../core/models/team.model';
 
 export interface Standing {
   name: string;
@@ -11,7 +12,9 @@ export interface Standing {
   pts: number;
 }
 
-export function computeStandings(tournament: TournamentDetail): Standing[] {
+/** Accepts anything with `teams`/`matches` (not just a full TournamentDetail) so it can be
+ *  called once per group with a filtered subset of teams/matches. */
+export function computeStandings(tournament: { teams: Team[]; matches: Match[] }): Standing[] {
   const stats: Record<string, Standing> = {};
   tournament.teams.forEach((team) => {
     stats[team.name] = { name: team.name, j: 0, v: 0, n: 0, d: 0, bp: 0, bc: 0, pts: 0 };

@@ -88,6 +88,7 @@ export class DashboardNewTournamentPage implements OnInit {
   readonly endDate = signal('');
   readonly maxTeams = signal('');
   readonly description = signal('');
+  readonly groupCount = signal('4');
 
   readonly errors = signal<FormErrors>({});
   readonly loading = signal(false);
@@ -174,6 +175,11 @@ export class DashboardNewTournamentPage implements OnInit {
       return;
     }
 
+    if (format === 'GROUP_KNOCKOUT' && Math.floor(rowsToCreate.length / Number(this.groupCount())) < 3) {
+      this.toast.error('Avec ce nombre de poules, certaines poules auraient moins de 3 équipes.');
+      return;
+    }
+
     this.finishing.set(true);
     forkJoin(
       rowsToCreate.map((row) =>
@@ -191,7 +197,8 @@ export class DashboardNewTournamentPage implements OnInit {
           return;
         }
 
-        this.bracketService.generate(tournamentId, format).subscribe({
+        const groupCount = format === 'GROUP_KNOCKOUT' ? Number(this.groupCount()) : undefined;
+        this.bracketService.generate(tournamentId, format, groupCount).subscribe({
           next: () => {
             this.finishing.set(false);
             this.toast.success('Tournoi créé et tableau généré !', 'Succès');

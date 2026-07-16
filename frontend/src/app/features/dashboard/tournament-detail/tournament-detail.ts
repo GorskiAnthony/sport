@@ -11,14 +11,18 @@ import { Match } from '../../../core/models/match.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
+import { GroupStandings, StandingsGroup } from '../../../shared/ui/group-standings/group-standings';
+import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { tournamentShareSlug } from '../../../shared/utils/slug';
 
+const GROUP_PHASE_PREFIX = 'Groupe ';
+
 @Component({
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
@@ -35,6 +39,7 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly notFound = signal(false);
 
   readonly chosenFormat = signal<TournamentFormat | null>(null);
+  readonly groupCount = signal('4');
   readonly generating = signal(false);
   readonly advancing = signal(false);
 
@@ -52,6 +57,44 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly standings = computed<Standing[]>(() => {
     const t = this.tournament();
     return t ? computeStandings(t) : [];
+  });
+
+  readonly knockoutMatches = computed<Match[]>(() =>
+    (this.tournament()?.matches ?? []).filter((m) => !m.phase?.startsWith(GROUP_PHASE_PREFIX)),
+  );
+
+  readonly groupPhases = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t) return [];
+    const byPhase = new Map<string, Match[]>();
+    const order: string[] = [];
+    for (const match of [...t.matches].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.id - b.id)) {
+      const phase = match.phase ?? '';
+      if (!phase.startsWith(GROUP_PHASE_PREFIX)) continue;
+      if (!byPhase.has(phase)) {
+        byPhase.set(phase, []);
+        order.push(phase);
+      }
+      byPhase.get(phase)!.push(match);
+    }
+    return order.map((label) => {
+      const matches = byPhase.get(label)!;
+      const teamIds = new Set<number>();
+      matches.forEach((m) => { teamIds.add(m.homeTeam.id); teamIds.add(m.awayTeam.id); });
+      const teams = t.teams.filter((team) => teamIds.has(team.id));
+      return { label, teams, matches };
+    });
+  });
+
+  /** Only teams that appear in a knockout-phase match — never the full tournament team list.
+   *  bracket-tree.ts treats any team in its [teams] input that's absent from round-1 matches as
+   *  a "bye", so feeding it group-stage-eliminated teams would render them as false byes. */
+  readonly qualifiedTeams = computed<Team[]>(() => {
+    const t = this.tournament();
+    if (!t) return [];
+    const ids = new Set<number>();
+    this.knockoutMatches().forEach((m) => { ids.add(m.homeTeam.id); ids.add(m.awayTeam.id); });
+    return t.teams.filter((team) => ids.has(team.id));
   });
 
   ngOnInit(): void {
@@ -108,8 +151,9 @@ export class DashboardTournamentDetailPage implements OnInit {
       return;
     }
 
+    const groupCount = format === 'GROUP_KNOCKOUT' ? Number(this.groupCount()) : undefined;
     this.generating.set(true);
-    this.bracketService.generate(this.tournamentId, format).subscribe({
+    this.bracketService.generate(this.tournamentId, format, groupCount).subscribe({
       next: () => {
         this.generating.set(false);
         this.toast.success('Le tableau a été généré.', 'Tableau généré');

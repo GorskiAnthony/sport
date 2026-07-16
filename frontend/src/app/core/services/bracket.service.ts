@@ -15,9 +15,9 @@ export class BracketService {
     return `${environment.apiUrl}/tournaments/${tournamentId}/bracket`;
   }
 
-  generate(tournamentId: number, format: TournamentFormat): Observable<Match[]> {
+  generate(tournamentId: number, format: TournamentFormat, groupCount?: number): Observable<Match[]> {
     return this.http
-      .post<ApiResponse<Match[]>>(this.bracketUrl(tournamentId), { format })
+      .post<ApiResponse<Match[]>>(this.bracketUrl(tournamentId), { format, groupCount })
       .pipe(map((res) => res.data));
   }
 
