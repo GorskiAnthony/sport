@@ -68,6 +68,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/spectator/favorites/favorites').then((m) => m.SpectatorFavoritesPage),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/spectator/notifications/notifications').then((m) => m.SpectatorNotificationsPage),
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./features/spectator/settings/settings').then((m) => m.SpectatorSettingsPage),
       },

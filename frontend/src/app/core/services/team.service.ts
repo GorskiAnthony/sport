@@ -36,4 +36,26 @@ export class TeamService {
       .delete<ApiResponse<{ success: boolean }>>(`${this.baseUrl}/${id}`)
       .pipe(map((res) => res.data));
   }
+
+  getFollowed(): Observable<Team[]> {
+    return this.http.get<ApiResponse<Team[]>>(`${this.baseUrl}/followed`).pipe(map((res) => res.data));
+  }
+
+  isFollowing(id: number): Observable<{ following: boolean }> {
+    return this.http
+      .get<ApiResponse<{ following: boolean }>>(`${this.baseUrl}/${id}/follow`)
+      .pipe(map((res) => res.data));
+  }
+
+  follow(id: number): Observable<{ following: boolean }> {
+    return this.http
+      .post<ApiResponse<{ following: boolean }>>(`${this.baseUrl}/${id}/follow`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  unfollow(id: number): Observable<{ following: boolean }> {
+    return this.http
+      .delete<ApiResponse<{ following: boolean }>>(`${this.baseUrl}/${id}/follow`)
+      .pipe(map((res) => res.data));
+  }
 }

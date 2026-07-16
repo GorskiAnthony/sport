@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { ToastService } from '../../../core/services/toast.service';
@@ -22,6 +23,7 @@ export class DashboardTournamentsPage implements OnInit {
   readonly skeletons = [1, 2, 3];
   readonly pending = signal<TournamentSummary | null>(null);
   readonly shareTarget = signal<TournamentSummary | null>(null);
+  readonly qrDataUrl = signal<string | null>(null);
 
   readonly statusStyles: Record<string, string> = {
     ONGOING: 'bg-green-500/20 text-green-400 border-green-500/20',
@@ -62,6 +64,14 @@ export class DashboardTournamentsPage implements OnInit {
 
   copyShareLink(t: TournamentSummary): void {
     navigator.clipboard.writeText(this.shareUrl(t)).then(() => this.toast.success('Lien copié dans le presse-papiers.'));
+  }
+
+  openShare(t: TournamentSummary): void {
+    this.shareTarget.set(t);
+    this.qrDataUrl.set(null);
+    toDataURL(this.shareUrl(t), { margin: 1, width: 240 })
+      .then((dataUrl) => this.qrDataUrl.set(dataUrl))
+      .catch(() => this.qrDataUrl.set(null));
   }
 
   goToDetail(t: TournamentSummary): void {

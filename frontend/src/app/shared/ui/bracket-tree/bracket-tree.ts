@@ -73,6 +73,23 @@ export class BracketTree {
     this.editingMatchId.set(null);
   }
 
+  startMatch(match: Match): void {
+    this.matchService.start(match.id).subscribe({
+      next: () => {
+        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
+        this.scoreUpdated.emit();
+      },
+      error: () => this.toast.error('Une erreur est survenue.'),
+    });
+  }
+
+  addGoal(match: Match, team: Team): void {
+    this.matchService.addGoal(match.id, team.id).subscribe({
+      next: () => this.toast.success(`But de ${team.name} enregistré.`),
+      error: () => this.toast.error('Une erreur est survenue.'),
+    });
+  }
+
   saveScore(match: Match): void {
     const homeScore = Number(this.homeInput());
     const awayScore = Number(this.awayInput());

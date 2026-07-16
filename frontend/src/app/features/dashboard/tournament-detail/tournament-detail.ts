@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { MatchService } from '../../../core/services/match.service';
 import { BracketService } from '../../../core/services/bracket.service';
@@ -35,6 +36,9 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly chosenFormat = signal<TournamentFormat | null>(null);
   readonly generating = signal(false);
   readonly advancing = signal(false);
+
+  readonly shareOpen = signal(false);
+  readonly qrDataUrl = signal<string | null>(null);
 
   /** Identifies the exact grid cell (row team id, col team id) being edited — not just the
    *  match id, since round robin shows each match twice (mirrored), and only the clicked
@@ -79,6 +83,22 @@ export class DashboardTournamentDetailPage implements OnInit {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
   }
 
+  shareUrl(): string {
+    return `${window.location.origin}/t/${this.tournamentId}`;
+  }
+
+  openShare(): void {
+    this.shareOpen.set(true);
+    this.qrDataUrl.set(null);
+    toDataURL(this.shareUrl(), { margin: 1, width: 240 })
+      .then((dataUrl) => this.qrDataUrl.set(dataUrl))
+      .catch(() => this.qrDataUrl.set(null));
+  }
+
+  copyShareLink(): void {
+    navigator.clipboard.writeText(this.shareUrl()).then(() => this.toast.success('Lien copié dans le presse-papiers.'));
+  }
+
   generateBracket(): void {
     const format = this.chosenFormat();
     if (!format) {
@@ -121,6 +141,23 @@ export class DashboardTournamentDetailPage implements OnInit {
 
   cancelEdit(): void {
     this.editingCell.set(null);
+  }
+
+  startMatch(match: Match): void {
+    this.matchService.start(match.id).subscribe({
+      next: () => {
+        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
+        this.load();
+      },
+      error: () => this.toast.error('Une erreur est survenue.'),
+    });
+  }
+
+  addGoal(match: Match, team: Team): void {
+    this.matchService.addGoal(match.id, team.id).subscribe({
+      next: () => this.toast.success(`But de ${team.name} enregistré.`),
+      error: () => this.toast.error('Une erreur est survenue.'),
+    });
   }
 
   isEditingCell(rowTeam: Team, colTeam: Team): boolean {
