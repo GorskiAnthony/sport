@@ -121,6 +121,40 @@ curl -X POST https://api.sport.example.com/api/auth/register \
 Puis ouvre `https://sport.example.com` dans le navigateur : inscription → connexion → redirection vers le
 dashboard/espace spectateur selon le rôle.
 
+## Capacité et supervision
+
+Réglages pensés pour **une seule instance backend, dimensionnée un peu plus large** (pas de scaling horizontal —
+voir plus bas pourquoi ça changerait des choses). Tous ajustables sans rebuild via les variables d'environnement
+du service (voir `.env.prod.example`) :
+
+| Variable | Défaut | Rôle |
+|---|---|---|
+| `DB_POOL_MAX_SIZE` | `20` | Taille max du pool de connexions Postgres (HikariCP). Le défaut Spring Boot (10) est un goulot d'étranglement sous charge réelle — quasi chaque requête fait un aller-retour DB. |
+| `TOMCAT_MAX_THREADS` | `400` | Threads HTTP max côté backend. Le vrai plafond reste le pool DB ci-dessus ; cette marge sert juste à laisser les pics de connexions attendre gentiment plutôt que d'être refusés direct. |
+| `CACHE_TTL_SECONDS` | `3` | Durée du cache en mémoire (Caffeine) sur la liste des tournois publics et le détail d'un tournoi. Absorbe une rafale de spectateurs qui rafraîchissent la même page en même temps (ex. juste après un but) en une seule requête DB au lieu de N. |
+
+**Monitoring** : Spring Boot Actuator tourne sur un **port séparé** (`MANAGEMENT_PORT`, défaut `8081`), jamais
+proxifié par nginx ni exposé publiquement — c'est la vraie barrière de sécurité, pas l'auth applicative. Pour le
+consulter :
+```bash
+# Depuis le serveur (SSH), ou via docker exec dans le conteneur backend
+curl http://localhost:8081/actuator/health
+curl http://localhost:8081/actuator/metrics/hikaricp.connections.active
+```
+Si tu veux y accéder depuis un navigateur, ajoute un domaine Dokploy dédié pointant vers le port `8081` du
+service `backend`, protégé par une **Basic Auth** au niveau de Traefik (middleware Dokploy) — ne l'expose jamais
+sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au public.
+
+**Avant un pic de trafic annoncé** (ex. un beta testeur qui prévoit ~250 req/s) :
+1. Simule-le d'abord avec un outil de test de charge (ex. [`k6`](https://k6.io/), `autocannon`) contre un
+   environnement de staging plutôt que de deviner — ça dit précisément ce qui plie en premier.
+2. Si besoin de plus de marge que les défauts ci-dessus, **augmente d'abord les ressources du serveur** (CPU/RAM)
+   plutôt que de multiplier les instances : passer à plusieurs instances backend en parallèle demande de
+   remplacer le rate-limiter (`RateLimitingFilter`, en mémoire — voir sa javadoc) et le broker WebSocket
+   (`SimpleBrokerMessageHandler`, également en mémoire) par des versions partagées (Redis) puisque chaque
+   instance a aujourd'hui son propre état ; un vrai chantier, à ne lancer que si le trafic doit rester élevé
+   durablement, pas pour un pic ponctuel.
+
 ## Mises à jour
 
 - Un push sur `dev` publie une pre-release (`:dev`) — utile pour tester en staging avant de promouvoir.

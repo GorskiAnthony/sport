@@ -10,6 +10,9 @@ import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import com.tournoicenter.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,9 @@ public class TournamentService {
         this.matchRepository = matchRepository;
     }
 
+    /** Cached briefly (see application.yml) — the public tournament list is hit by every
+     *  visitor and doesn't need to be millisecond-fresh. */
+    @Cacheable("tournamentList")
     @Transactional(readOnly = true)
     public List<TournamentSummaryResponse> findAll() {
         return tournamentRepository.findAllByOrderByStartDateDesc().stream().map(TournamentSummaryResponse::from).toList();
@@ -42,6 +48,14 @@ public class TournamentService {
                 .map(TournamentSummaryResponse::from).toList();
     }
 
+    /** Cached briefly (see application.yml) — this is the endpoint a burst of spectators all
+     *  hammer simultaneously when watching the same live tournament, so a short TTL matters
+     *  more here than anywhere else: it collapses N simultaneous requests for the same
+     *  tournament into one DB hit instead of N. Deliberately NOT evicted on match score/goal
+     *  updates (see MatchService) — those are exactly what triggers the read burst in the
+     *  first place, so evicting eagerly would defeat the point; the short TTL alone bounds
+     *  staleness to a couple of seconds, which is an acceptable trade-off for live scores. */
+    @Cacheable(value = "tournamentDetail", key = "#id")
     @Transactional
     public TournamentDetailResponse findById(Long id) {
         Tournament tournament = getOrThrow(id);
@@ -49,6 +63,7 @@ public class TournamentService {
         return TournamentDetailResponse.from(tournament);
     }
 
+    @CacheEvict(value = "tournamentList", allEntries = true)
     @Transactional
     public TournamentSummaryResponse create(Long organizerId, TournamentRequest request) {
         User organizer = userRepository.getReferenceById(organizerId);
@@ -65,6 +80,10 @@ public class TournamentService {
         return TournamentSummaryResponse.from(tournamentRepository.save(tournament));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "tournamentList", allEntries = true),
+            @CacheEvict(value = "tournamentDetail", key = "#id")
+    })
     @Transactional
     public TournamentSummaryResponse update(Long id, Long requesterId, TournamentRequest request) {
         Tournament tournament = getOrThrow(id);
@@ -82,6 +101,10 @@ public class TournamentService {
         return TournamentSummaryResponse.from(tournament);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "tournamentList", allEntries = true),
+            @CacheEvict(value = "tournamentDetail", key = "#id")
+    })
     @Transactional
     public void delete(Long id, Long requesterId) {
         Tournament tournament = getOrThrow(id);
