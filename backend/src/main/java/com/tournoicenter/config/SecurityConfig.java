@@ -56,6 +56,11 @@ public class SecurityConfig {
                         .accessDeniedHandler(jsonAuthErrorHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()
+                        // Actuator runs on a separate internal port (management.server.port) that's
+                        // never published outside the Docker network — that's the real security
+                        // boundary, not app-level JWT auth (which would be inconvenient for uptime
+                        // checks/ops tooling to use anyway).
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()

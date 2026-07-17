@@ -30,6 +30,7 @@ services:
       STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
     ports:
       - "3000:3000"
+      - "8081:8081" # Actuator (health/metrics) — separate port, not proxied by nginx, local convenience only
     depends_on:
       postgres:
         condition: service_healthy

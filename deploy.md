@@ -121,12 +121,52 @@ curl -X POST https://api.sport.example.com/api/auth/register \
 Puis ouvre `https://sport.example.com` dans le navigateur : inscription → connexion → redirection vers le
 dashboard/espace spectateur selon le rôle.
 
+## Capacité et supervision
+
+Réglages pensés pour **une seule instance backend, dimensionnée un peu plus large** (pas de scaling horizontal —
+voir plus bas pourquoi ça changerait des choses). Tous ajustables sans rebuild via les variables d'environnement
+du service (voir `.env.prod.example`) :
+
+| Variable | Défaut | Rôle |
+|---|---|---|
+| `DB_POOL_MAX_SIZE` | `20` | Taille max du pool de connexions Postgres (HikariCP). Le défaut Spring Boot (10) est un goulot d'étranglement sous charge réelle — quasi chaque requête fait un aller-retour DB. |
+| `TOMCAT_MAX_THREADS` | `400` | Threads HTTP max côté backend. Le vrai plafond reste le pool DB ci-dessus ; cette marge sert juste à laisser les pics de connexions attendre gentiment plutôt que d'être refusés direct. |
+| `CACHE_TTL_SECONDS` | `3` | Durée du cache en mémoire (Caffeine) sur la liste des tournois publics et le détail d'un tournoi. Absorbe une rafale de spectateurs qui rafraîchissent la même page en même temps (ex. juste après un but) en une seule requête DB au lieu de N. |
+
+**Monitoring** : Spring Boot Actuator tourne sur un **port séparé** (`MANAGEMENT_PORT`, défaut `8081`), jamais
+proxifié par nginx ni exposé publiquement — c'est la vraie barrière de sécurité, pas l'auth applicative. Pour le
+consulter :
+```bash
+# Depuis le serveur (SSH), ou via docker exec dans le conteneur backend
+curl http://localhost:8081/actuator/health
+curl http://localhost:8081/actuator/metrics/hikaricp.connections.active
+```
+Si tu veux y accéder depuis un navigateur, ajoute un domaine Dokploy dédié pointant vers le port `8081` du
+service `backend`, protégé par une **Basic Auth** au niveau de Traefik (middleware Dokploy) — ne l'expose jamais
+sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au public.
+
+**Avant un pic de trafic annoncé** (ex. un beta testeur qui prévoit ~250 req/s) :
+1. Simule-le d'abord avec un outil de test de charge (ex. [`k6`](https://k6.io/), `autocannon`) contre un
+   environnement de staging plutôt que de deviner — ça dit précisément ce qui plie en premier.
+2. Si besoin de plus de marge que les défauts ci-dessus, **augmente d'abord les ressources du serveur** (CPU/RAM)
+   plutôt que de multiplier les instances : passer à plusieurs instances backend en parallèle demande de
+   remplacer le rate-limiter (`RateLimitingFilter`, en mémoire — voir sa javadoc) et le broker WebSocket
+   (`SimpleBrokerMessageHandler`, également en mémoire) par des versions partagées (Redis) puisque chaque
+   instance a aujourd'hui son propre état ; un vrai chantier, à ne lancer que si le trafic doit rester élevé
+   durablement, pas pour un pic ponctuel.
+
 ## Mises à jour
 
 - Un push sur `dev` publie une pre-release (`:dev`) — utile pour tester en staging avant de promouvoir.
 - Une PR mergée `dev` → `main` publie une release stable et met à jour le tag `:latest`.
+- `docker-compose.prod.yml` déclare `pull_policy: always` sur `backend`/`frontend` : un simple **Redeploy**
+  (ou un `docker compose up`) revérifie donc toujours le registre, même si le nom du tag (`:latest`) n'a pas
+  changé. Sans ça, Docker réutilise silencieusement l'image déjà présente en local sur le serveur et une
+  nouvelle release ne se déploie jamais tant qu'on n'a pas fait un `pull` explicite — c'est le piège classique
+  à connaître si un service semble "en retard" après une release.
 - Dans Dokploy, active **Auto Deploy** (webhook) sur le service si tu veux qu'un nouveau `:latest` redéploie
-  automatiquement, ou clique **Redeploy** manuellement après une release.
+  automatiquement, ou clique **Redeploy** manuellement après une release (grâce au point ci-dessus, les deux
+  approches repartent bien de l'image la plus récente).
 - Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG` à un numéro de
   version exact (ex. `1.2.0`) dans les variables d'environnement du service.
 
@@ -138,6 +178,13 @@ c'est juste un changement de tag suivi d'un `docker compose up`.
 
 ## Dépannage
 
+- **Je viens de redeployer mais je ne vois pas les derniers changements** : vérifie d'abord que la release
+  a bien réussi (onglet Actions du repo GitHub), puis compare la date de build réellement servie —
+  `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
+  est visible dans le `<script>` de `curl -s https://sport.example.com/ | grep main-`) — à l'heure de la
+  dernière release. Si le build servi est manifestement plus vieux, `pull_policy: always` (voir "Mises à jour"
+  ci-dessus) devrait déjà empêcher ce cas ; sinon force un `docker compose -f docker-compose.prod.yml pull`
+  suivi d'un `up -d` directement sur le serveur.
 - **Le backend ne démarre pas / boucle** : vérifie les logs — le plus souvent `DATABASE_URL`/`DATABASE_PASSWORD`
   incorrects, ou `postgres` pas encore healthy (le `depends_on: condition: service_healthy` du compose devrait
   déjà gérer ça).

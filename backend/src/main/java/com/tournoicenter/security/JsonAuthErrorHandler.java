@@ -33,7 +33,7 @@ public class JsonAuthErrorHandler implements AuthenticationEntryPoint, AccessDen
 
     private void writeError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
-        response.setContentType("application/json");
+        response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(Map.of("message", message)));
     }
 }

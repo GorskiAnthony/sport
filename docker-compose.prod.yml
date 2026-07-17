@@ -20,6 +20,11 @@ services:
 
   backend:
     image: ghcr.io/gorskianthony/sport-backend:${BACKEND_TAG:-latest}
+    # Forces `docker compose up` to check the registry for a newer image on every
+    # deploy, even though the tag name (":latest") is unchanged — without this,
+    # a plain redeploy/restart silently keeps running whatever image is already
+    # cached locally on the server, even after a new release has been published.
+    pull_policy: always
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-tournoi_center}
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -39,6 +44,7 @@ services:
 
   frontend:
     image: ghcr.io/gorskianthony/sport-frontend:${FRONTEND_TAG:-latest}
+    pull_policy: always
     depends_on:
       - backend
     restart: unless-stopped

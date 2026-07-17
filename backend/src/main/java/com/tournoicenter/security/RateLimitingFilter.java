@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Duration WINDOW = Duration.ofMinutes(15);
-    private static final int AUTH_LIMIT = 20;
-    private static final int GLOBAL_LIMIT = 200;
+    private static final int AUTH_LIMIT = 30;
+    private static final int GLOBAL_LIMIT = 500;
 
     private final ObjectMapper objectMapper;
     private final ConcurrentHashMap<String, Window> authWindows = new ConcurrentHashMap<>();
@@ -76,7 +76,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private void reject(HttpServletResponse response, String message) throws IOException {
         response.setStatus(429);
-        response.setContentType("application/json");
+        response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(Map.of("message", message)));
     }
 
