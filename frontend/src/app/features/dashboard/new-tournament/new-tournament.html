@@ -73,6 +73,9 @@
     @if (step() === 2) {
       <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
         <p class="text-slate-400 text-sm">Ajoutez au moins 2 équipes pour générer automatiquement le tableau des matchs (vous pourrez en ajouter d'autres plus tard).</p>
+        @if (format() === 'GROUP_KNOCKOUT') {
+          <app-form-input id="nt-group-count" label="Nombre de poules" type="number" placeholder="4" [(value)]="groupCount" />
+        }
         @for (row of teams(); track $index) {
           <div class="grid grid-cols-3 gap-3 items-end">
             <input

@@ -1,7 +1,7 @@
 import { Match } from './match.model';
 import { Team } from './team.model';
 
-export type TournamentFormat = 'ROUND_ROBIN' | 'SINGLE_ELIMINATION';
+export type TournamentFormat = 'ROUND_ROBIN' | 'SINGLE_ELIMINATION' | 'GROUP_KNOCKOUT';
 
 export interface BracketAdvanceResponse {
   matches: Match[];

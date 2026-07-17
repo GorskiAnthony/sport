@@ -1,0 +1,37 @@
+<div class="space-y-4">
+  @for (group of groups(); track group.label) {
+    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+      <div class="px-5 py-3 border-b border-white/5">
+        <h2 class="text-white text-sm font-semibold">{{ group.label }}</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" [attr.aria-label]="'Classement ' + group.label">
+          <thead>
+            <tr class="border-b border-white/5">
+              @for (h of ['#', 'Équipe', 'J', 'V', 'N', 'D', 'BP', 'BC', 'Pts']; track h) {
+                <th scope="col" class="text-left px-4 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider" [class.text-green-400]="h === 'Pts'">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of standingsFor(group); track row.name; let i = $index) {
+              <tr class="border-b border-white/5 last:border-0">
+                <td class="px-4 py-3">
+                  <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" [class]="i < group.teams.length - 2 ? 'bg-green-600' : 'bg-white/5'">{{ i + 1 }}</span>
+                </td>
+                <td class="px-4 py-3 text-white font-medium">{{ row.name }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.j }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.v }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.n }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.d }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.bp }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ row.bc }}</td>
+                <td class="px-4 py-3 text-green-400 font-bold">{{ row.pts }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

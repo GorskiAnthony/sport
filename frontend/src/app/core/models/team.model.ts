@@ -1,3 +1,6 @@
+import { Match } from './match.model';
+import { TournamentStatus } from './tournament.model';
+
 export interface Team {
   id: number;
   name: string;
@@ -17,4 +20,12 @@ export interface TeamRequest {
   category: string;
   contact?: string;
   tournamentId: number;
+}
+
+export interface FollowedTeam {
+  team: Team;
+  tournamentName: string;
+  tournamentStatus: TournamentStatus;
+  nextMatch: Match | null;
+  lastMatch: Match | null;
 }

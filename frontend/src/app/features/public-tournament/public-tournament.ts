@@ -10,16 +10,19 @@ import { TournamentDetail } from '../../core/models/tournament.model';
 import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
+import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
 
 interface PhaseGroup {
   label: string;
   matches: Match[];
 }
 
+const GROUP_PHASE_PREFIX = 'Groupe ';
+
 @Component({
   selector: 'app-public-tournament-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, GroupStandings],
   templateUrl: './public-tournament.html',
 })
 export class PublicTournamentPage implements OnInit, OnDestroy {
@@ -41,7 +44,31 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
 
   readonly standings = computed<Standing[]>(() => {
     const t = this.tournament();
-    return t ? computeStandings(t) : [];
+    if (!t || t.format === 'GROUP_KNOCKOUT') return [];
+    return computeStandings(t);
+  });
+
+  readonly groupStandingsData = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t || t.format !== 'GROUP_KNOCKOUT') return [];
+    const byPhase = new Map<string, Match[]>();
+    const order: string[] = [];
+    for (const match of [...t.matches].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.id - b.id)) {
+      const phase = match.phase ?? '';
+      if (!phase.startsWith(GROUP_PHASE_PREFIX)) continue;
+      if (!byPhase.has(phase)) {
+        byPhase.set(phase, []);
+        order.push(phase);
+      }
+      byPhase.get(phase)!.push(match);
+    }
+    return order.map((label) => {
+      const matches = byPhase.get(label)!;
+      const teamIds = new Set<number>();
+      matches.forEach((m) => { teamIds.add(m.homeTeam.id); teamIds.add(m.awayTeam.id); });
+      const teams = t.teams.filter((team) => teamIds.has(team.id));
+      return { label, teams, matches };
+    });
   });
 
   readonly phaseGroups = computed<PhaseGroup[]>(() => {
@@ -84,6 +111,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
         this.loading.set(false);
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
+          this.tournamentService.recordView(this.tournamentId).subscribe({ error: () => {} });
         }
       },
       error: () => this.loading.set(false),

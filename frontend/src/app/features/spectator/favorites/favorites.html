@@ -12,15 +12,26 @@
   } @else {
     <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
       <ul class="divide-y divide-white/5">
-        @for (team of teams(); track team.id) {
-          <li class="px-5 py-4 flex items-center justify-between gap-3">
+        @for (followed of teams(); track followed.team.id) {
+          <li class="px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <p class="text-white font-semibold text-sm">{{ team.name }}</p>
-              <p class="text-slate-500 text-xs">{{ team.category }}</p>
+              <p class="text-white font-semibold text-sm">{{ followed.team.name }}</p>
+              <p class="text-slate-500 text-xs">
+                {{ followed.team.category }} · {{ followed.tournamentName }} · {{ statusLabels[followed.tournamentStatus] }}
+              </p>
+              @if (followed.nextMatch) {
+                <p class="text-green-400 text-xs mt-1">
+                  Prochain match : {{ followed.nextMatch.homeTeam.name }} vs {{ followed.nextMatch.awayTeam.name }} — {{ followed.nextMatch.date | date: 'dd/MM/yy HH:mm' }}
+                </p>
+              } @else if (followed.lastMatch) {
+                <p class="text-slate-500 text-xs mt-1">
+                  Dernier match : {{ followed.lastMatch.homeTeam.name }} {{ followed.lastMatch.homeScore }} - {{ followed.lastMatch.awayScore }} {{ followed.lastMatch.awayTeam.name }}
+                </p>
+              }
             </div>
             <div class="flex items-center gap-3">
-              <a [routerLink]="['/t', team.tournamentId]" class="text-green-400 hover:text-green-300 text-xs font-semibold">Voir le tournoi</a>
-              <button type="button" (click)="unfollow(team)" class="text-slate-500 hover:text-red-400 text-xs font-semibold">Ne plus suivre</button>
+              <a [routerLink]="['/t', followed.team.tournamentId]" class="text-green-400 hover:text-green-300 text-xs font-semibold">Voir le tournoi</a>
+              <button type="button" (click)="unfollow(followed)" class="text-slate-500 hover:text-red-400 text-xs font-semibold">Ne plus suivre</button>
             </div>
           </li>
         }

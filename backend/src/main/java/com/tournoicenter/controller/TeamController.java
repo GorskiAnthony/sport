@@ -1,6 +1,7 @@
 package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.ApiResponse;
+import com.tournoicenter.dto.team.FollowedTeamResponse;
 import com.tournoicenter.dto.team.TeamRequest;
 import com.tournoicenter.dto.team.TeamResponse;
 import com.tournoicenter.security.JwtPrincipal;
@@ -28,6 +29,11 @@ public class TeamController {
     @GetMapping("/followed")
     public ApiResponse<List<TeamResponse>> findFollowed(@AuthenticationPrincipal JwtPrincipal principal) {
         return ApiResponse.of(teamFollowService.findFollowed(principal.userId()));
+    }
+
+    @GetMapping("/followed/enriched")
+    public ApiResponse<List<FollowedTeamResponse>> findFollowedEnriched(@AuthenticationPrincipal JwtPrincipal principal) {
+        return ApiResponse.of(teamFollowService.findFollowedEnriched(principal.userId()));
     }
 
     @GetMapping("/{id}/follow")

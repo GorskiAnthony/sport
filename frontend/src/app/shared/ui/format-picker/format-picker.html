@@ -1,4 +1,4 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Format du tournoi">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Format du tournoi">
   @for (option of options; track option.id) {
     <button
       type="button"
@@ -14,11 +14,16 @@
             <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
             <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
           </svg>
-        } @else {
+        } @else if (option.id === 'SINGLE_ELIMINATION') {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="6" x2="9" y2="6" /><line x1="3" y1="18" x2="9" y2="18" />
             <line x1="9" y1="6" x2="9" y2="18" /><line x1="9" y1="12" x2="15" y2="12" />
             <line x1="15" y1="9" x2="21" y2="9" />
+          </svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+            <path d="M6.5 10v3M17.5 10v3M6.5 13h11M12 13v8" />
           </svg>
         }
       </span>
