@@ -125,8 +125,14 @@ dashboard/espace spectateur selon le rôle.
 
 - Un push sur `dev` publie une pre-release (`:dev`) — utile pour tester en staging avant de promouvoir.
 - Une PR mergée `dev` → `main` publie une release stable et met à jour le tag `:latest`.
+- `docker-compose.prod.yml` déclare `pull_policy: always` sur `backend`/`frontend` : un simple **Redeploy**
+  (ou un `docker compose up`) revérifie donc toujours le registre, même si le nom du tag (`:latest`) n'a pas
+  changé. Sans ça, Docker réutilise silencieusement l'image déjà présente en local sur le serveur et une
+  nouvelle release ne se déploie jamais tant qu'on n'a pas fait un `pull` explicite — c'est le piège classique
+  à connaître si un service semble "en retard" après une release.
 - Dans Dokploy, active **Auto Deploy** (webhook) sur le service si tu veux qu'un nouveau `:latest` redéploie
-  automatiquement, ou clique **Redeploy** manuellement après une release.
+  automatiquement, ou clique **Redeploy** manuellement après une release (grâce au point ci-dessus, les deux
+  approches repartent bien de l'image la plus récente).
 - Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG` à un numéro de
   version exact (ex. `1.2.0`) dans les variables d'environnement du service.
 
@@ -138,6 +144,13 @@ c'est juste un changement de tag suivi d'un `docker compose up`.
 
 ## Dépannage
 
+- **Je viens de redeployer mais je ne vois pas les derniers changements** : vérifie d'abord que la release
+  a bien réussi (onglet Actions du repo GitHub), puis compare la date de build réellement servie —
+  `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
+  est visible dans le `<script>` de `curl -s https://sport.example.com/ | grep main-`) — à l'heure de la
+  dernière release. Si le build servi est manifestement plus vieux, `pull_policy: always` (voir "Mises à jour"
+  ci-dessus) devrait déjà empêcher ce cas ; sinon force un `docker compose -f docker-compose.prod.yml pull`
+  suivi d'un `up -d` directement sur le serveur.
 - **Le backend ne démarre pas / boucle** : vérifie les logs — le plus souvent `DATABASE_URL`/`DATABASE_PASSWORD`
   incorrects, ou `postgres` pas encore healthy (le `depends_on: condition: service_healthy` du compose devrait
   déjà gérer ça).
