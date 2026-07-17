@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../../core/services/tournament.service';
@@ -159,9 +160,10 @@ export class DashboardTournamentDetailPage implements OnInit {
         this.toast.success('Le tableau a été généré.', 'Tableau généré');
         this.load();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.generating.set(false);
-        this.toast.error('Une erreur est survenue lors de la génération.', 'Erreur');
+        const message = (err.error as { message?: string } | null)?.message;
+        this.toast.error(message ?? 'Une erreur est survenue lors de la génération.', 'Erreur');
       },
     });
   }
@@ -178,9 +180,10 @@ export class DashboardTournamentDetailPage implements OnInit {
         }
         this.load();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.advancing.set(false);
-        this.toast.error("Le tour en cours n'est pas terminé ou une erreur est survenue.", 'Erreur');
+        const message = (err.error as { message?: string } | null)?.message;
+        this.toast.error(message ?? "Le tour en cours n'est pas terminé ou une erreur est survenue.", 'Erreur');
       },
     });
   }

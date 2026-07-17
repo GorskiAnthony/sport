@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { TeamService } from '../../../core/services/team.service';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { Team } from '../../../core/models/team.model';
@@ -131,7 +132,10 @@ export class DashboardTeamsPage implements OnInit {
           this.toast.success(`${form.name} ajoutée.`, 'Équipe ajoutée');
           this.panelOpen.set(false);
         },
-        error: () => this.toast.error('Une erreur est survenue.'),
+        error: (err: HttpErrorResponse) => {
+          const message = (err.error as { message?: string } | null)?.message;
+          this.toast.error(message ?? 'Une erreur est survenue.');
+        },
       });
     }
   }

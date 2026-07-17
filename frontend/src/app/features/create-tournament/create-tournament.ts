@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -106,9 +107,10 @@ export class CreateTournamentPage {
           this.loading.set(false);
           this.router.navigate(['/dashboard']);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.loading.set(false);
-          this.toast.error('Une erreur est survenue.', 'Erreur');
+          const message = (err.error as { message?: string } | null)?.message;
+          this.toast.error(message ?? 'Une erreur est survenue.', 'Erreur');
         },
       });
   }

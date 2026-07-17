@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
@@ -141,9 +142,10 @@ export class DashboardNewTournamentPage implements OnInit {
           this.loading.set(false);
           this.step.set(2);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.loading.set(false);
-          this.toast.error('Erreur lors de la création.');
+          const message = (err.error as { message?: string } | null)?.message;
+          this.toast.error(message ?? 'Erreur lors de la création.');
         },
       });
   }
@@ -204,18 +206,20 @@ export class DashboardNewTournamentPage implements OnInit {
             this.toast.success('Tournoi créé et tableau généré !', 'Succès');
             this.router.navigate(['/dashboard/tournaments']);
           },
-          error: () => {
+          error: (err: HttpErrorResponse) => {
             this.finishing.set(false);
+            const message = (err.error as { message?: string } | null)?.message;
             this.toast.error(
-              "Les équipes ont été ajoutées, mais la génération du tableau a échoué. Réessayez depuis la liste des tournois.",
+              message ?? "Les équipes ont été ajoutées, mais la génération du tableau a échoué. Réessayez depuis la liste des tournois.",
             );
             this.router.navigate(['/dashboard/tournaments']);
           },
         });
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.finishing.set(false);
-        this.toast.error("Une erreur est survenue lors de l'ajout des équipes.");
+        const message = (err.error as { message?: string } | null)?.message;
+        this.toast.error(message ?? "Une erreur est survenue lors de l'ajout des équipes.");
       },
     });
   }
