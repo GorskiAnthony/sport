@@ -44,6 +44,7 @@ jobs:
           npx ng test
 
       - name: Install release tooling
+        if: github.ref_name == 'main'
         run: npm ci
 
       - name: Log in to GHCR
@@ -53,7 +54,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # main: semantic-release computes the next version from commits, updates the
+      # changelog/package.json, tags, publishes a GitHub release, and pushes `:latest`.
       - name: Release
+        if: github.ref_name == 'main'
         working-directory: frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,3 +65,15 @@ jobs:
         run: |
           export FRONTEND_IMAGE=$(echo "$FRONTEND_IMAGE" | tr '[:upper:]' '[:lower:]')
           npx semantic-release -e semantic-release-monorepo
+
+      # dev: no versioning/changelog — just refresh the mutable `:dev` tag Dokploy's
+      # preprod service tracks (FRONTEND_TAG=dev).
+      - name: Publish dev image
+        if: github.ref_name == 'dev'
+        working-directory: frontend
+        env:
+          FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-frontend
+        run: |
+          export FRONTEND_IMAGE=$(echo "$FRONTEND_IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build -t "$FRONTEND_IMAGE:dev" .
+          docker push "$FRONTEND_IMAGE:dev"

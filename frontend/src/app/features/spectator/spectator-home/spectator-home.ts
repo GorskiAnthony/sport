@@ -4,6 +4,7 @@ import { TournamentService } from '../../../core/services/tournament.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { RecentTournament, TournamentSummary } from '../../../core/models/tournament.model';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { SPORTS } from '../../../shared/utils/sports';
 
 @Component({
   selector: 'app-spectator-home-page',
@@ -21,14 +22,7 @@ export class SpectatorHomePage implements OnInit {
   readonly recentlyViewed = signal<RecentTournament[]>([]);
   readonly unreadCount = this.notificationService.unreadCount;
 
-  readonly sports = [
-    { id: 'football', label: 'Football', icon: '⚽' },
-    { id: 'basketball', label: 'Basketball', icon: '🏀' },
-    { id: 'tennis', label: 'Tennis', icon: '🎾' },
-    { id: 'volleyball', label: 'Volleyball', icon: '🏐' },
-    { id: 'rugby', label: 'Rugby', icon: '🏉' },
-    { id: 'esport', label: 'Esport', icon: '🎮' },
-  ];
+  readonly sports = SPORTS;
 
   ngOnInit(): void {
     this.tournamentService.getAll().subscribe({

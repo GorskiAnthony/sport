@@ -7,6 +7,7 @@ import { Button } from '../../shared/ui/button/button';
 import { FormInput } from '../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../shared/ui/form-select/form-select';
 import { todayIsoDate } from '../../shared/utils/today';
+import { SPORTS as SPORT_LIST } from '../../shared/utils/sports';
 
 interface FormErrors {
   name?: string;
@@ -16,16 +17,10 @@ interface FormErrors {
   endDate?: string;
 }
 
-const SPORTS: FormSelectOption[] = [
-  { value: 'football', label: 'Football ⚽' },
-  { value: 'futsal', label: 'Futsal' },
-  { value: 'basketball', label: 'Basketball 🏀' },
-  { value: 'handball', label: 'Handball 🤾' },
-  { value: 'volleyball', label: 'Volleyball 🏐' },
-  { value: 'rugby', label: 'Rugby 🏉' },
-  { value: 'tennis', label: 'Tennis 🎾' },
-  { value: 'esport', label: 'Esport 🎮' },
-];
+const SPORTS: FormSelectOption[] = SPORT_LIST.map((sport) => ({
+  value: sport.id,
+  label: `${sport.label} ${sport.icon}`,
+}));
 
 const CATEGORIES: FormSelectOption[] = [
   { value: 'u13', label: 'U13' },
