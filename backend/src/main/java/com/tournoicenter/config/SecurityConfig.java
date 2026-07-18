@@ -62,6 +62,7 @@ public class SecurityConfig {
                         // checks/ops tooling to use anyway).
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/share/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
