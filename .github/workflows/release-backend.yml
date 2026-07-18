@@ -38,6 +38,7 @@ jobs:
           cache: maven
 
       - uses: actions/setup-node@v4
+        if: github.ref_name == 'main'
         with:
           node-version: '24'
           cache: npm
@@ -47,6 +48,7 @@ jobs:
         run: mvn -B -ntp verify
 
       - name: Install release tooling
+        if: github.ref_name == 'main'
         run: npm ci
 
       - name: Log in to GHCR
@@ -56,7 +58,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # main: semantic-release computes the next version from commits, updates the
+      # changelog/pom.xml, tags, publishes a GitHub release, and pushes `:latest`.
       - name: Release
+        if: github.ref_name == 'main'
         working-directory: backend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,3 +69,15 @@ jobs:
         run: |
           export BACKEND_IMAGE=$(echo "$BACKEND_IMAGE" | tr '[:upper:]' '[:lower:]')
           npx semantic-release -e semantic-release-monorepo
+
+      # dev: no versioning/changelog — just refresh the mutable `:dev` tag Dokploy's
+      # preprod service tracks (BACKEND_TAG=dev).
+      - name: Publish dev image
+        if: github.ref_name == 'dev'
+        working-directory: backend
+        env:
+          BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-backend
+        run: |
+          export BACKEND_IMAGE=$(echo "$BACKEND_IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build -t "$BACKEND_IMAGE:dev" .
+          docker push "$BACKEND_IMAGE:dev"

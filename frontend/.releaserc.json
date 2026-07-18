@@ -1,5 +1,5 @@
 {
-  "branches": ["main", { "name": "dev", "prerelease": true }],
+  "branches": ["main"],
   "tagFormat": "frontend-v${version}",
   "extends": "semantic-release-monorepo",
   "plugins": [

@@ -49,13 +49,13 @@ et les images publiées sur `ghcr.io`.
 
 ## Branches et releases
 
-- **`dev`** : branche d'intégration (par défaut). Chaque push y déclenche une **pre-release** (`backend-vX.Y.Z-dev.N` / `frontend-vX.Y.Z-dev.N`), image Docker taguée `:dev`.
+- **`dev`** : branche de préprod et d'intégration (par défaut). Chaque push y déclenche un simple build + push de l'image Docker taguée `:dev` — pas de versioning, pas de changelog.
 - **`main`** : branche stable. Une fois `dev` prête à être promue, ouvrir une PR `dev` → `main` : le merge déclenche une **release stable** (`backend-vX.Y.Z` / `frontend-vX.Y.Z`), image Docker taguée `:latest`.
 
 ## CI/CD
 
 - **CI** (`.github/workflows/ci.yml`) : sur chaque PR vers `dev` ou `main`, build + tests du/des paquet(s) modifié(s), et vérification du format des commits.
-- **Releases** (`.github/workflows/release-backend.yml`, `release-frontend.yml`) : sur push vers `dev` ou `main`, [semantic-release](https://semantic-release.gitbook.io/) (via `semantic-release-monorepo`) détermine la version suivante à partir des commits, met à jour le changelog et la version (`pom.xml` / `package.json`), crée un tag Git et une GitHub Release, et publie une image Docker sur `ghcr.io`.
+- **Releases** (`.github/workflows/release-backend.yml`, `release-frontend.yml`) : sur push vers `dev`, build + push de l'image `:dev` uniquement. Sur push vers `main`, [semantic-release](https://semantic-release.gitbook.io/) (via `semantic-release-monorepo`) détermine la version suivante à partir des commits, met à jour le changelog et la version (`pom.xml` / `package.json`), crée un tag Git et une GitHub Release, et publie une image Docker taguée `:latest` sur `ghcr.io`.
 
 ### Convention de commit
 
