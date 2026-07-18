@@ -1,6 +1,4 @@
-## [frontend-v1.10.1-dev.2](https://github.com/GorskiAnthony/sport/compare/frontend-v1.10.1-dev.1...frontend-v1.10.1-dev.2) (2026-07-18)
-
-## [frontend-v1.10.1-dev.1](https://github.com/GorskiAnthony/sport/compare/frontend-v1.10.0...frontend-v1.10.1-dev.1) (2026-07-17)
+## [frontend-v1.10.1](https://github.com/GorskiAnthony/sport/compare/frontend-v1.10.0...frontend-v1.10.1) (2026-07-17)
 
 ## [frontend-v1.10.0](https://github.com/GorskiAnthony/sport/compare/frontend-v1.9.0...frontend-v1.10.0) (2026-07-16)
 

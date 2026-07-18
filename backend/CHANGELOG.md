@@ -1,4 +1,4 @@
-## [sport-backend-v1.5.1-dev.2](https://github.com/GorskiAnthony/sport/compare/backend-v1.5.1-dev.1...backend-v1.5.1-dev.2) (2026-07-17)
+## [sport-backend-v1.5.1](https://github.com/GorskiAnthony/sport/compare/backend-v1.5.0...backend-v1.5.1) (2026-07-17)
 
 ## [sport-backend-v1.5.1-dev.1](https://github.com/GorskiAnthony/sport/compare/backend-v1.5.0...backend-v1.5.1-dev.1) (2026-07-17)
 
