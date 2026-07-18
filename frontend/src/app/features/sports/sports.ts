@@ -1,5 +1,17 @@
 import { Component } from '@angular/core';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { SPORTS } from '../../shared/utils/sports';
+
+const SHOWCASE_COUNTS: Record<string, number> = {
+  football: 1240,
+  basketball: 380,
+  tennis: 210,
+  volleyball: 175,
+  rugby: 145,
+  esport: 220,
+  handball: 130,
+  futsal: 90,
+};
 
 @Component({
   selector: 'app-sports-page',
@@ -8,14 +20,8 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
   templateUrl: './sports.html',
 })
 export class SportsPage {
-  readonly sports = [
-    { id: 'football', label: 'Football', icon: '⚽', count: 1240 },
-    { id: 'basketball', label: 'Basketball', icon: '🏀', count: 380 },
-    { id: 'tennis', label: 'Tennis', icon: '🎾', count: 210 },
-    { id: 'volleyball', label: 'Volleyball', icon: '🏐', count: 175 },
-    { id: 'rugby', label: 'Rugby', icon: '🏉', count: 145 },
-    { id: 'esport', label: 'Esport', icon: '🎮', count: 220 },
-    { id: 'handball', label: 'Handball', icon: '🤾', count: 130 },
-    { id: 'futsal', label: 'Futsal', icon: '⚽', count: 90 },
-  ];
+  readonly sports = SPORTS.map((sport) => ({
+    ...sport,
+    count: SHOWCASE_COUNTS[sport.id] ?? 0,
+  }));
 }

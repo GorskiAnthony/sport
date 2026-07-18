@@ -14,6 +14,7 @@ import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/for
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { todayIsoDate } from '../../../shared/utils/today';
+import { SPORTS as SPORT_LIST } from '../../../shared/utils/sports';
 
 interface FormErrors {
   name?: string;
@@ -35,16 +36,10 @@ const MAX_TOURNAMENTS_BY_PLAN: Record<string, number> = {
   PRO: Infinity,
 };
 
-const SPORTS: FormSelectOption[] = [
-  { value: 'football', label: 'Football ⚽' },
-  { value: 'futsal', label: 'Futsal' },
-  { value: 'basketball', label: 'Basketball 🏀' },
-  { value: 'handball', label: 'Handball 🤾' },
-  { value: 'volleyball', label: 'Volleyball 🏐' },
-  { value: 'rugby', label: 'Rugby 🏉' },
-  { value: 'tennis', label: 'Tennis 🎾' },
-  { value: 'esport', label: 'Esport 🎮' },
-];
+const SPORTS: FormSelectOption[] = SPORT_LIST.map((sport) => ({
+  value: sport.id,
+  label: `${sport.label} ${sport.icon}`,
+}));
 
 const CATEGORIES: FormSelectOption[] = [
   { value: 'u13', label: 'U13' },
