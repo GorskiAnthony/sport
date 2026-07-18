@@ -20,6 +20,8 @@ import com.tournoicenter.service.bracket.BracketGenerator;
 import com.tournoicenter.service.bracket.GroupKnockoutGenerator;
 import com.tournoicenter.service.bracket.GroupStandingsCalculator;
 import com.tournoicenter.service.bracket.SingleEliminationGenerator;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,19 +41,22 @@ public class BracketGenerationService {
     private final List<BracketGenerator> generators;
     private final SingleEliminationGenerator singleEliminationGenerator;
     private final TournamentLiveService tournamentLiveService;
+    private final CacheManager cacheManager;
 
     public BracketGenerationService(TournamentRepository tournamentRepository,
                                      TeamRepository teamRepository,
                                      MatchRepository matchRepository,
                                      List<BracketGenerator> generators,
                                      SingleEliminationGenerator singleEliminationGenerator,
-                                     TournamentLiveService tournamentLiveService) {
+                                     TournamentLiveService tournamentLiveService,
+                                     CacheManager cacheManager) {
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
         this.matchRepository = matchRepository;
         this.generators = generators;
         this.singleEliminationGenerator = singleEliminationGenerator;
         this.tournamentLiveService = tournamentLiveService;
+        this.cacheManager = cacheManager;
     }
 
     @Transactional
@@ -82,6 +87,7 @@ public class BracketGenerationService {
 
         List<MatchResponse> saved = matchRepository.saveAll(matches).stream().map(MatchResponse::from).toList();
         tournamentLiveService.notifyTournamentChanged(tournamentId);
+        evictTournamentCaches(tournamentId);
         return saved;
     }
 
@@ -90,13 +96,32 @@ public class BracketGenerationService {
         Tournament tournament = getOrThrow(tournamentId);
         requireOwner(tournament, requesterId);
 
+        BracketAdvanceResponse response;
         if (TournamentFormat.SINGLE_ELIMINATION.name().equals(tournament.getFormat())) {
-            return advanceSingleElimination(tournament, tournamentId);
+            response = advanceSingleElimination(tournament, tournamentId);
+        } else if (TournamentFormat.GROUP_KNOCKOUT.name().equals(tournament.getFormat())) {
+            response = advanceGroupKnockout(tournament, tournamentId);
+        } else {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Ce tournoi n'utilise pas un tableau à élimination directe.");
         }
-        if (TournamentFormat.GROUP_KNOCKOUT.name().equals(tournament.getFormat())) {
-            return advanceGroupKnockout(tournament, tournamentId);
+        evictTournamentCaches(tournamentId);
+        return response;
+    }
+
+    /** BracketGenerationService mutates matches/tournament state that TournamentService's
+     *  findAll()/findById() cache (see application.yml) — without this, an organizer who just
+     *  loaded the tournament page (near-guaranteed, since that's how they got to the button)
+     *  would click "Tour suivant"/"Générer le tableau" and see the cached pre-advance state for
+     *  up to CACHE_TTL_SECONDS, looking exactly like the click "didn't do anything". */
+    private void evictTournamentCaches(Long tournamentId) {
+        Cache detailCache = cacheManager.getCache("tournamentDetail");
+        if (detailCache != null) {
+            detailCache.evict(tournamentId);
         }
-        throw new ApiException(HttpStatus.BAD_REQUEST, "Ce tournoi n'utilise pas un tableau à élimination directe.");
+        Cache listCache = cacheManager.getCache("tournamentList");
+        if (listCache != null) {
+            listCache.clear();
+        }
     }
 
     private BracketAdvanceResponse advanceSingleElimination(Tournament tournament, Long tournamentId) {

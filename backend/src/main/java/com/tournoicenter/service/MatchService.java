@@ -14,6 +14,8 @@ import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
@@ -33,15 +35,32 @@ public class MatchService {
     private final NotificationService notificationService;
     private final TournamentLiveService tournamentLiveService;
     private final ObjectMapper objectMapper;
+    private final CacheManager cacheManager;
 
     public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
-                         NotificationService notificationService, TournamentLiveService tournamentLiveService, ObjectMapper objectMapper) {
+                         NotificationService notificationService, TournamentLiveService tournamentLiveService, ObjectMapper objectMapper,
+                         CacheManager cacheManager) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
         this.notificationService = notificationService;
         this.tournamentLiveService = tournamentLiveService;
         this.objectMapper = objectMapper;
+        this.cacheManager = cacheManager;
+    }
+
+    /** A match's score/status/events are embedded in TournamentService's cached tournament
+     *  detail (see application.yml) — without evicting here, whoever just mutated a match
+     *  (organizer editing a score, or the live-update "refetch" triggered by this same change)
+     *  would see the pre-change cached state for up to CACHE_TTL_SECONDS. Evicting costs at
+     *  most one extra DB read for the very next viewer; everyone after that still shares one
+     *  fresh cached copy, so this doesn't reintroduce the thundering-herd problem the cache
+     *  exists to prevent — it just removes an avoidable staleness window on top of it. */
+    private void evictTournamentDetailCache(Long tournamentId) {
+        Cache detailCache = cacheManager.getCache("tournamentDetail");
+        if (detailCache != null) {
+            detailCache.evict(tournamentId);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -72,7 +91,9 @@ public class MatchService {
         match.setHomeScore(request.homeScore());
         match.setAwayScore(request.awayScore());
 
-        return MatchResponse.from(matchRepository.save(match));
+        MatchResponse response = MatchResponse.from(matchRepository.save(match));
+        evictTournamentDetailCache(tournament.getId());
+        return response;
     }
 
     @Transactional
@@ -95,6 +116,7 @@ public class MatchService {
             notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
         }
         tournamentLiveService.notifyTournamentChanged(tournament.getId());
+        evictTournamentDetailCache(tournament.getId());
 
         return MatchResponse.from(match);
     }
@@ -114,6 +136,7 @@ public class MatchService {
         notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
         notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_STARTED, message);
         tournamentLiveService.notifyTournamentChanged(tournament.getId());
+        evictTournamentDetailCache(tournament.getId());
 
         return MatchResponse.from(match);
     }
@@ -135,6 +158,7 @@ public class MatchService {
         String message = String.format("But de %s !", scoringTeam.getName());
         notificationService.notifyFollowers(scoringTeam, tournament, match, NotificationType.GOAL_SCORED, message);
         tournamentLiveService.notifyTournamentChanged(tournament.getId());
+        evictTournamentDetailCache(tournament.getId());
 
         return MatchResponse.from(match);
     }
@@ -150,7 +174,9 @@ public class MatchService {
     public void delete(Long id, Long requesterId) {
         Match match = getOrThrow(id);
         requireOwner(match, requesterId);
+        Long tournamentId = match.getTournament().getId();
         matchRepository.delete(match);
+        evictTournamentDetailCache(tournamentId);
     }
 
     private Match getOrThrow(Long id) {

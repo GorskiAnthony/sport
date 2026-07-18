@@ -49,9 +49,23 @@ Dans Dokploy, section *Registry* (ou *Docker* selon la version) : ajouter un reg
 
 1. **Create Project** → nom libre, ex. `tournoi-center`.
 2. Dans le projet, **Create Service** → **Compose**.
-3. Source : connecte le repo Git `GorskiAnthony/sport`, branche `main` (ou `dev` pour tester une pre-release).
+3. Source : connecte le repo Git `GorskiAnthony/sport`, branche `main` (prod) **ou** `dev` (préprod/staging).
 4. **Compose Path** : `docker-compose.prod.yml` (pas `docker-compose.yml`, qui est pour le dev local).
 5. **Compose Type** : `docker-compose` (pas Stack/Swarm).
+
+⚠️ **La branche choisie ici et les tags d'image (`BACKEND_TAG`/`FRONTEND_TAG`, section suivante) doivent
+correspondre**, sinon un déploiement peut sembler réussir (bon commit affiché dans l'onglet Deployments) tout
+en tournant avec l'ancienne image : la branche ne détermine que le contenu du repo (donc de
+`docker-compose.prod.yml`) que Dokploy lit, **pas** l'image Docker réellement tirée — ça, c'est uniquement les
+variables d'environnement `BACKEND_TAG`/`FRONTEND_TAG` qui le décident, indépendamment de la branche source.
+Concrètement :
+- Service sur branche `main` → `BACKEND_TAG=latest` / `FRONTEND_TAG=latest` (le tag stable, mis à jour par une
+  release sur `main`).
+- Service sur branche `dev` → `BACKEND_TAG=dev` / `FRONTEND_TAG=dev` (le tag pre-release, mis à jour par
+  *chaque* push sur `dev` — pas besoin de merger vers `main` pour tester).
+
+Si un environnement de préprod pointe sur `dev` mais garde `BACKEND_TAG`/`FRONTEND_TAG` à leur valeur par défaut
+(`latest`), il restera bloqué sur le dernier `main` publié, même après un redeploy — voir "Dépannage" plus bas.
 
 ## 3. Variables d'environnement
 
@@ -72,8 +86,8 @@ STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_CLASSIC=
 STRIPE_PRICE_PRO=
 
-BACKEND_TAG=latest
-FRONTEND_TAG=latest
+BACKEND_TAG=latest    # dev si ce service suit la branche dev — voir l'avertissement de l'étape 2
+FRONTEND_TAG=latest   # idem
 ```
 
 **Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le navigateur ne
@@ -182,9 +196,15 @@ c'est juste un changement de tag suivi d'un `docker compose up`.
   a bien réussi (onglet Actions du repo GitHub), puis compare la date de build réellement servie —
   `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
   est visible dans le `<script>` de `curl -s https://sport.example.com/ | grep main-`) — à l'heure de la
-  dernière release. Si le build servi est manifestement plus vieux, `pull_policy: always` (voir "Mises à jour"
-  ci-dessus) devrait déjà empêcher ce cas ; sinon force un `docker compose -f docker-compose.prod.yml pull`
-  suivi d'un `up -d` directement sur le serveur.
+  dernière release. Deux causes possibles, à vérifier dans cet ordre :
+  1. **Mauvais tag suivi** : le service est sur la branche `dev` mais `BACKEND_TAG`/`FRONTEND_TAG` valent encore
+     `latest` (ou l'inverse) — voir l'avertissement de l'étape 2. C'est la cause la plus probable si le *bon*
+     commit apparaît dans l'onglet **Deployments** mais que le site ne change pas : le commit affiché reflète la
+     branche source, pas l'image réellement tirée. Corrige les tags pour qu'ils correspondent à la branche, puis
+     redeploy.
+  2. **Image locale pas re-tirée** : si les tags correspondent déjà bien à la branche, `pull_policy: always`
+     (voir "Mises à jour" ci-dessus) devrait empêcher ce cas ; sinon force un
+     `docker compose -f docker-compose.prod.yml pull` suivi d'un `up -d` directement sur le serveur.
 - **Le backend ne démarre pas / boucle** : vérifie les logs — le plus souvent `DATABASE_URL`/`DATABASE_PASSWORD`
   incorrects, ou `postgres` pas encore healthy (le `depends_on: condition: service_healthy` du compose devrait
   déjà gérer ça).
