@@ -5,12 +5,14 @@ import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentDetail } from '../../../core/models/tournament.model';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { Standing, computeStandings } from '../../../shared/utils/standings';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 
 const TOURNAMENT_COLORS = ['bg-green-600', 'bg-blue-600', 'bg-purple-600'];
 
 @Component({
   selector: 'app-dashboard-standings-page',
   standalone: true,
+  imports: [StatusBadge],
   templateUrl: './standings.html',
 })
 export class DashboardStandingsPage implements OnInit {

@@ -11,6 +11,7 @@ import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
+import { LucideStar } from '@lucide/angular';
 
 interface PhaseGroup {
   label: string;
@@ -22,7 +23,7 @@ const GROUP_PHASE_PREFIX = 'Groupe ';
 @Component({
   selector: 'app-public-tournament-page',
   standalone: true,
-  imports: [RouterLink, GroupStandings],
+  imports: [RouterLink, GroupStandings, LucideStar],
   templateUrl: './public-tournament.html',
 })
 export class PublicTournamentPage implements OnInit, OnDestroy {

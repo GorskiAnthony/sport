@@ -1,0 +1,9 @@
+<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full" [class]="classes()">
+  @if (isLive()) {
+    <span class="relative flex w-1.5 h-1.5" aria-hidden="true">
+      <span class="absolute inset-0 rounded-full bg-green-400" style="animation: radar-ring 1.6s ease-out infinite"></span>
+      <span class="relative w-1.5 h-1.5 rounded-full bg-green-400"></span>
+    </span>
+  }
+  {{ label() }}
+</span>

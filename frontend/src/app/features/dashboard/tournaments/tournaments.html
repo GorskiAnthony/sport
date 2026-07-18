@@ -41,21 +41,21 @@
   <div class="space-y-3">
     @if (loading()) {
       @for (i of skeletons; track i) {
-        <div class="bg-[#161B22] border border-white/5 rounded-xl h-20 animate-pulse"></div>
+        <div class="bg-[#161B22] border border-white/10 rounded-xl h-20 animate-pulse"></div>
       }
     } @else if (tournaments().length === 0) {
-      <p class="text-slate-500 text-sm text-center py-12">
+      <p class="text-slate-400 text-sm text-center py-12">
         Aucun tournoi. <a routerLink="/dashboard/tournaments/new" class="text-green-400">Créer le premier →</a>
       </p>
     } @else {
       @for (t of tournaments(); track t.id) {
-        <div (click)="goToDetail(t)" class="cursor-pointer bg-[#161B22] border border-white/5 hover:border-green-500/30 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors">
-          <span class="text-2xl flex-shrink-0" aria-hidden="true">{{ icon(t.sport) }}</span>
+        <div (click)="goToDetail(t)" class="cursor-pointer bg-[#161B22] border border-white/10 hover:border-green-500/30 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors">
+          <app-sport-icon [sport]="t.sport" size="sm" />
           <div class="flex-1 min-w-0">
             <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
-            <p class="text-slate-500 text-xs">{{ dates(t) }} · {{ t.location }} · {{ t.teamsCount }}/{{ t.maxTeams }} équipes</p>
+            <p class="text-slate-400 text-xs">{{ dates(t) }} · {{ t.location }} · {{ t.teamsCount }}/{{ t.maxTeams }} équipes</p>
           </div>
-          <span class="text-xs font-medium px-2 py-0.5 rounded-full border" [class]="statusStyles[t.status]">{{ statusLabel(t.status) }}</span>
+          <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
 
           <div class="flex items-center gap-1 flex-shrink-0">
             <a [routerLink]="['/dashboard/tournaments', t.id, 'edit']" (click)="$event.stopPropagation()" aria-label="Modifier" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">

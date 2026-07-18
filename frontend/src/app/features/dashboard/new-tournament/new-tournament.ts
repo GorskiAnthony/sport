@@ -15,6 +15,7 @@ import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { todayIsoDate } from '../../../shared/utils/today';
 import { SPORTS as SPORT_LIST } from '../../../shared/utils/sports';
+import { LucideLock } from '@lucide/angular';
 
 interface FormErrors {
   name?: string;
@@ -54,7 +55,7 @@ const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
 @Component({
   selector: 'app-dashboard-new-tournament-page',
   standalone: true,
-  imports: [RouterLink, Button, FormInput, FormSelect, FormatPicker, ConfirmModal],
+  imports: [RouterLink, Button, FormInput, FormSelect, FormatPicker, ConfirmModal, LucideLock],
   templateUrl: './new-tournament.html',
 })
 export class DashboardNewTournamentPage implements OnInit {

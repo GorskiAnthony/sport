@@ -4,10 +4,12 @@ import { catchError } from 'rxjs/operators';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentDetail } from '../../../core/models/tournament.model';
 import { Standing, computeStandings } from '../../../shared/utils/standings';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 
 @Component({
   selector: 'app-spectator-standings-page',
   standalone: true,
+  imports: [StatusBadge],
   templateUrl: './standings.html',
 })
 export class SpectatorStandingsPage implements OnInit {

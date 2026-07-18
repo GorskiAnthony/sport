@@ -8,12 +8,12 @@
     [class.translate-x-0]="sidebarOpen()"
     [class.-translate-x-full]="!sidebarOpen()"
   >
-    <aside class="w-56 lg:w-44 h-full bg-[#0D1117] border-r border-white/5 flex flex-col" aria-label="Navigation spectateur">
-      <div class="px-4 py-4 border-b border-white/5 flex items-center justify-between">
+    <aside class="w-56 lg:w-44 h-full bg-[#0D1117] border-r border-white/10 flex flex-col" aria-label="Navigation spectateur">
+      <div class="px-4 py-4 border-b border-white/10 flex items-center justify-between">
         <a routerLink="/" aria-label="Tournoi Center — retour au site public">
           <img src="/logo_white.png" alt="Tournoi Center" class="h-8 w-auto" />
         </a>
-        <button (click)="closeSidebar()" class="lg:hidden w-7 h-7 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Fermer la navigation">
+        <button (click)="closeSidebar()" class="lg:hidden w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Fermer la navigation">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -21,13 +21,13 @@
       </div>
 
       @if (user(); as currentUser) {
-        <div class="mx-3 mt-4 mb-1 px-3 py-2.5 bg-white/[0.04] border border-white/5 rounded-xl flex items-center gap-2.5">
+        <div class="mx-3 mt-4 mb-1 px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xs font-bold flex-shrink-0" aria-hidden="true">
             {{ initials() }}
           </div>
           <div class="min-w-0">
             <p class="text-white text-xs font-semibold truncate">{{ currentUser.name }}</p>
-            <p class="text-slate-500 text-[10px]">Spectateur</p>
+            <p class="text-slate-400 text-[10px]">Spectateur</p>
           </div>
         </div>
       }
@@ -95,7 +95,7 @@
           </a>
         }
 
-        <div class="pt-2 mt-2 border-t border-white/5 space-y-0.5">
+        <div class="pt-2 mt-2 border-t border-white/10 space-y-0.5">
           @for (item of navBottom; track item.path) {
             <a
               [routerLink]="item.path"
@@ -114,7 +114,7 @@
         </div>
       </nav>
 
-      <div class="px-3 pb-4 pt-2 border-t border-white/5">
+      <div class="px-3 pb-4 pt-2 border-t border-white/10">
         <button (click)="logout()" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full" aria-label="Se déconnecter">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -127,20 +127,20 @@
   </div>
 
   <div class="flex-1 flex flex-col overflow-hidden min-w-0">
-    <header class="h-12 flex-shrink-0 bg-[#0D1117] border-b border-white/5 flex items-center justify-between px-3 lg:px-6">
+    <header class="h-12 flex-shrink-0 bg-[#0D1117] border-b border-white/10 flex items-center justify-between px-3 lg:px-6">
       <div class="flex items-center gap-2">
         <button (click)="openSidebar()" class="lg:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Ouvrir le menu de navigation">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <p class="text-slate-500 text-xs">
+        <p class="text-slate-400 text-xs">
           Bienvenue, <span class="text-white font-medium">{{ user()?.name ?? 'Spectateur' }}</span>
         </p>
       </div>
 
       <div class="flex items-center gap-3">
-        <a routerLink="/home/notifications" aria-label="Notifications" class="relative w-8 h-8 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+        <a routerLink="/home/notifications" aria-label="Notifications" class="relative w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />

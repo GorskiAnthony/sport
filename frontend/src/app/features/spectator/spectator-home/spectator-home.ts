@@ -5,11 +5,13 @@ import { NotificationService } from '../../../core/services/notification.service
 import { RecentTournament, TournamentSummary } from '../../../core/models/tournament.model';
 import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { SPORTS } from '../../../shared/utils/sports';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { LucideBell } from '@lucide/angular';
 
 @Component({
   selector: 'app-spectator-home-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, StatusBadge, LucideBell],
   templateUrl: './spectator-home.html',
 })
 export class SpectatorHomePage implements OnInit {

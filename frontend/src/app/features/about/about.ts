@@ -1,26 +1,29 @@
 import { Component } from '@angular/core';
+import { LucideTarget, LucideZap, LucideShieldCheck } from '@lucide/angular';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+
+type ValueIcon = 'target' | 'zap' | 'shield';
 
 @Component({
   selector: 'app-about-page',
   standalone: true,
-  imports: [PageHeader],
+  imports: [PageHeader, LucideTarget, LucideZap, LucideShieldCheck],
   templateUrl: './about.html',
 })
 export class AboutPage {
-  readonly values = [
+  readonly values: { icon: ValueIcon; title: string; desc: string }[] = [
     {
-      icon: '🎯',
+      icon: 'target',
       title: 'Simplicité',
       desc: 'Une interface intuitive pour que chaque organisateur puisse se lancer en quelques minutes.',
     },
     {
-      icon: '⚡',
+      icon: 'zap',
       title: 'Performance',
       desc: 'Conçu pour supporter des milliers de connexions simultanées lors de grands événements.',
     },
     {
-      icon: '🔒',
+      icon: 'shield',
       title: 'Sécurité',
       desc: 'Données chiffrées, authentification sécurisée et infrastructure haute disponibilité.',
     },

@@ -3,12 +3,12 @@
     badge="Pour les organisateurs"
     title="Tout ce dont vous"
     highlight="avez besoin."
-    subtitle="Organiser un tournoi n'a jamais été aussi simple. Commencez en 4 étapes."
+    subtitle="Feuilles Excel, tableaux à la main, coups de fil pour les résultats : c'est fini. 4 étapes, et votre tournoi tourne tout seul."
   />
 
   <ol class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
     @for (step of steps; track step.n) {
-      <li class="bg-[#161B22] border border-white/5 rounded-xl p-6 relative">
+      <li class="bg-[#161B22] border border-white/10 rounded-xl p-6 relative">
         <span class="text-green-400 text-5xl font-extrabold opacity-20 absolute top-4 right-4" aria-hidden="true">
           {{ step.n }}
         </span>
@@ -23,6 +23,6 @@
 
   <div class="text-center">
     <app-button text="Devenir organisateur" variant="primary" routerLink="/register" className="px-8 py-3 text-base" />
-    <p class="text-slate-500 text-sm mt-3">Gratuit, sans carte bancaire.</p>
+    <p class="text-slate-400 text-sm mt-3">Gratuit, sans carte bancaire.</p>
   </div>
 </div>

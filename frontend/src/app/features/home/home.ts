@@ -1,33 +1,36 @@
 import { Component } from '@angular/core';
+import { LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2 } from '@lucide/angular';
 import { Button } from '../../shared/ui/button/button';
+
+type FeatureIcon = 'trophy' | 'shuffle' | 'chart' | 'link';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [Button],
+  imports: [Button, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2],
   templateUrl: './home.html',
 })
 export class HomePage {
-  readonly features = [
+  readonly features: { title: string; description: string; icon: FeatureIcon }[] = [
     {
-      title: 'Créez votre tournoi',
-      description: "Configurez équipes, phases et calendrier en quelques minutes.",
-      icon: '🏆',
+      title: 'Prêt en 5 minutes',
+      description: 'Choisissez votre sport, ajoutez vos équipes : votre tournoi est en ligne avant la fin de votre café.',
+      icon: 'trophy',
     },
     {
-      title: 'Générez le tableau automatiquement',
-      description: 'Poule (round robin) ou élimination directe : les matchs sont générés pour vous, tour après tour.',
-      icon: '🔀',
+      title: 'Zéro calcul, zéro erreur',
+      description: 'Poules ou élimination directe : le tableau se construit tout seul et enchaîne les tours à votre place.',
+      icon: 'shuffle',
     },
     {
-      title: 'Suivez en direct',
-      description: 'Scores, classements et statistiques mis à jour en temps réel.',
-      icon: '📊',
+      title: 'Le direct, sans rafraîchir',
+      description: 'Scores, classements et stats se mettent à jour en temps réel, sous les yeux de vos spectateurs.',
+      icon: 'chart',
     },
     {
-      title: 'Partagez facilement',
-      description: 'Un lien public et un QR code pour vos spectateurs.',
-      icon: '🔗',
+      title: 'Un lien, et tout le monde suit',
+      description: 'Un lien public et un QR code : vos spectateurs suivent le tournoi sans compte ni téléchargement.',
+      icon: 'link',
     },
   ];
 }

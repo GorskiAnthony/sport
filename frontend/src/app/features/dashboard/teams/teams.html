@@ -19,7 +19,7 @@
   </div>
 
   @if (tournaments().length === 0) {
-    <p class="text-slate-500 text-sm text-center py-12">
+    <p class="text-slate-400 text-sm text-center py-12">
       Créez d'abord un tournoi pour pouvoir y ajouter des équipes.
     </p>
   } @else {
@@ -38,7 +38,7 @@
     </div>
 
     @if (panelOpen()) {
-      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 mb-6">
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5 mb-6">
         <h2 class="text-white font-semibold mb-4">{{ editId() !== null ? "Modifier l'équipe" : 'Nouvelle équipe' }}</h2>
         <form (submit)="$event.preventDefault(); save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex items-center gap-3">
@@ -80,20 +80,20 @@
       </div>
     }
 
-    <div class="bg-[#161B22] border border-white/5 rounded-xl overflow-hidden">
+    <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm" aria-label="Liste des équipes">
           <thead>
-            <tr class="border-b border-white/5">
+            <tr class="border-b border-white/10">
               @for (h of ['Équipe', 'Catégorie', 'Contact', 'Actions']; track h) {
-                <th scope="col" class="text-left px-5 py-3 text-slate-500 text-xs font-semibold uppercase tracking-wider">{{ h }}</th>
+                <th scope="col" class="text-left px-5 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">{{ h }}</th>
               }
             </tr>
           </thead>
           <tbody>
             @if (loading()) {
               @for (i of skeletons; track i) {
-                <tr class="border-b border-white/5 animate-pulse">
+                <tr class="border-b border-white/10 animate-pulse">
                   @for (j of skeletons; track j) {
                     <td class="px-5 py-4"><div class="h-4 bg-white/5 rounded"></div></td>
                   }
@@ -101,7 +101,7 @@
               }
             } @else {
               @for (t of teams(); track t.id) {
-                <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                <tr class="border-b border-white/10 last:border-0 hover:bg-white/[0.02]">
                   <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
                       @if (t.logo) {

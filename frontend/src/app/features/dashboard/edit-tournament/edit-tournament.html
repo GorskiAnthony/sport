@@ -4,15 +4,15 @@
     <div class="bg-[#161B22] h-64 rounded-xl"></div>
   </div>
 } @else if (notFound()) {
-  <p class="text-slate-500">Tournoi introuvable. <a routerLink="/dashboard/tournaments" class="text-green-400">← Retour aux tournois</a></p>
+  <p class="text-slate-400">Tournoi introuvable. <a routerLink="/dashboard/tournaments" class="text-green-400">← Retour aux tournois</a></p>
 } @else {
   <div class="max-w-2xl">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-white text-2xl font-extrabold">Modifier le tournoi</h1>
-      <a routerLink="/dashboard/tournaments" class="text-slate-500 hover:text-white text-sm transition-colors">Annuler</a>
+      <a routerLink="/dashboard/tournaments" class="text-slate-400 hover:text-white text-sm transition-colors">Annuler</a>
     </div>
 
-    <form (submit)="$event.preventDefault(); submit()" class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
+    <form (submit)="$event.preventDefault(); submit()" class="bg-[#161B22] border border-white/10 rounded-xl p-5 space-y-4">
       <app-form-input id="et-name" label="Nom du tournoi" [(value)]="name" [required]="true" [error]="errors().name" />
       <div class="grid grid-cols-2 gap-4">
         <app-form-select id="et-sport" label="Sport" [options]="sports" [(value)]="sport" [required]="true" [error]="errors().sport" />

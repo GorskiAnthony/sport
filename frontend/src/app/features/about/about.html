@@ -9,8 +9,14 @@
   <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-labelledby="values-title">
     <h2 id="values-title" class="sr-only">Nos valeurs</h2>
     @for (value of values; track value.title) {
-      <div class="bg-[#161B22] border border-white/5 rounded-xl p-6">
-        <span class="text-3xl mb-4 block" aria-hidden="true">{{ value.icon }}</span>
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-6 shadow-lg shadow-black/20">
+        <div class="w-11 h-11 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-4" aria-hidden="true">
+          @switch (value.icon) {
+            @case ('target') { <svg lucideTarget class="w-5 h-5"></svg> }
+            @case ('zap') { <svg lucideZap class="w-5 h-5"></svg> }
+            @case ('shield') { <svg lucideShieldCheck class="w-5 h-5"></svg> }
+          }
+        </div>
         <h3 class="text-white font-semibold mb-2">{{ value.title }}</h3>
         <p class="text-slate-400 text-sm">{{ value.desc }}</p>
       </div>
@@ -18,7 +24,7 @@
   </section>
 
   <section class="text-center mb-16" aria-labelledby="team-title">
-    <h2 id="team-title" class="text-white text-2xl font-bold mb-8">L'équipe</h2>
+    <h2 id="team-title" class="text-white text-2xl font-bold mb-8">Derrière le projet</h2>
     <div class="flex flex-wrap justify-center gap-6">
       @for (member of team; track member.name) {
         <div class="text-center">
@@ -26,7 +32,7 @@
             {{ member.initials }}
           </div>
           <p class="text-white font-semibold">{{ member.name }}</p>
-          <p class="text-slate-500 text-sm">{{ member.role }}</p>
+          <p class="text-slate-400 text-sm">{{ member.role }}</p>
         </div>
       }
     </div>

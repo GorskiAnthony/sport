@@ -5,11 +5,12 @@ import { MatchService } from '../../../core/services/match.service';
 import { Match } from '../../../core/models/match.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { MATCH_STATUS_LABELS } from '../../../shared/utils/labels';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 
 @Component({
   selector: 'app-dashboard-match-detail-page',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, StatusBadge],
   templateUrl: './match-detail.html',
 })
 export class DashboardMatchDetailPage implements OnInit {

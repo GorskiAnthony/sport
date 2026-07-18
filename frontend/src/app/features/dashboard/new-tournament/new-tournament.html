@@ -1,8 +1,10 @@
 @if (planBlocked()) {
   <div class="max-w-lg mx-auto text-center py-16">
-    <p class="text-4xl mb-4" aria-hidden="true">🔒</p>
+    <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto mb-4" aria-hidden="true">
+      <svg lucideLock class="w-6 h-6"></svg>
+    </div>
     <h1 class="text-white text-xl font-bold mb-2">Limite atteinte</h1>
-    <p class="text-slate-400 text-sm mb-6">Votre plan Gratuit est limité à 1 tournoi. Passez au plan Classic pour en créer plus.</p>
+    <p class="text-slate-400 text-sm mb-6">Le plan Gratuit s'arrête à 1 tournoi actif. Passez en Classic pour en créer autant que vous voulez.</p>
     <a routerLink="/pricing" class="inline-flex items-center px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors">
       Voir les plans →
     </a>
@@ -21,7 +23,7 @@
   <div class="max-w-2xl">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-white text-2xl font-extrabold">Nouveau tournoi</h1>
-      <button type="button" (click)="cancelOpen.set(true)" class="text-slate-500 hover:text-white text-sm transition-colors">Annuler</button>
+      <button type="button" (click)="cancelOpen.set(true)" class="text-slate-400 hover:text-white text-sm transition-colors">Annuler</button>
     </div>
 
     <div class="flex items-center gap-3 mb-7">
@@ -33,19 +35,19 @@
             1
           }
         </div>
-        <span class="text-sm font-medium hidden sm:block" [class]="step() >= 1 ? 'text-white' : 'text-slate-500'">Tournoi</span>
+        <span class="text-sm font-medium hidden sm:block" [class]="step() >= 1 ? 'text-white' : 'text-slate-400'">Tournoi</span>
       </div>
       <div class="flex items-center gap-2 flex-1">
         <div class="flex-1 h-px" [class]="step() > 1 ? 'bg-green-500/50' : 'bg-white/10'" aria-hidden="true"></div>
-        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border flex-shrink-0" [class]="step() === 2 ? 'bg-green-500 border-green-500 text-black' : 'bg-white/5 border-white/10 text-slate-500'">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border flex-shrink-0" [class]="step() === 2 ? 'bg-green-500 border-green-500 text-black' : 'bg-white/5 border-white/10 text-slate-400'">
           2
         </div>
-        <span class="text-sm font-medium hidden sm:block" [class]="step() >= 2 ? 'text-white' : 'text-slate-500'">Équipes</span>
+        <span class="text-sm font-medium hidden sm:block" [class]="step() >= 2 ? 'text-white' : 'text-slate-400'">Équipes</span>
       </div>
     </div>
 
     @if (step() === 1) {
-      <form (submit)="$event.preventDefault(); submitStepOne()" class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
+      <form (submit)="$event.preventDefault(); submitStepOne()" class="bg-[#161B22] border border-white/10 rounded-xl p-5 space-y-4">
         <app-form-input id="nt-name" label="Nom du tournoi" placeholder="Challenge U15 Lyon 2024" [(value)]="name" [required]="true" [error]="errors().name" />
         <div class="grid grid-cols-2 gap-4">
           <app-form-select id="nt-sport" label="Sport" [options]="sports" [(value)]="sport" [required]="true" [error]="errors().sport" />
@@ -71,7 +73,7 @@
     }
 
     @if (step() === 2) {
-      <div class="bg-[#161B22] border border-white/5 rounded-xl p-5 space-y-4">
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5 space-y-4">
         <p class="text-slate-400 text-sm">Ajoutez au moins 2 équipes pour générer automatiquement le tableau des matchs (vous pourrez en ajouter d'autres plus tard).</p>
         @if (format() === 'GROUP_KNOCKOUT') {
           <app-form-input id="nt-group-count" label="Nombre de poules" type="number" placeholder="4" [(value)]="groupCount" />
@@ -93,7 +95,7 @@
                 <option [value]="c">{{ c }}</option>
               }
             </select>
-            <button type="button" (click)="removeTeamRow($index)" class="text-slate-500 hover:text-red-400 text-sm transition-colors">Supprimer</button>
+            <button type="button" (click)="removeTeamRow($index)" class="text-slate-400 hover:text-red-400 text-sm transition-colors">Supprimer</button>
           </div>
         }
         <button type="button" (click)="addTeamRow()" class="text-green-400 hover:text-green-300 text-sm transition-colors">+ Ajouter une équipe</button>

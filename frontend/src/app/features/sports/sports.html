@@ -3,10 +3,12 @@
   <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5" role="list">
     @for (sport of sports; track sport.id) {
       <li>
-        <button type="button" class="w-full bg-[#161B22] border border-white/5 rounded-xl p-6 text-center hover:border-green-500/30 transition-colors group">
-          <span class="text-4xl mb-3 block" aria-hidden="true">{{ sport.icon }}</span>
+        <button type="button" class="w-full bg-[#161B22] border border-white/10 rounded-xl p-6 text-center shadow-lg shadow-black/20 hover:border-green-500/40 hover:-translate-y-0.5 transition-all group">
+          <div class="flex justify-center mb-3">
+            <app-sport-icon [sport]="sport.id" size="lg" />
+          </div>
           <p class="text-white font-semibold group-hover:text-green-400 transition-colors">{{ sport.label }}</p>
-          <p class="text-slate-500 text-xs mt-1">{{ sport.count }} tournois</p>
+          <p class="text-slate-400 text-xs mt-1">{{ sport.count }} tournois</p>
         </button>
       </li>
     }

@@ -3,7 +3,7 @@
     <h1 class="text-white text-2xl font-extrabold mb-2 text-center">Créer un tournoi</h1>
     <p class="text-slate-400 text-sm text-center mb-8">Configurez votre tournoi en quelques secondes.</p>
 
-    <div class="bg-[#161B22] border border-white/5 rounded-2xl p-6">
+    <div class="bg-[#161B22] border border-white/10 rounded-2xl p-6">
       <form (submit)="$event.preventDefault(); submit()" aria-label="Formulaire de création de tournoi" class="space-y-4">
         <app-form-input id="t-name" label="Nom du tournoi" placeholder="Challenge U15 Lyon 2024" [(value)]="name" [required]="true" [error]="errors().name" />
         <div class="grid grid-cols-2 gap-4">

@@ -1,19 +1,20 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LucidePlay, LucideFlag, LucideBell } from '@lucide/angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Notification, NotificationType } from '../../../core/models/notification.model';
 
 const TYPE_ICONS: Record<NotificationType, string> = {
-  MATCH_STARTED: '▶️',
-  MATCH_FINISHED: '🏁',
-  GOAL_SCORED: '⚽',
+  MATCH_STARTED: 'play',
+  MATCH_FINISHED: 'flag',
+  GOAL_SCORED: 'goal',
 };
 
 @Component({
   selector: 'app-spectator-notifications-page',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, LucidePlay, LucideFlag, LucideBell],
   templateUrl: './notifications.html',
 })
 export class SpectatorNotificationsPage implements OnInit {
@@ -33,7 +34,7 @@ export class SpectatorNotificationsPage implements OnInit {
   }
 
   icon(type: NotificationType): string {
-    return TYPE_ICONS[type] ?? '🔔';
+    return TYPE_ICONS[type] ?? 'bell';
   }
 
   markRead(notification: Notification): void {

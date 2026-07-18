@@ -13,6 +13,6 @@ export class OrganizersPage {
     { n: 1, title: 'Créez votre compte', desc: "Inscrivez-vous gratuitement en moins de 2 minutes." },
     { n: 2, title: 'Créez votre tournoi', desc: 'Renseignez les infos : sport, catégorie, dates, lieu, format.' },
     { n: 3, title: 'Ajoutez vos équipes', desc: 'Importez ou ajoutez manuellement les équipes participantes.' },
-    { n: 4, title: 'Gérez en direct', desc: 'Saisissez les scores et suivez les classements en temps réel.' },
+    { n: 4, title: 'Gérez en direct', desc: 'Saisissez les scores, le classement se met à jour tout seul.' },
   ];
 }

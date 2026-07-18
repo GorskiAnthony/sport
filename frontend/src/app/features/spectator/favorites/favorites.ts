@@ -4,11 +4,12 @@ import { DatePipe } from '@angular/common';
 import { TeamService } from '../../../core/services/team.service';
 import { FollowedTeam } from '../../../core/models/team.model';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { LucideStar } from '@lucide/angular';
 
 @Component({
   selector: 'app-spectator-favorites-page',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, LucideStar],
   templateUrl: './favorites.html',
 })
 export class SpectatorFavoritesPage implements OnInit {

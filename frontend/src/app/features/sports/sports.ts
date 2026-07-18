@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
 
 const SHOWCASE_COUNTS: Record<string, number> = {
@@ -16,7 +17,7 @@ const SHOWCASE_COUNTS: Record<string, number> = {
 @Component({
   selector: 'app-sports-page',
   standalone: true,
-  imports: [PageHeader],
+  imports: [PageHeader, SportIcon],
   templateUrl: './sports.html',
 })
 export class SportsPage {

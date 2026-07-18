@@ -10,7 +10,7 @@
     @for (plan of plans; track plan.id) {
       <div
         class="relative bg-[#161B22] rounded-2xl p-6 flex flex-col border transition-colors"
-        [class]="plan.highlighted ? 'border-green-500/50 shadow-[0_0_40px_-8px_rgba(34,197,94,0.2)]' : 'border-white/5'"
+        [class]="plan.highlighted ? 'border-green-500/50 shadow-[0_0_40px_-8px_rgba(34,197,94,0.2)]' : 'border-white/10'"
       >
         @if (plan.badge) {
           <span
@@ -24,7 +24,7 @@
           <h2 class="text-white font-bold text-xl mb-1">{{ plan.name }}</h2>
           <div class="flex items-baseline gap-1 mb-2">
             <span class="text-white text-4xl font-extrabold">{{ plan.price }}</span>
-            <span class="text-slate-500 text-sm">{{ plan.period }}</span>
+            <span class="text-slate-400 text-sm">{{ plan.period }}</span>
           </div>
           <p class="text-slate-400 text-sm">{{ plan.description }}</p>
         </div>
@@ -55,7 +55,7 @@
     <h2 id="faq-title" class="text-white text-2xl font-bold text-center mb-8">Questions fréquentes</h2>
     <dl class="space-y-4">
       @for (item of faq; track item.q) {
-        <div class="bg-[#161B22] border border-white/5 rounded-xl p-5">
+        <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
           <dt class="text-white font-semibold mb-2">{{ item.q }}</dt>
           <dd class="text-slate-400 text-sm">{{ item.a }}</dd>
         </div>

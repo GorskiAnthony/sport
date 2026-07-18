@@ -1,7 +1,8 @@
 <div class="space-y-10">
   @if (unreadCount() > 0) {
-    <a routerLink="/home/notifications" class="block bg-green-500/10 border border-green-500/20 rounded-xl px-5 py-3 text-sm text-green-400 hover:border-green-500/40 transition-colors">
-      🔔 {{ unreadCount() }} notification{{ unreadCount() > 1 ? 's' : '' }} non lue{{ unreadCount() > 1 ? 's' : '' }}
+    <a routerLink="/home/notifications" class="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-5 py-3 text-sm text-green-400 hover:border-green-500/40 transition-colors">
+      <svg lucideBell class="w-4 h-4 flex-shrink-0"></svg>
+      {{ unreadCount() }} notification{{ unreadCount() > 1 ? 's' : '' }} non lue{{ unreadCount() > 1 ? 's' : '' }}
     </a>
   }
 
@@ -11,10 +12,10 @@
       <ul class="grid grid-cols-1 md:grid-cols-3 gap-5" role="list">
         @for (r of recentlyViewed(); track r.tournament.id) {
           <li>
-            <a [routerLink]="['/t', r.tournament.id]" class="block bg-[#161B22] border border-white/5 rounded-xl p-5 hover:border-green-500/30 transition-colors">
+            <a [routerLink]="['/t', r.tournament.id]" class="block bg-[#161B22] border border-white/10 rounded-xl p-5 hover:border-green-500/30 transition-colors">
               <p class="text-white font-semibold">{{ r.tournament.name }}</p>
               <p class="text-slate-400 text-xs mt-1">{{ icon(r.tournament.sport) }} {{ r.tournament.sport }} · {{ r.tournament.category }}</p>
-              <span class="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ statusLabel(r.tournament.status) }}</span>
+              <app-status-badge class="inline-block mt-2" [status]="r.tournament.status" [label]="statusLabel(r.tournament.status)" />
             </a>
           </li>
         }
@@ -29,21 +30,21 @@
     @if (loading()) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @for (i of [1, 2]; track i) {
-          <div class="bg-[#161B22] border border-white/5 rounded-xl h-32 animate-pulse"></div>
+          <div class="bg-[#161B22] border border-white/10 rounded-xl h-32 animate-pulse"></div>
         }
       </div>
     } @else if (live().length === 0) {
-      <p class="text-slate-500 text-sm">Aucun tournoi en direct pour le moment.</p>
+      <p class="text-slate-400 text-sm">Rien en direct pour l'instant — revenez au prochain coup d'envoi.</p>
     } @else {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @for (t of live(); track t.id) {
-          <a [routerLink]="['/t', t.id]" class="block bg-[#161B22] border border-white/5 rounded-xl p-4 hover:border-green-500/30 transition-colors">
+          <a [routerLink]="['/t', t.id]" class="block bg-[#161B22] border border-white/10 rounded-xl p-4 hover:border-green-500/30 transition-colors">
             <div class="flex items-center justify-between mb-3">
               <p class="text-white font-semibold text-sm">{{ t.name }}</p>
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-green-500/20 text-green-400">{{ statusLabel(t.status) }}</span>
+              <app-status-badge status="ONGOING" [label]="statusLabel(t.status)" />
             </div>
-            <p class="text-slate-500 text-xs text-center py-2">{{ t.teamsCount }} équipes inscrites</p>
-            <p class="text-slate-500 text-xs text-center mt-1">{{ t.category }} · {{ t.location }}</p>
+            <p class="text-slate-400 text-xs text-center py-2">{{ t.teamsCount }} équipes inscrites</p>
+            <p class="text-slate-400 text-xs text-center mt-1">{{ t.category }} · {{ t.location }}</p>
           </a>
         }
       </div>
@@ -55,7 +56,7 @@
     <ul class="flex flex-wrap gap-2" role="list">
       @for (sport of sports; track sport.id) {
         <li>
-          <a routerLink="/home/sports" class="flex items-center gap-1.5 px-4 py-2 bg-[#161B22] border border-white/5 rounded-full text-sm text-slate-300 hover:text-white hover:border-green-500/30 transition-colors">
+          <a routerLink="/home/sports" class="flex items-center gap-1.5 px-4 py-2 bg-[#161B22] border border-white/10 rounded-full text-sm text-slate-300 hover:text-white hover:border-green-500/30 transition-colors">
             <span aria-hidden="true">{{ sport.icon }}</span>{{ sport.label }}
           </a>
         </li>
@@ -66,18 +67,18 @@
   <section aria-labelledby="featured-title">
     <h2 id="featured-title" class="text-white text-xl font-bold mb-4">Tournois à suivre</h2>
     @if (!loading() && featured().length === 0) {
-      <p class="text-slate-500 text-sm">Aucun tournoi pour le moment.</p>
+      <p class="text-slate-400 text-sm">Aucun tournoi pour le moment.</p>
     } @else {
       <ul class="grid grid-cols-1 md:grid-cols-3 gap-5" role="list">
         @for (t of featured(); track t.id) {
           <li>
-            <a [routerLink]="['/t', t.id]" class="block bg-[#161B22] border border-white/5 rounded-xl p-5 hover:border-green-500/30 transition-colors">
+            <a [routerLink]="['/t', t.id]" class="block bg-[#161B22] border border-white/10 rounded-xl p-5 hover:border-green-500/30 transition-colors">
               <div class="flex items-start justify-between mb-3">
                 <p class="text-white font-semibold">{{ t.name }}</p>
-                <span class="text-xs px-2 py-0.5 rounded-full" [class]="t.status === 'ONGOING' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'">{{ statusLabel(t.status) }}</span>
+                <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
               </div>
               <p class="text-slate-400 text-xs">{{ icon(t.sport) }} {{ t.sport }} · {{ t.category }}</p>
-              <p class="text-slate-500 text-xs mt-1">{{ t.startDate }} – {{ t.endDate }} · {{ t.teamsCount }} équipes</p>
+              <p class="text-slate-400 text-xs mt-1">{{ t.startDate }} – {{ t.endDate }} · {{ t.teamsCount }} équipes</p>
             </a>
           </li>
         }

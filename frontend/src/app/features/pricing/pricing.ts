@@ -25,7 +25,7 @@ const PLANS: Plan[] = [
     name: 'Gratuit',
     price: '0€',
     period: 'pour toujours',
-    description: 'Pour découvrir la plateforme et organiser vos premiers tournois.',
+    description: 'Pour se lancer sans risque et organiser vos premiers tournois.',
     cta: 'Commencer gratuitement',
     highlighted: false,
     features: [
@@ -41,7 +41,7 @@ const PLANS: Plan[] = [
     name: 'Classic',
     price: '19€',
     period: '/ mois',
-    description: 'Pour les organisateurs réguliers qui veulent plus de contrôle.',
+    description: 'Pour les organisateurs réguliers qui ne veulent plus de limites.',
     cta: "Démarrer l'essai gratuit",
     highlighted: true,
     badge: 'Populaire',
@@ -58,8 +58,8 @@ const PLANS: Plan[] = [
     name: 'Pro',
     price: '49€',
     period: '/ mois',
-    description: 'Pour les grands événements avec infrastructure haute disponibilité.',
-    cta: "Contacter l'équipe",
+    description: "Pour les grands événements qui ne peuvent pas se permettre un pépin.",
+    cta: 'Discuter de mon projet',
     highlighted: false,
     badge: 'Haute dispo',
     features: [

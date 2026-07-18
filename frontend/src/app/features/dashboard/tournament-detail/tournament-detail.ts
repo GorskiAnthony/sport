@@ -15,15 +15,18 @@ import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
 import { GroupStandings, StandingsGroup } from '../../../shared/ui/group-standings/group-standings';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
-import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { tournamentShareSlug } from '../../../shared/utils/slug';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { LucideTrophy } from '@lucide/angular';
+import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
 @Component({
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput, StatusBadge, LucideTrophy, SportIcon],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
@@ -118,10 +121,6 @@ export class DashboardTournamentDetailPage implements OnInit {
         this.loading.set(false);
       },
     });
-  }
-
-  icon(sport: string): string {
-    return SPORT_ICONS[sport] ?? '🏆';
   }
 
   statusLabel(status: string): string {

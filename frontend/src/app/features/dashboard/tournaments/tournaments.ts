@@ -5,13 +5,15 @@ import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
-import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { tournamentShareSlug } from '../../../shared/utils/slug';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
 
 @Component({
   selector: 'app-dashboard-tournaments-page',
   standalone: true,
-  imports: [RouterLink, ConfirmModal],
+  imports: [RouterLink, ConfirmModal, StatusBadge, SportIcon],
   templateUrl: './tournaments.html',
 })
 export class DashboardTournamentsPage implements OnInit {
@@ -26,12 +28,6 @@ export class DashboardTournamentsPage implements OnInit {
   readonly shareTarget = signal<TournamentSummary | null>(null);
   readonly qrDataUrl = signal<string | null>(null);
 
-  readonly statusStyles: Record<string, string> = {
-    ONGOING: 'bg-green-500/20 text-green-400 border-green-500/20',
-    UPCOMING: 'bg-amber-500/20 text-amber-400 border-amber-500/20',
-    FINISHED: 'bg-slate-500/20 text-slate-400 border-slate-500/20',
-  };
-
   ngOnInit(): void {
     this.load();
   }
@@ -45,10 +41,6 @@ export class DashboardTournamentsPage implements OnInit {
       },
       error: () => this.loading.set(false),
     });
-  }
-
-  icon(sport: string): string {
-    return SPORT_ICONS[sport] ?? '🏆';
   }
 
   statusLabel(status: string): string {
