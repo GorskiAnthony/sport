@@ -10,32 +10,22 @@
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <a routerLink="/dashboard/tournaments" class="text-slate-400 hover:text-white text-sm transition-colors">← Tournois</a>
       <div class="flex items-center gap-4">
-        <button type="button" (click)="openShare()" class="text-slate-400 hover:text-green-400 text-sm transition-colors">Partager (QR code)</button>
+        <button type="button" (click)="shareOpen.set(true)" class="text-slate-400 hover:text-green-400 text-sm transition-colors">Partager (QR code)</button>
         <a [routerLink]="['/dashboard/tournaments', tournament()!.id, 'edit']" class="text-slate-400 hover:text-white text-sm transition-colors">Modifier le tournoi</a>
       </div>
     </div>
 
-    @if (shareOpen()) {
-      <div class="fixed inset-0 z-[60] flex items-center justify-center px-4">
-        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" (click)="shareOpen.set(false)" aria-hidden="true"></div>
-        <div class="relative bg-[#161B22] border border-white/10 rounded-xl p-6 max-w-sm w-full">
-          <h2 class="text-white font-bold text-lg mb-2">Partager "{{ tournament()!.name }}"</h2>
-          <p class="text-slate-400 text-sm mb-4">Ce lien public permet à vos spectateurs de suivre le tournoi, suivre une équipe et être notifiés en direct.</p>
-          @if (qrDataUrl(); as qr) {
-            <div class="flex justify-center mb-4">
-              <img [src]="qr" width="180" height="180" alt="QR code du tournoi" class="rounded-lg bg-white p-2" />
-            </div>
-          }
-          <div class="flex items-center gap-2 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 mb-4">
-            <span class="text-slate-300 text-xs truncate flex-1">{{ shareUrl() }}</span>
-            <button type="button" (click)="copyShareLink()" class="text-green-400 hover:text-green-300 text-xs font-semibold flex-shrink-0">Copier</button>
-          </div>
-          <div class="flex justify-end">
-            <button type="button" (click)="shareOpen.set(false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Fermer</button>
-          </div>
-        </div>
-      </div>
-    }
+    <app-share-modal
+      [open]="shareOpen()"
+      [tournamentId]="tournament()!.id"
+      [name]="tournament()!.name"
+      [sport]="tournament()!.sport"
+      [location]="tournament()!.location"
+      [startDate]="tournament()!.startDate"
+      [endDate]="tournament()!.endDate"
+      [teamsCount]="tournament()!.teams.length"
+      (closed)="shareOpen.set(false)"
+    />
 
     <div class="bg-[#161B22] border border-white/10 rounded-xl px-5 py-4 flex items-center gap-4 flex-wrap">
       <app-sport-icon [sport]="tournament()!.sport" size="md" />

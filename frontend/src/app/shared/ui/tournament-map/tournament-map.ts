@@ -18,6 +18,7 @@ export class TournamentMap implements OnChanges, OnDestroy {
   private readonly injector = inject(Injector);
 
   readonly state = signal<MapState>('loading');
+  readonly precise = signal(true);
 
   private map: L.Map | null = null;
   private lastQuery: string | null = null;
@@ -42,17 +43,18 @@ export class TournamentMap implements OnChanges, OnDestroy {
         this.state.set('unavailable');
         return;
       }
+      this.precise.set(point.precise);
       this.state.set('ready');
-      afterNextRender(() => this.renderMap(point.lat, point.lon), { injector: this.injector });
+      afterNextRender(() => this.renderMap(point.lat, point.lon, point.precise), { injector: this.injector });
     });
   }
 
-  private renderMap(lat: number, lon: number): void {
+  private renderMap(lat: number, lon: number, precise: boolean): void {
     if (!this.mapEl) return;
 
     this.map = L.map(this.mapEl.nativeElement, {
       center: [lat, lon],
-      zoom: 13,
+      zoom: precise ? 15 : 12,
       scrollWheelZoom: false,
     });
 

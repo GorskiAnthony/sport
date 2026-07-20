@@ -1,0 +1,46 @@
+<div class="min-h-screen bg-white text-[#0D1117] flex items-center justify-center p-8 print:p-0 print:min-h-0">
+  @if (loading()) {
+    <p class="text-slate-500">Chargement…</p>
+  } @else if (!tournament()) {
+    <p class="text-slate-500">Tournoi introuvable.</p>
+  } @else {
+    <div class="w-full max-w-md text-center border-2 border-[#0D1117] rounded-3xl p-10 print:border-0 print:p-0 print:max-w-full">
+      <p class="text-green-600 text-xs font-bold uppercase tracking-[0.2em] mb-3">Tournoi Center</p>
+
+      <span class="text-5xl mb-3 block" aria-hidden="true">{{ icon(tournament()!.sport) }}</span>
+      <h1 class="text-3xl font-extrabold leading-tight">{{ tournament()!.name }}</h1>
+      <p class="text-slate-600 mt-1 mb-8">{{ tournament()!.category }} · {{ tournament()!.sport }}</p>
+
+      @if (qrDataUrl(); as qr) {
+        <img [src]="qr" width="240" height="240" alt="QR code du tournoi" class="mx-auto mb-8" />
+      }
+
+      <p class="text-lg font-bold mb-6">Scannez pour suivre le tournoi en direct</p>
+
+      <dl class="grid grid-cols-2 gap-4 text-left border-t-2 border-[#0D1117]/10 pt-6">
+        @if (tournament()!.location) {
+          <div class="col-span-2">
+            <dt class="text-slate-500 text-xs uppercase tracking-wide font-semibold">Lieu</dt>
+            <dd class="font-semibold">{{ tournament()!.location }}</dd>
+          </div>
+        }
+        <div>
+          <dt class="text-slate-500 text-xs uppercase tracking-wide font-semibold">Dates</dt>
+          <dd class="font-semibold">{{ dateRange(tournament()!) }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500 text-xs uppercase tracking-wide font-semibold">Équipes</dt>
+          <dd class="font-semibold">{{ tournament()!.teams.length }}</dd>
+        </div>
+      </dl>
+
+      <button
+        type="button"
+        (click)="print()"
+        class="print:hidden mt-8 px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors"
+      >
+        Imprimer
+      </button>
+    </div>
+  }
+</div>

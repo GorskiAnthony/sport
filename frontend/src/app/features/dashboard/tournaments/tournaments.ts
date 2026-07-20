@@ -1,19 +1,18 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
-import { tournamentShareSlug } from '../../../shared/utils/slug';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
+import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
 
 @Component({
   selector: 'app-dashboard-tournaments-page',
   standalone: true,
-  imports: [RouterLink, ConfirmModal, StatusBadge, SportIcon],
+  imports: [RouterLink, ConfirmModal, StatusBadge, SportIcon, ShareModal],
   templateUrl: './tournaments.html',
 })
 export class DashboardTournamentsPage implements OnInit {
@@ -26,7 +25,6 @@ export class DashboardTournamentsPage implements OnInit {
   readonly skeletons = [1, 2, 3];
   readonly pending = signal<TournamentSummary | null>(null);
   readonly shareTarget = signal<TournamentSummary | null>(null);
-  readonly qrDataUrl = signal<string | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -49,22 +47,6 @@ export class DashboardTournamentsPage implements OnInit {
 
   dates(t: TournamentSummary): string {
     return `${t.startDate} – ${t.endDate}`;
-  }
-
-  shareUrl(t: TournamentSummary): string {
-    return `${window.location.origin}/t/${tournamentShareSlug(t.id, t.name)}`;
-  }
-
-  copyShareLink(t: TournamentSummary): void {
-    navigator.clipboard.writeText(this.shareUrl(t)).then(() => this.toast.success('Lien copié dans le presse-papiers.'));
-  }
-
-  openShare(t: TournamentSummary): void {
-    this.shareTarget.set(t);
-    this.qrDataUrl.set(null);
-    toDataURL(this.shareUrl(t), { margin: 1, width: 240 })
-      .then((dataUrl) => this.qrDataUrl.set(dataUrl))
-      .catch(() => this.qrDataUrl.set(null));
   }
 
   goToDetail(t: TournamentSummary): void {

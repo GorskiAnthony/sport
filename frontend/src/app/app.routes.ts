@@ -134,5 +134,9 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'print/tournaments/:id',
+    loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
+  },
   { path: '**', loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFoundPage) },
 ];

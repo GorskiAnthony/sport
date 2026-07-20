@@ -13,6 +13,7 @@ import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
+import { formatDateFr } from '../../shared/utils/date';
 import { LucideStar } from '@lucide/angular';
 
 interface PhaseGroup {
@@ -172,15 +173,10 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     if (!t) return [];
     return [
       { label: 'Lieu', value: t.location ?? '—' },
-      { label: 'Début', value: this.formatDate(t.startDate) },
-      { label: 'Fin', value: this.formatDate(t.endDate) },
+      { label: 'Début', value: formatDateFr(t.startDate) },
+      { label: 'Fin', value: formatDateFr(t.endDate) },
       { label: 'Équipes', value: String(t.teams.length) },
       { label: 'Statut', value: this.statusLabel(t.status) },
     ];
-  }
-
-  private formatDate(iso: string): string {
-    const [y, m, d] = iso.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }
