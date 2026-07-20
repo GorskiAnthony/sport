@@ -13,9 +13,13 @@ import java.util.List;
 public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByTournamentIdOrderByDateAsc(Long tournamentId);
 
+    long countByTournamentId(Long tournamentId);
+
     long countByTournamentOrganizerId(Long organizerId);
 
     long countByTournamentOrganizerIdAndStatus(Long organizerId, MatchStatus status);
+
+    long countByStatus(MatchStatus status);
 
     List<Match> findTop10ByTournamentOrganizerIdAndStatusAndDateBetweenOrderByDateAsc(
             Long organizerId, MatchStatus status, Instant from, Instant to);
