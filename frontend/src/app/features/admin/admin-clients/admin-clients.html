@@ -1,0 +1,42 @@
+<app-page-header badge="Espace administrateur" title="Clients" subtitle="Rechercher un client pour consulter son compte et l'aider en support." />
+
+<div class="mt-8 max-w-5xl">
+  <div class="relative mb-4">
+    <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input
+      type="search"
+      [value]="search()"
+      (input)="onSearchInput($event)"
+      placeholder="Rechercher par nom ou email…"
+      aria-label="Rechercher un client"
+      class="w-full bg-[#161B22] border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50"
+    />
+  </div>
+
+  <div class="space-y-3">
+    @if (loading()) {
+      @for (i of skeletons; track i) {
+        <div class="bg-[#161B22] border border-white/10 rounded-xl h-16 animate-pulse"></div>
+      }
+    } @else if (clients().length === 0) {
+      <p class="text-slate-400 text-sm text-center py-12">Aucun client trouvé.</p>
+    } @else {
+      @for (client of clients(); track client.id) {
+        <a
+          [routerLink]="['/admin/clients', client.id]"
+          class="block bg-[#161B22] border border-white/10 hover:border-green-500/30 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors"
+        >
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-semibold text-sm truncate">{{ client.name }}</p>
+            <p class="text-slate-400 text-xs truncate">{{ client.email }}</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300 text-xs flex-shrink-0">{{ client.role }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-xs flex-shrink-0">{{ client.plan }}</span>
+          <span class="text-slate-400 text-xs flex-shrink-0 hidden sm:inline">{{ client.tournamentsCount }} tournoi(s)</span>
+        </a>
+      }
+    }
+  </div>
+</div>

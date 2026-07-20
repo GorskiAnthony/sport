@@ -1,0 +1,44 @@
+<app-page-header badge="Espace administrateur" title="Tournois" subtitle="Rechercher un tournoi, tous organisateurs confondus, pour diagnostiquer un problème." />
+
+<div class="mt-8 max-w-5xl">
+  <div class="flex flex-col sm:flex-row gap-3 mb-4">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="search"
+        [value]="search()"
+        (input)="onSearchInput($event)"
+        placeholder="Rechercher par nom, lieu ou organisateur…"
+        aria-label="Rechercher un tournoi"
+        class="w-full bg-[#161B22] border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50"
+      />
+    </div>
+    <div class="sm:w-48">
+      <app-form-select id="admin-tournament-status" [options]="statusOptions" placeholder="Tous les statuts" [value]="status()" (valueChange)="onStatusChange($event)" />
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    @if (loading()) {
+      @for (i of skeletons; track i) {
+        <div class="bg-[#161B22] border border-white/10 rounded-xl h-20 animate-pulse"></div>
+      }
+    } @else if (tournaments().length === 0) {
+      <p class="text-slate-400 text-sm text-center py-12">Aucun tournoi trouvé.</p>
+    } @else {
+      @for (t of tournaments(); track t.id) {
+        <div class="bg-[#161B22] border border-white/10 rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
+            <p class="text-slate-400 text-xs truncate">{{ t.sport }} · {{ t.location }} · {{ t.startDate }} – {{ t.endDate }}</p>
+            <p class="text-slate-500 text-xs truncate">Organisateur : {{ t.organizerName }} ({{ t.organizerEmail }})</p>
+          </div>
+          <span class="text-slate-400 text-xs flex-shrink-0">{{ t.teamsCount }} équipe(s) · {{ t.matchesCount }} match(s)</span>
+          <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
+        </div>
+      }
+    }
+  </div>
+</div>

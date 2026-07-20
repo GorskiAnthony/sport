@@ -15,5 +15,9 @@ export const roleRedirectGuard: CanActivateFn = () => {
     return true;
   }
 
+  if (user.role === 'ADMIN') {
+    return router.createUrlTree(['/admin']);
+  }
+
   return router.createUrlTree([user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
 };

@@ -1,0 +1,58 @@
+<app-page-header badge="Espace administrateur" title="Fiche client" />
+
+<div class="mt-8 max-w-4xl">
+  @if (loading()) {
+    <div class="bg-[#161B22] h-40 rounded-xl animate-pulse"></div>
+  } @else if (error() || !client()) {
+    <p class="text-slate-400 text-sm">Client introuvable.</p>
+  } @else if (client(); as c) {
+    <div class="space-y-6">
+      <div class="bg-[#161B22] border border-white/10 rounded-2xl p-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 class="text-white text-xl font-bold">{{ c.name }}</h2>
+            <p class="text-slate-400 text-sm">{{ c.email }}</p>
+          </div>
+          <div class="flex gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300 text-xs">{{ c.role }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-xs">{{ c.plan }}</span>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+          <div>
+            <p class="text-slate-400 uppercase tracking-wider mb-1">Inscrit le</p>
+            <p class="text-white">{{ c.createdAt | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <div>
+            <p class="text-slate-400 uppercase tracking-wider mb-1">Abonnement</p>
+            <p class="text-white">{{ c.subscriptionStatus ?? '—' }}</p>
+          </div>
+          <div>
+            <p class="text-slate-400 uppercase tracking-wider mb-1">Tournois</p>
+            <p class="text-white">{{ c.tournaments.length }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden">
+        <div class="px-5 py-3 border-b border-white/10">
+          <h3 class="text-white text-sm font-semibold">Tournois</h3>
+        </div>
+        @if (c.tournaments.length === 0) {
+          <p class="px-5 py-8 text-slate-400 text-sm text-center">Ce client n'a créé aucun tournoi.</p>
+        } @else {
+          <ul class="divide-y divide-white/5">
+            @for (t of c.tournaments; track t.id) {
+              <li class="px-5 py-3 flex items-center justify-between gap-3">
+                <a [routerLink]="['/t', t.id]" target="_blank" class="text-white text-sm font-medium truncate hover:text-green-400">{{ t.name }}</a>
+                <span class="text-slate-400 text-xs flex-shrink-0">{{ t.location }} · {{ t.teamsCount }} équipe(s) · {{ t.matchesCount }} match(s)</span>
+                <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+</div>

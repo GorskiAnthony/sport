@@ -1,0 +1,17 @@
+@if (rows().length === 0) {
+  <p class="text-slate-400 text-sm">Aucune donnée disponible.</p>
+} @else {
+  <ul class="space-y-3">
+    @for (row of rows(); track row.label) {
+      <li>
+        <div class="flex items-center justify-between text-xs mb-1">
+          <span class="text-slate-300 truncate">{{ row.label }}</span>
+          <span class="text-white font-semibold flex-shrink-0 ml-2">{{ row.value }}</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full rounded-full" [style.width.%]="row.percent" [style.background]="row.color"></div>
+        </div>
+      </li>
+    }
+  </ul>
+}
