@@ -135,6 +135,43 @@ curl -X POST https://api.sport.example.com/api/auth/register \
 Puis ouvre `https://sport.example.com` dans le navigateur : inscription → connexion → redirection vers le
 dashboard/espace spectateur selon le rôle.
 
+## Compte administrateur
+
+Le rôle `ADMIN` (tableau de bord `/admin` : vue d'ensemble, clients, tournois, localisations) n'a **aucune
+voie self-service** — l'inscription ne peut créer que `ORGANIZER`/`SPECTATOR` (`RegisterRequest.resolveRole`),
+par design, pour qu'aucun endpoint public ne permette de devenir admin. Pour obtenir un premier compte admin
+en prod : crée un compte normal via `/register`, puis promeus-le directement en base, par ex. depuis le
+serveur :
+
+```bash
+docker exec -it <conteneur_postgres> psql -U postgres -d tournoi_center \
+  -c "UPDATE users SET role = 'ADMIN' WHERE email = 'ton-email@exemple.com';"
+```
+
+Le tableau de bord `/admin` est en lecture seule (aucune action de modification) — voir le code de
+`AdminController`/`AdminService` pour son périmètre exact.
+
+## Emails de réinitialisation de mot de passe (EmailJS)
+
+Le "mot de passe oublié" envoie l'email **depuis le navigateur** via [EmailJS](https://www.emailjs.com/),
+pas via un serveur SMTP côté backend. Contrairement aux autres réglages de ce guide, les identifiants EmailJS
+ne se configurent **pas** via une variable d'environnement Dokploy : ils sont compilés en dur dans le bundle
+Angular au moment du build (`frontend/src/environments/environment.docker.ts`, le fichier utilisé par
+`angular.json` pour le build de prod via `fileReplacements`).
+
+Avant de builder/publier l'image frontend :
+1. Renseigne `serviceId`, `templateId` et `publicKey` (depuis
+   [dashboard.emailjs.com](https://dashboard.emailjs.com/)) dans `environment.docker.ts`.
+2. Le template EmailJS doit définir les variables `{{to_email}}` et `{{reset_link}}`.
+3. Committe le fichier puis laisse la CI publier une nouvelle image (ou builde/pousse-la manuellement) — un
+   simple **Redeploy** Dokploy sans nouvelle image ne suffit pas, ces valeurs ne sont lues qu'au build, jamais
+   au démarrage du conteneur.
+
+La `publicKey` EmailJS est conçue pour être exposée côté client (la sécurité se règle via les domaines
+autorisés dans le dashboard EmailJS) — la committer dans `environment.docker.ts` n'est donc pas un risque
+comme le serait un secret backend (`JWT_SECRET`, `STRIPE_SECRET_KEY`, etc.), qui eux restent exclusivement
+dans les variables d'environnement Dokploy.
+
 ## Capacité et supervision
 
 Réglages pensés pour **une seule instance backend, dimensionnée un peu plus large** (pas de scaling horizontal —
