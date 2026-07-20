@@ -6,14 +6,15 @@
 />
 
 @if (loading()) {
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+  <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
     @for (i of [1, 2, 3]; track i) {
       <div class="bg-[#161B22] h-32 rounded-xl"></div>
     }
   </div>
 } @else if (error()) {
-  <p class="text-slate-400 text-sm">Impossible de charger les statistiques pour le moment.</p>
+  <p class="mt-8 text-slate-400 text-sm">Impossible de charger les statistiques pour le moment.</p>
 } @else if (stats(); as s) {
+  <div class="mt-8 space-y-6">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
       <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Tournois</p>
@@ -77,5 +78,6 @@
         }
       </ul>
     }
+  </div>
   </div>
 }
