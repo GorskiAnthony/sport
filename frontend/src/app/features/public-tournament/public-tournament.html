@@ -11,13 +11,13 @@
   <div class="flex-1 max-w-4xl mx-auto px-6 py-12 space-y-6">
     <div class="bg-[#161B22] border border-white/10 rounded-2xl p-8">
       <div class="flex items-center gap-4 mb-6">
-        <span class="text-5xl" aria-hidden="true">{{ icon(tournament()!.sport) }}</span>
+        <app-sport-icon [sport]="tournament()!.sport" size="lg" />
         <div>
           <h1 class="text-white text-3xl font-extrabold">{{ tournament()!.name }}</h1>
           <p class="text-slate-400">{{ tournament()!.category }} · {{ tournament()!.sport }}</p>
         </div>
       </div>
-      <dl class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <dl class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         @for (item of details; track item.label) {
           <div class="bg-[#0D1117] rounded-xl p-4">
             <dt class="text-slate-400 text-xs mb-1">{{ item.label }}</dt>
@@ -25,6 +25,11 @@
           </div>
         }
       </dl>
+      @if (tournament()!.location) {
+        <div class="mt-4">
+          <app-tournament-map [location]="tournament()!.location" />
+        </div>
+      }
     </div>
 
     @if (!auth.isAuthenticated()) {

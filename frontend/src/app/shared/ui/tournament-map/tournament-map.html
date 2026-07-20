@@ -1,0 +1,8 @@
+@switch (state()) {
+  @case ('loading') {
+    <div class="w-full h-52 rounded-xl bg-[#161B22] border border-white/10 animate-pulse"></div>
+  }
+  @case ('ready') {
+    <div #mapEl class="w-full h-52 rounded-xl overflow-hidden border border-white/10" aria-label="Carte de localisation du tournoi"></div>
+  }
+}

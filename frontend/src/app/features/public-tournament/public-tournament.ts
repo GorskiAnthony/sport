@@ -9,8 +9,10 @@ import { LiveUpdateService } from '../../core/services/live-update.service';
 import { TournamentDetail } from '../../core/models/tournament.model';
 import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
-import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
+import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
+import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
+import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
 import { LucideStar } from '@lucide/angular';
 
 interface PhaseGroup {
@@ -23,7 +25,7 @@ const GROUP_PHASE_PREFIX = 'Groupe ';
 @Component({
   selector: 'app-public-tournament-page',
   standalone: true,
-  imports: [RouterLink, GroupStandings, LucideStar],
+  imports: [RouterLink, GroupStandings, SportIcon, TournamentMap, LucideStar],
   templateUrl: './public-tournament.html',
 })
 export class PublicTournamentPage implements OnInit, OnDestroy {
@@ -131,10 +133,6 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     });
   }
 
-  icon(sport: string): string {
-    return SPORT_ICONS[sport] ?? '🏆';
-  }
-
   statusLabel(status: string): string {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
   }
@@ -174,9 +172,15 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     if (!t) return [];
     return [
       { label: 'Lieu', value: t.location ?? '—' },
-      { label: 'Dates', value: `${t.startDate} – ${t.endDate}` },
+      { label: 'Début', value: this.formatDate(t.startDate) },
+      { label: 'Fin', value: this.formatDate(t.endDate) },
       { label: 'Équipes', value: String(t.teams.length) },
       { label: 'Statut', value: this.statusLabel(t.status) },
     ];
+  }
+
+  private formatDate(iso: string): string {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }
