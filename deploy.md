@@ -153,24 +153,26 @@ Le tableau de bord `/admin` est en lecture seule (aucune action de modification)
 
 ## Emails de réinitialisation de mot de passe (EmailJS)
 
-Le "mot de passe oublié" envoie l'email **depuis le navigateur** via [EmailJS](https://www.emailjs.com/),
-pas via un serveur SMTP côté backend. Contrairement aux autres réglages de ce guide, les identifiants EmailJS
-ne se configurent **pas** via une variable d'environnement Dokploy : ils sont compilés en dur dans le bundle
-Angular au moment du build (`frontend/src/environments/environment.docker.ts`, le fichier utilisé par
-`angular.json` pour le build de prod via `fileReplacements`).
+Le "mot de passe oublié" envoie l'email **depuis le backend**, via l'API REST serveur-à-serveur
+d'[EmailJS](https://www.emailjs.com/) (pas le SDK navigateur — celui-ci aurait obligé à renvoyer le
+token de réinitialisation dans la réponse de l'API pour que le frontend puisse l'envoyer lui-même,
+ce qui aurait permis à n'importe qui connaissant un email de récupérer le token directement sans
+jamais recevoir le mail). L'appel serveur-à-serveur utilise la **clé privée** du compte EmailJS
+(distincte de la clé publique), qui contourne la vérification d'origine navigateur d'EmailJS.
 
-Avant de builder/publier l'image frontend :
-1. Renseigne `serviceId`, `templateId` et `publicKey` (depuis
-   [dashboard.emailjs.com](https://dashboard.emailjs.com/)) dans `environment.docker.ts`.
-2. Le template EmailJS doit définir les variables `{{to_email}}` et `{{reset_link}}`.
-3. Committe le fichier puis laisse la CI publier une nouvelle image (ou builde/pousse-la manuellement) — un
-   simple **Redeploy** Dokploy sans nouvelle image ne suffit pas, ces valeurs ne sont lues qu'au build, jamais
-   au démarrage du conteneur.
+Comme pour Stripe, ce sont des variables d'environnement Dokploy classiques (voir `.env.prod.example`) :
 
-La `publicKey` EmailJS est conçue pour être exposée côté client (la sécurité se règle via les domaines
-autorisés dans le dashboard EmailJS) — la committer dans `environment.docker.ts` n'est donc pas un risque
-comme le serait un secret backend (`JWT_SECRET`, `STRIPE_SECRET_KEY`, etc.), qui eux restent exclusivement
-dans les variables d'environnement Dokploy.
+```env
+EMAILJS_SERVICE_ID=
+EMAILJS_TEMPLATE_ID=
+EMAILJS_PUBLIC_KEY=
+EMAILJS_PRIVATE_KEY=   # dashboard.emailjs.com > Account > API Keys — à garder secrète, jamais côté frontend
+```
+
+Le template EmailJS doit définir les variables `{{to_email}}` et `{{reset_link}}`. Tant que
+`EMAILJS_PRIVATE_KEY` n'est pas renseignée, `/forgot-password` continue de répondre normalement (succès
+générique) mais l'envoi échoue silencieusement côté serveur (visible dans les logs backend) — le compte
+n'est jamais bloqué, seul l'email n'part pas.
 
 ## Capacité et supervision
 

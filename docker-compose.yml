@@ -28,6 +28,10 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_PRICE_CLASSIC: ${STRIPE_PRICE_CLASSIC:-}
       STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      EMAILJS_SERVICE_ID: ${EMAILJS_SERVICE_ID:-}
+      EMAILJS_TEMPLATE_ID: ${EMAILJS_TEMPLATE_ID:-}
+      EMAILJS_PUBLIC_KEY: ${EMAILJS_PUBLIC_KEY:-}
+      EMAILJS_PRIVATE_KEY: ${EMAILJS_PRIVATE_KEY:-}
     ports:
       - "3000:3000"
       - "8081:8081" # Actuator (health/metrics) — separate port, not proxied by nginx, local convenience only

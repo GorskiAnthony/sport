@@ -1,9 +1,9 @@
 package com.tournoicenter.service;
 
+import com.tournoicenter.config.CorsProperties;
 import com.tournoicenter.domain.PasswordResetToken;
 import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.auth.AuthResponse;
-import com.tournoicenter.dto.auth.ForgotPasswordResponse;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.UserResponse;
@@ -33,14 +33,19 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailJsClient emailJsClient;
+    private final CorsProperties corsProperties;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(UserRepository userRepository, PasswordResetTokenRepository passwordResetTokenRepository,
-                        PasswordEncoder passwordEncoder, JwtService jwtService) {
+                        PasswordEncoder passwordEncoder, JwtService jwtService, EmailJsClient emailJsClient,
+                        CorsProperties corsProperties) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.emailJsClient = emailJsClient;
+        this.corsProperties = corsProperties;
     }
 
     @Transactional
@@ -66,22 +71,25 @@ public class AuthService {
     }
 
     /**
-     * Always returns a same-shaped, same-status response whether or not the email is registered —
-     * a distinct 404/leak here would let an attacker enumerate registered accounts. Only the
-     * registered-account branch actually persists a usable token; the other branch's token is
-     * generated but never saved, so it silently fails validation if anyone tries it.
+     * Always responds identically (success, no body) whether or not the email is registered, and
+     * regardless of whether the email send itself succeeds — any distinguishable response here
+     * (a 404, a different shape, a surfaced send failure) would let an attacker enumerate registered
+     * accounts. The token itself is never returned to the caller; it's only ever delivered inside
+     * the email EmailJS sends on the backend's behalf.
      */
     @Transactional
-    public ForgotPasswordResponse forgotPassword(String email) {
+    public void forgotPassword(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            return new ForgotPasswordResponse(generateToken());
+            return;
         }
 
         passwordResetTokenRepository.deleteByUserId(user.get().getId());
         String token = generateToken();
         passwordResetTokenRepository.save(new PasswordResetToken(user.get(), token, Instant.now().plus(RESET_TOKEN_TTL)));
-        return new ForgotPasswordResponse(token);
+
+        String resetLink = corsProperties.allowedOrigin() + "/reset-password?token=" + token;
+        emailJsClient.sendPasswordResetEmail(email, resetLink);
     }
 
     @Transactional

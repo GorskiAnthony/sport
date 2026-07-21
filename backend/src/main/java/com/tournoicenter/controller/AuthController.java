@@ -1,9 +1,7 @@
 package com.tournoicenter.controller;
 
-import com.tournoicenter.dto.ApiResponse;
 import com.tournoicenter.dto.auth.AuthResponse;
 import com.tournoicenter.dto.auth.ForgotPasswordRequest;
-import com.tournoicenter.dto.auth.ForgotPasswordResponse;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.ResetPasswordRequest;
@@ -34,8 +32,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ApiResponse<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        return ApiResponse.of(authService.forgotPassword(request.email()));
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.email());
     }
 
     @PostMapping("/reset-password")

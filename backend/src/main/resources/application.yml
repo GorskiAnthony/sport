@@ -71,6 +71,11 @@ app:
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
     price-classic: ${STRIPE_PRICE_CLASSIC:}
     price-pro: ${STRIPE_PRICE_PRO:}
+  emailjs:
+    service-id: ${EMAILJS_SERVICE_ID:}
+    template-id: ${EMAILJS_TEMPLATE_ID:}
+    public-key: ${EMAILJS_PUBLIC_KEY:}
+    private-key: ${EMAILJS_PRIVATE_KEY:}
 
 logging:
   level:
