@@ -36,7 +36,7 @@ class AdminControllerTest {
 
     private String registerAndGetToken(String email, String role) throws Exception {
         String body = """
-                {"name":"User","email":"%s","password":"password123","role":"%s"}
+                {"name":"User","email":"%s","password":"password1234","role":"%s"}
                 """.formatted(email, role);
 
         String response = mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))
@@ -56,7 +56,7 @@ class AdminControllerTest {
 
     private String registerAndReloginAsAdmin(String email) throws Exception {
         String body = """
-                {"email":"%s","password":"password123"}
+                {"email":"%s","password":"password1234"}
                 """.formatted(email);
 
         String response = mockMvc.perform(post("/api/auth/login").contentType("application/json").content(body))

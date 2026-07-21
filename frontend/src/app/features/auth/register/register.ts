@@ -60,7 +60,7 @@ export class RegisterPage {
     if (!this.email()) next.email = "L'email est requis.";
     else if (!/\S+@\S+\.\S+/.test(this.email())) next.email = 'Email invalide.';
     if (!this.password()) next.password = 'Le mot de passe est requis.';
-    else if (this.password().length < 8) next.password = '8 caractères minimum.';
+    else if (this.password().length < 12) next.password = '12 caractères minimum.';
     return next;
   }
 

@@ -31,7 +31,7 @@ class TournamentFlowTest {
 
     private String registerAndGetToken(String email) throws Exception {
         String body = """
-                {"name":"Organizer","email":"%s","password":"password123"}
+                {"name":"Organizer","email":"%s","password":"password1234"}
                 """.formatted(email);
 
         String response = mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))

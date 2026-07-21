@@ -7,6 +7,7 @@ import com.tournoicenter.dto.auth.AuthResponse;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.UserResponse;
+import com.tournoicenter.exception.AccountLockedException;
 import com.tournoicenter.exception.EmailNotFoundException;
 import com.tournoicenter.exception.EmailTakenException;
 import com.tournoicenter.exception.InvalidResetTokenException;
@@ -15,6 +16,7 @@ import com.tournoicenter.repository.PasswordResetTokenRepository;
 import com.tournoicenter.repository.UserRepository;
 import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.security.JwtService;
+import com.tournoicenter.security.LoginAttemptService;
 import com.tournoicenter.security.TokenRevocationService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,11 +40,13 @@ public class AuthService {
     private final EmailJsClient emailJsClient;
     private final CorsProperties corsProperties;
     private final TokenRevocationService tokenRevocationService;
+    private final LoginAttemptService loginAttemptService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(UserRepository userRepository, PasswordResetTokenRepository passwordResetTokenRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, EmailJsClient emailJsClient,
-                        CorsProperties corsProperties, TokenRevocationService tokenRevocationService) {
+                        CorsProperties corsProperties, TokenRevocationService tokenRevocationService,
+                        LoginAttemptService loginAttemptService) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -50,6 +54,7 @@ public class AuthService {
         this.emailJsClient = emailJsClient;
         this.corsProperties = corsProperties;
         this.tokenRevocationService = tokenRevocationService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Transactional
@@ -65,11 +70,17 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        if (loginAttemptService.isLocked(request.email())) {
+            throw new AccountLockedException();
+        }
+
         User user = userRepository.findByEmail(request.email()).orElseThrow(EmailNotFoundException::new);
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            loginAttemptService.recordFailure(request.email());
             throw new WrongPasswordException();
         }
+        loginAttemptService.recordSuccess(request.email());
 
         return new AuthResponse(jwtService.generateToken(user), UserResponse.from(user));
     }

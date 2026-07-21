@@ -30,7 +30,7 @@ class DashboardControllerTest {
 
     private String registerAndGetToken(String email) throws Exception {
         String body = """
-                {"name":"Organizer","email":"%s","password":"password123","role":"ORGANIZER"}
+                {"name":"Organizer","email":"%s","password":"password1234","role":"ORGANIZER"}
                 """.formatted(email);
 
         String response = mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))

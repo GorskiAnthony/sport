@@ -35,7 +35,7 @@ export class ResetPasswordPage {
   private validate(): FormErrors {
     const next: FormErrors = {};
     if (!this.password()) next.password = 'Le mot de passe est requis.';
-    else if (this.password().length < 8) next.password = '8 caractères minimum.';
+    else if (this.password().length < 12) next.password = '12 caractères minimum.';
     if (this.confirmPassword() !== this.password()) next.confirmPassword = 'Les mots de passe ne correspondent pas.';
     return next;
   }

@@ -70,6 +70,8 @@ export class LoginPage {
         } else if (code === 'WRONG_PASSWORD') {
           this.errors.set({ password: 'Mot de passe incorrect.' });
           this.toast.error('Vérifiez votre mot de passe.', 'Mot de passe incorrect');
+        } else if (code === 'ACCOUNT_LOCKED') {
+          this.toast.error('Trop de tentatives échouées. Réessayez dans quelques minutes.', 'Compte temporairement bloqué');
         } else {
           this.toast.error('Une erreur est survenue. Réessayez.', 'Erreur');
         }
