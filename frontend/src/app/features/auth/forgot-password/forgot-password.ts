@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { EmailjsService } from '../../../core/services/emailjs.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthCard } from '../../../shared/ui/auth-card/auth-card';
 import { Button } from '../../../shared/ui/button/button';
@@ -19,7 +18,6 @@ interface FormErrors {
 })
 export class ForgotPasswordPage {
   private readonly authService = inject(AuthService);
-  private readonly emailjs = inject(EmailjsService);
   private readonly toast = inject(ToastService);
 
   readonly email = signal('');
@@ -42,15 +40,9 @@ export class ForgotPasswordPage {
     }
 
     this.loading.set(true);
-    const email = this.email();
 
-    this.authService.forgotPassword(email).subscribe({
-      next: ({ token }) => {
-        const resetLink = `${location.origin}/reset-password?token=${token}`;
-        this.emailjs.sendPasswordResetEmail(email, resetLink).catch(() => {
-          this.toast.error("L'envoi de l'email a échoué (vérifiez la configuration EmailJS).", 'Erreur d’envoi');
-        });
-
+    this.authService.forgotPassword(this.email()).subscribe({
+      next: () => {
         // Always the same message regardless of whether the account exists — never leak that here.
         this.loading.set(false);
         this.sent.set(true);

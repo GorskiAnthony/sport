@@ -1,9 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/api-response.model';
 import { AuthResponse, Role, User } from '../models/user.model';
 
 const TOKEN_KEY = 'token';
@@ -42,10 +40,8 @@ export class AuthService {
       .pipe(tap((response) => this.persistSession(response)));
   }
 
-  forgotPassword(email: string): Observable<{ token: string }> {
-    return this.http
-      .post<ApiResponse<{ token: string }>>(`${environment.apiUrl}/auth/forgot-password`, { email })
-      .pipe(map((res) => res.data));
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/auth/forgot-password`, { email });
   }
 
   resetPassword(token: string, newPassword: string): Observable<void> {
