@@ -69,9 +69,20 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return window.count.incrementAndGet() > limit;
     }
 
+    /** nginx appends via $proxy_add_x_forwarded_for rather than replacing, so the *last* entry is
+     *  the one the trusted reverse proxy itself observed — the leftmost entry is whatever the client
+     *  sent, and trusting it (as this used to) let a client bypass the whole limiter just by sending
+     *  a different fake X-Forwarded-For per request. This assumes exactly one trusted proxy hop in
+     *  front of the app; a differently-configured additional hop further out that blindly forwards
+     *  client-supplied headers would need real trusted-proxy handling (e.g. Spring's
+     *  forward-headers-strategy with an internal-proxies allowlist) to fully close. */
     private String clientKey(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded != null ? forwarded.split(",")[0].trim() : request.getRemoteAddr();
+        if (forwarded == null) {
+            return request.getRemoteAddr();
+        }
+        String[] parts = forwarded.split(",");
+        return parts[parts.length - 1].trim();
     }
 
     private void reject(HttpServletResponse response, String message) throws IOException {
