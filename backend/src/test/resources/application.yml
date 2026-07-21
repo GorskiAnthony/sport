@@ -1,7 +1,0 @@
-# Test-only override — src/test/resources sits ahead of src/main/resources on the test classpath,
-# so this replaces application.yml's app.jwt.secret for the test suite. Never packaged into the
-# runtime artifact (Maven excludes test resources from the built jar), so this isn't a production
-# fallback — it exists solely so `mvnw test` doesn't need a real JWT_SECRET env var.
-app:
-  jwt:
-    secret: test-only-secret-never-used-outside-the-test-suite-32bytes-min
