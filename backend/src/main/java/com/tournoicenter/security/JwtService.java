@@ -23,8 +23,16 @@ public class JwtService {
     private final SecretKey key;
     private final Duration expiration;
 
+    private static final int MIN_SECRET_BYTES = 32;
+
     public JwtService(JwtProperties properties) {
-        this.key = Keys.hmacShaKeyFor(properties.secret().getBytes(StandardCharsets.UTF_8));
+        String secret = properties.secret();
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException(
+                    "The JWT_SECRET environment variable must be set to a random secret of at least "
+                            + MIN_SECRET_BYTES + " bytes (e.g. `openssl rand -base64 32`).");
+        }
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = Duration.ofDays(properties.expirationDays());
     }
 
