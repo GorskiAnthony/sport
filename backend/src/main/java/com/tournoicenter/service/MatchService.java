@@ -81,10 +81,8 @@ public class MatchService {
             throw new ForbiddenException();
         }
 
-        Team homeTeam = teamRepository.findById(request.homeTeamId())
-                .orElseThrow(() -> new ResourceNotFoundException("Équipe (domicile) introuvable."));
-        Team awayTeam = teamRepository.findById(request.awayTeamId())
-                .orElseThrow(() -> new ResourceNotFoundException("Équipe (extérieur) introuvable."));
+        Team homeTeam = teamInTournamentOrThrow(request.homeTeamId(), tournament, "domicile");
+        Team awayTeam = teamInTournamentOrThrow(request.awayTeamId(), tournament, "extérieur");
 
         Match match = new Match(tournament, homeTeam, awayTeam, request.phase(), request.date());
         match.setVenue(request.venue());
@@ -177,6 +175,18 @@ public class MatchService {
         Long tournamentId = match.getTournament().getId();
         matchRepository.delete(match);
         evictTournamentDetailCache(tournamentId);
+    }
+
+    /** Without checking the team's own tournament here, an organizer could create a match in
+     *  their own tournament that references another organizer's team by id — the team would
+     *  then wrongly show up in a tournament it never joined and start receiving its notifications. */
+    private Team teamInTournamentOrThrow(Long teamId, Tournament tournament, String side) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException("Équipe (" + side + ") introuvable."));
+        if (!team.getTournament().getId().equals(tournament.getId())) {
+            throw new ResourceNotFoundException("Équipe (" + side + ") introuvable.");
+        }
+        return team;
     }
 
     private Match getOrThrow(Long id) {
