@@ -16,16 +16,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
     private final SecretKey key;
     private final Duration expiration;
+    private final TokenRevocationService tokenRevocationService;
 
     private static final int MIN_SECRET_BYTES = 32;
 
-    public JwtService(JwtProperties properties) {
+    public JwtService(JwtProperties properties, TokenRevocationService tokenRevocationService) {
         String secret = properties.secret();
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
             throw new IllegalStateException(
@@ -34,11 +36,13 @@ public class JwtService {
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = Duration.ofDays(properties.expirationDays());
+        this.tokenRevocationService = tokenRevocationService;
     }
 
     public String generateToken(User user) {
         Instant now = Instant.now();
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(user.getId()))
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
@@ -52,11 +56,15 @@ public class JwtService {
     public Optional<JwtPrincipal> parseToken(String token) {
         try {
             Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            String tokenId = claims.getId();
+            if (tokenRevocationService.isRevoked(tokenId)) {
+                return Optional.empty();
+            }
             Long userId = Long.valueOf(claims.getSubject());
             String email = claims.get("email", String.class);
             Role role = Role.valueOf(claims.get("role", String.class));
             Plan plan = Plan.valueOf(claims.get("plan", String.class));
-            return Optional.of(new JwtPrincipal(userId, email, role, plan));
+            return Optional.of(new JwtPrincipal(userId, email, role, plan, tokenId));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }

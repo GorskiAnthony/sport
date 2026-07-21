@@ -49,6 +49,13 @@ export class AuthService {
   }
 
   logout(): void {
+    // Revoke server-side first — subscribe() dispatches synchronously, so the auth interceptor
+    // still reads the (still-present) token for this one request. Fire-and-forget: logout must
+    // still succeed client-side even if this call fails (network down, token already expired).
+    if (this.getToken()) {
+      this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
+    }
+
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUserSignal.set(null);

@@ -13,7 +13,9 @@ import com.tournoicenter.exception.InvalidResetTokenException;
 import com.tournoicenter.exception.WrongPasswordException;
 import com.tournoicenter.repository.PasswordResetTokenRepository;
 import com.tournoicenter.repository.UserRepository;
+import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.security.JwtService;
+import com.tournoicenter.security.TokenRevocationService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +37,19 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailJsClient emailJsClient;
     private final CorsProperties corsProperties;
+    private final TokenRevocationService tokenRevocationService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(UserRepository userRepository, PasswordResetTokenRepository passwordResetTokenRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, EmailJsClient emailJsClient,
-                        CorsProperties corsProperties) {
+                        CorsProperties corsProperties, TokenRevocationService tokenRevocationService) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailJsClient = emailJsClient;
         this.corsProperties = corsProperties;
+        this.tokenRevocationService = tokenRevocationService;
     }
 
     @Transactional
@@ -105,6 +109,12 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.deleteByUserId(user.getId());
+    }
+
+    /** Without this, "logout" was purely a client-side localStorage clear — the token itself
+     *  stayed valid (usable by anyone who'd captured it) for up to its full 7-day lifetime. */
+    public void logout(JwtPrincipal principal) {
+        tokenRevocationService.revoke(principal.tokenId());
     }
 
     private String generateToken() {
