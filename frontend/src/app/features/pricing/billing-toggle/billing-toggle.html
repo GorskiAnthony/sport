@@ -1,0 +1,28 @@
+<div class="inline-flex items-center gap-1 bg-[#161B22] border border-white/10 rounded-full p-1" role="radiogroup" aria-label="Fréquence de facturation">
+  <button
+    type="button"
+    role="radio"
+    [attr.aria-checked]="period() === 'monthly'"
+    (click)="select('monthly')"
+    class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
+    [class]="period() === 'monthly' ? 'bg-green-500 text-black' : 'text-slate-400 hover:text-white'"
+  >
+    Mensuel
+  </button>
+  <button
+    type="button"
+    role="radio"
+    [attr.aria-checked]="period() === 'annual'"
+    (click)="select('annual')"
+    class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors inline-flex items-center gap-1.5"
+    [class]="period() === 'annual' ? 'bg-green-500 text-black' : 'text-slate-400 hover:text-white'"
+  >
+    Annuel
+    <span
+      class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+      [class]="period() === 'annual' ? 'bg-black/20 text-black' : 'bg-green-500/10 text-green-400'"
+    >
+      2 mois offerts
+    </span>
+  </button>
+</div>

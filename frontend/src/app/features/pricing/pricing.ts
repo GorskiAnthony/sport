@@ -6,16 +6,29 @@ import { PlanTier, SubscriptionService } from '../../core/services/subscription.
 import { ToastService } from '../../core/services/toast.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
+import { BillingPeriod, BillingToggle } from './billing-toggle/billing-toggle';
+
+type Pricing =
+  | { kind: 'fixed'; price: string; period: string }
+  | { kind: 'recurring'; monthly: number; annual: number };
 
 interface Plan {
   id: 'free' | PlanTier;
   name: string;
-  price: string;
-  period: string;
   description: string;
   cta: string;
   highlighted: boolean;
   badge?: string;
+  features: string[];
+  pricing: Pricing;
+}
+
+interface EventPass {
+  name: string;
+  description: string;
+  price: string;
+  period: string;
+  cta: string;
   features: string[];
 }
 
@@ -23,11 +36,10 @@ const PLANS: Plan[] = [
   {
     id: 'free',
     name: 'Gratuit',
-    price: '0€',
-    period: 'pour toujours',
     description: 'Pour se lancer sans risque et organiser vos premiers tournois.',
     cta: 'Commencer gratuitement',
     highlighted: false,
+    pricing: { kind: 'fixed', price: '0€', period: 'pour toujours' },
     features: [
       '1 tournoi actif',
       "Jusqu'à 14 équipes",
@@ -39,40 +51,56 @@ const PLANS: Plan[] = [
   {
     id: 'classic',
     name: 'Classic',
-    price: '19€',
-    period: '/ mois',
     description: 'Pour les organisateurs réguliers qui ne veulent plus de limites.',
     cta: "Démarrer l'essai gratuit",
     highlighted: true,
     badge: 'Populaire',
+    pricing: { kind: 'recurring', monthly: 19, annual: 190 },
     features: [
       'Tournois illimités',
       'Équipes illimitées',
       'Résultats en temps réel',
       'Export PDF des classements',
+      // TODO: confirmer que cette feature existe ; elle sert à différencier de Pass Événement
+      'Historique de vos tournois',
       'Support par email',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '49€',
-    period: '/ mois',
-    description: "Pour les grands événements qui ne peuvent pas se permettre un pépin.",
+    description: 'Pour les grands événements qui ne peuvent pas se permettre un pépin.',
     cta: 'Discuter de mon projet',
     highlighted: false,
     badge: 'Haute dispo',
+    pricing: { kind: 'recurring', monthly: 49, annual: 490 },
     features: [
       'Tout le plan Classic',
-      "Jusqu'à 48 équipes par tournoi",
       '2 000 – 3 000 connexions simultanées',
-      'Tournois scindables (split tournament)',
-      'Règles personnalisées',
       'Infra dédiée + SLA 99.9%',
       'Support prioritaire 24/7',
+      // TODO: confirmer la limite technique réelle du bracket unique avant split automatique
+      "Tournois scindables (split) jusqu'à 48 équipes dans un même bracket",
+      'Règles personnalisées',
     ],
   },
 ];
+
+const EVENT_PASS: EventPass = {
+  name: 'Pass Événement',
+  description: "Juste un tournoi ? Pas besoin d'abonnement.",
+  price: '12€',
+  period: 'paiement unique',
+  cta: 'Créer mon tournoi - 12 €',
+  features: [
+    '1 tournoi, sans engagement',
+    'Équipes illimitées pour cet événement',
+    'Résultats en temps réel',
+    'Export PDF des classements',
+    'QR code de partage',
+    "Accès jusqu'à 7 jours après l'événement",
+  ],
+};
 
 const FAQ = [
   {
@@ -89,14 +117,22 @@ const FAQ = [
   },
   {
     q: "Qu'est-ce qu'un tournoi scindable (Pro) ?",
-    a: 'Un gros tournoi de 48 équipes peut être automatiquement divisé en deux sous-tournois parallèles avec classements fusionnés.',
+    a: 'Un gros tournoi peut être automatiquement divisé en deux sous-tournois parallèles avec classements fusionnés.',
+  },
+  {
+    q: 'Quelle différence entre le Pass Événement et un abonnement ?',
+    a: "Le Pass Événement est un paiement unique de 12 € pour organiser un seul tournoi, sans engagement ni abonnement. Si vous organisez plusieurs tournois dans l'année, l'abonnement Classic (tournois illimités) devient plus avantageux dès le 2e événement.",
+  },
+  {
+    q: "L'abonnement annuel, comment ça marche ?",
+    a: "En choisissant la facturation annuelle, vous bénéficiez de 2 mois offerts par rapport au tarif mensuel. Vous pouvez passer du mensuel à l'annuel à tout moment.",
   },
 ];
 
 @Component({
   selector: 'app-pricing-page',
   standalone: true,
-  imports: [PageHeader, Button],
+  imports: [PageHeader, Button, BillingToggle],
   templateUrl: './pricing.html',
 })
 export class PricingPage {
@@ -106,8 +142,28 @@ export class PricingPage {
   private readonly router = inject(Router);
 
   readonly plans = PLANS;
+  readonly eventPass = EVENT_PASS;
   readonly faq = FAQ;
   readonly loadingPlan = signal<string | null>(null);
+  readonly billing = signal<BillingPeriod>('monthly');
+
+  priceInfo(plan: Plan): { amount: string; period: string; note?: string } {
+    if (plan.pricing.kind === 'fixed') {
+      return { amount: plan.pricing.price, period: plan.pricing.period };
+    }
+
+    const { monthly, annual } = plan.pricing;
+    if (this.billing() === 'monthly') {
+      return { amount: `${monthly}€`, period: '/ mois' };
+    }
+
+    const equivalentMonthly = Math.round(annual / 12);
+    return {
+      amount: `${annual}€`,
+      period: '/ an',
+      note: `≈ ${equivalentMonthly}€/mois, facturé annuellement`,
+    };
+  }
 
   selectPlan(plan: Plan): void {
     if (plan.id === 'free') {
@@ -120,6 +176,8 @@ export class PricingPage {
       return;
     }
 
+    // TODO: brancher Stripe avec la période sélectionnée (mensuel/annuel) —
+    // le endpoint /subscriptions/checkout ne prend actuellement que le plan.
     this.loadingPlan.set(plan.id);
     this.subscriptionService.checkout(plan.id as PlanTier).subscribe({
       next: (res) => {
@@ -127,8 +185,16 @@ export class PricingPage {
       },
       error: (err: HttpErrorResponse) => {
         this.loadingPlan.set(null);
-        this.toast.error('Une erreur est survenue lors de la création de la session de paiement.', 'Erreur');
+        this.toast.error(
+          'Une erreur est survenue lors de la création de la session de paiement.',
+          'Erreur',
+        );
       },
     });
+  }
+
+  selectEventPass(): void {
+    // TODO: brancher Stripe (paiement unique de 12€, hors abonnement) — endpoint backend à créer
+    this.toast.info("Le paiement à l'unité arrive bientôt.", 'Bientôt disponible');
   }
 }
