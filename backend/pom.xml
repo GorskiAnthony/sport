@@ -158,6 +158,20 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- Test-only value, never used outside the test JVM — lets `mvn test`/`mvn verify`
+					     run without a real JWT_SECRET, without touching src/main/resources/application.yml
+					     (a same-named file under src/test/resources would shadow it entirely on the test
+					     classpath instead of layering just this one property, dropping every other
+					     config key — e.g. it silently broke Stripe bean creation in CI). -->
+					<environmentVariables>
+						<JWT_SECRET>test-only-secret-never-used-outside-the-test-suite-32bytes-min</JWT_SECRET>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
 					<execution>

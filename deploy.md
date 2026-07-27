@@ -135,6 +135,45 @@ curl -X POST https://api.sport.example.com/api/auth/register \
 Puis ouvre `https://sport.example.com` dans le navigateur : inscription → connexion → redirection vers le
 dashboard/espace spectateur selon le rôle.
 
+## Compte administrateur
+
+Le rôle `ADMIN` (tableau de bord `/admin` : vue d'ensemble, clients, tournois, localisations) n'a **aucune
+voie self-service** — l'inscription ne peut créer que `ORGANIZER`/`SPECTATOR` (`RegisterRequest.resolveRole`),
+par design, pour qu'aucun endpoint public ne permette de devenir admin. Pour obtenir un premier compte admin
+en prod : crée un compte normal via `/register`, puis promeus-le directement en base, par ex. depuis le
+serveur :
+
+```bash
+docker exec -it <conteneur_postgres> psql -U postgres -d tournoi_center \
+  -c "UPDATE users SET role = 'ADMIN' WHERE email = 'ton-email@exemple.com';"
+```
+
+Le tableau de bord `/admin` est en lecture seule (aucune action de modification) — voir le code de
+`AdminController`/`AdminService` pour son périmètre exact.
+
+## Emails de réinitialisation de mot de passe (EmailJS)
+
+Le "mot de passe oublié" envoie l'email **depuis le backend**, via l'API REST serveur-à-serveur
+d'[EmailJS](https://www.emailjs.com/) (pas le SDK navigateur — celui-ci aurait obligé à renvoyer le
+token de réinitialisation dans la réponse de l'API pour que le frontend puisse l'envoyer lui-même,
+ce qui aurait permis à n'importe qui connaissant un email de récupérer le token directement sans
+jamais recevoir le mail). L'appel serveur-à-serveur utilise la **clé privée** du compte EmailJS
+(distincte de la clé publique), qui contourne la vérification d'origine navigateur d'EmailJS.
+
+Comme pour Stripe, ce sont des variables d'environnement Dokploy classiques (voir `.env.prod.example`) :
+
+```env
+EMAILJS_SERVICE_ID=
+EMAILJS_TEMPLATE_ID=
+EMAILJS_PUBLIC_KEY=
+EMAILJS_PRIVATE_KEY=   # dashboard.emailjs.com > Account > API Keys — à garder secrète, jamais côté frontend
+```
+
+Le template EmailJS doit définir les variables `{{to_email}}` et `{{reset_link}}`. Tant que
+`EMAILJS_PRIVATE_KEY` n'est pas renseignée, `/forgot-password` continue de répondre normalement (succès
+générique) mais l'envoi échoue silencieusement côté serveur (visible dans les logs backend) — le compte
+n'est jamais bloqué, seul l'email n'part pas.
+
 ## Capacité et supervision
 
 Réglages pensés pour **une seule instance backend, dimensionnée un peu plus large** (pas de scaling horizontal —

@@ -1,0 +1,17 @@
+<app-page-header badge="Espace administrateur" title="Localisations" subtitle="Les lieux les plus représentés parmi les tournois créés sur la plateforme." />
+
+<div class="mt-8 max-w-2xl">
+  <div class="bg-[#161B22] border border-white/10 rounded-2xl p-6">
+    @if (loading()) {
+      <div class="space-y-3 animate-pulse">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="h-6 bg-white/5 rounded-lg"></div>
+        }
+      </div>
+    } @else if (error()) {
+      <p class="text-slate-400 text-sm">Impossible de charger les localisations pour le moment.</p>
+    } @else {
+      <app-ranked-bars [items]="bars()" />
+    }
+  </div>
+</div>

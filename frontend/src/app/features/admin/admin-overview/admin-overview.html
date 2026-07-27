@@ -1,0 +1,66 @@
+<app-page-header
+  badge="Espace administrateur"
+  title="Vue d'ensemble"
+  subtitle="L'activité globale de la plateforme : clients, tournois, matchs et localisations."
+/>
+
+@if (loading()) {
+  <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="bg-[#161B22] h-32 rounded-xl"></div>
+    }
+  </div>
+} @else if (error()) {
+  <p class="mt-8 text-slate-400 text-sm">Impossible de charger les statistiques pour le moment.</p>
+} @else if (overview(); as o) {
+  <div class="mt-8 space-y-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Clients</p>
+        <p class="text-white text-3xl font-extrabold mb-3">{{ o.users.total }}</p>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">Organisateurs : {{ o.users.organizers }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">Spectateurs : {{ o.users.spectators }}</span>
+        </div>
+      </div>
+
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Tournois</p>
+        <p class="text-white text-3xl font-extrabold mb-3">{{ o.tournaments.total }}</p>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ statusLabels.UPCOMING }} : {{ o.tournaments.upcoming }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ statusLabels.ONGOING }} : {{ o.tournaments.ongoing }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ statusLabels.FINISHED }} : {{ o.tournaments.finished }}</span>
+        </div>
+      </div>
+
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Matchs</p>
+        <p class="text-white text-3xl font-extrabold mb-3">{{ o.matches.total }}</p>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ matchStatusLabels.SCHEDULED }} : {{ o.matches.scheduled }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ matchStatusLabels.ONGOING }} : {{ o.matches.ongoing }}</span>
+          <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300">{{ matchStatusLabels.FINISHED }} : {{ o.matches.finished }}</span>
+        </div>
+      </div>
+
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Équipes</p>
+        <p class="text-white text-3xl font-extrabold mb-3">{{ o.totalTeams }}</p>
+        <p class="text-slate-400 text-xs">Toutes équipes confondues, sur l'ensemble de la plateforme.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2 bg-[#161B22] border border-white/10 rounded-2xl p-6">
+        <h2 class="text-white text-sm font-semibold mb-4">Croissance (30 derniers jours)</h2>
+        <app-growth-chart [signups]="o.signups30d" [tournaments]="o.tournamentsCreated30d" />
+      </div>
+
+      <div class="bg-[#161B22] border border-white/10 rounded-2xl p-6">
+        <h2 class="text-white text-sm font-semibold mb-4">Répartition des plans</h2>
+        <app-ranked-bars [items]="planBars()" />
+      </div>
+    </div>
+  </div>
+}

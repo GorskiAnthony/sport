@@ -8,6 +8,7 @@ import { AuthCard } from '../../../shared/ui/auth-card/auth-card';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { PasswordInput } from '../../../shared/ui/password-input/password-input';
+import { defaultRouteForRole } from '../../../shared/utils/default-route-for-role';
 import { sanitizeReturnUrl } from '../../../shared/utils/safe-return-url';
 
 interface FormErrors {
@@ -59,7 +60,7 @@ export class RegisterPage {
     if (!this.email()) next.email = "L'email est requis.";
     else if (!/\S+@\S+\.\S+/.test(this.email())) next.email = 'Email invalide.';
     if (!this.password()) next.password = 'Le mot de passe est requis.';
-    else if (this.password().length < 8) next.password = '8 caractères minimum.';
+    else if (this.password().length < 12) next.password = '12 caractères minimum.';
     return next;
   }
 
@@ -80,7 +81,7 @@ export class RegisterPage {
           if (this.returnUrl) {
             this.router.navigateByUrl(this.returnUrl);
           } else {
-            this.router.navigate([response.user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
+            this.router.navigate([defaultRouteForRole(response.user.role)]);
           }
         },
         error: (err: HttpErrorResponse) => {

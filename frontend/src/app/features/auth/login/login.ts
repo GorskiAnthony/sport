@@ -7,6 +7,7 @@ import { AuthCard } from '../../../shared/ui/auth-card/auth-card';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { PasswordInput } from '../../../shared/ui/password-input/password-input';
+import { defaultRouteForRole } from '../../../shared/utils/default-route-for-role';
 import { sanitizeReturnUrl } from '../../../shared/utils/safe-return-url';
 
 interface FormErrors {
@@ -57,7 +58,7 @@ export class LoginPage {
         if (this.returnUrl) {
           this.router.navigateByUrl(this.returnUrl);
         } else {
-          this.router.navigate([response.user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
+          this.router.navigate([defaultRouteForRole(response.user.role)]);
         }
       },
       error: (err: HttpErrorResponse) => {
@@ -69,6 +70,8 @@ export class LoginPage {
         } else if (code === 'WRONG_PASSWORD') {
           this.errors.set({ password: 'Mot de passe incorrect.' });
           this.toast.error('Vérifiez votre mot de passe.', 'Mot de passe incorrect');
+        } else if (code === 'ACCOUNT_LOCKED') {
+          this.toast.error('Trop de tentatives échouées. Réessayez dans quelques minutes.', 'Compte temporairement bloqué');
         } else {
           this.toast.error('Une erreur est survenue. Réessayez.', 'Erreur');
         }

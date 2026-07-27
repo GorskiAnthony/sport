@@ -1,7 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { MatchService } from '../../../core/services/match.service';
 import { BracketService } from '../../../core/services/bracket.service';
@@ -16,17 +15,17 @@ import { GroupStandings, StandingsGroup } from '../../../shared/ui/group-standin
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
-import { tournamentShareSlug } from '../../../shared/utils/slug';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LucideTrophy } from '@lucide/angular';
 import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
+import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
 @Component({
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput, StatusBadge, LucideTrophy, SportIcon],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
@@ -48,7 +47,6 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly advancing = signal(false);
 
   readonly shareOpen = signal(false);
-  readonly qrDataUrl = signal<string | null>(null);
 
   /** Identifies the exact grid cell (row team id, col team id) being edited — not just the
    *  match id, since round robin shows each match twice (mirrored), and only the clicked
@@ -127,22 +125,6 @@ export class DashboardTournamentDetailPage implements OnInit {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
   }
 
-  shareUrl(): string {
-    const name = this.tournament()?.name ?? '';
-    return `${window.location.origin}/t/${tournamentShareSlug(this.tournamentId, name)}`;
-  }
-
-  openShare(): void {
-    this.shareOpen.set(true);
-    this.qrDataUrl.set(null);
-    toDataURL(this.shareUrl(), { margin: 1, width: 240 })
-      .then((dataUrl) => this.qrDataUrl.set(dataUrl))
-      .catch(() => this.qrDataUrl.set(null));
-  }
-
-  copyShareLink(): void {
-    navigator.clipboard.writeText(this.shareUrl()).then(() => this.toast.success('Lien copié dans le presse-papiers.'));
-  }
 
   generateBracket(): void {
     const format = this.chosenFormat();

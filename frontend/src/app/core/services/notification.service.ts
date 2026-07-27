@@ -31,9 +31,10 @@ export class NotificationService {
       const user = this.authService.currentUser();
       this.unsubscribeLive?.();
       this.unsubscribeLive = null;
-      if (user) {
+      const token = this.authService.getToken();
+      if (user && token) {
         this.refreshUnreadCount();
-        this.unsubscribeLive = this.liveUpdate.subscribeToUserNotifications(user.id, (notification) => {
+        this.unsubscribeLive = this.liveUpdate.subscribeToUserNotifications(user.id, token, (notification) => {
           this.unreadCount.update((count) => count + 1);
           this.toast.info(notification.message, 'Nouvelle notification');
         });

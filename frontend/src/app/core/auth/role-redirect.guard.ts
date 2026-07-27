@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { defaultRouteForRole } from '../../shared/utils/default-route-for-role';
 import { AuthService } from './auth.service';
 
 /**
@@ -15,5 +16,5 @@ export const roleRedirectGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree([user.role === 'ORGANIZER' ? '/dashboard' : '/home']);
+  return router.createUrlTree([defaultRouteForRole(user.role)]);
 };

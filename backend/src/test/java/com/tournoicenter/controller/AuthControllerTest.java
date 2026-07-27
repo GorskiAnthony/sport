@@ -23,7 +23,7 @@ class AuthControllerTest {
     @Test
     void registerThenLoginSucceeds() throws Exception {
         String body = """
-                {"name":"Ada Lovelace","email":"ada@example.com","password":"password123","role":"ORGANIZER"}
+                {"name":"Ada Lovelace","email":"ada@example.com","password":"password1234","role":"ORGANIZER"}
                 """;
 
         mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))
@@ -33,7 +33,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.user.plan").value("FREE"));
 
         String loginBody = """
-                {"email":"ada@example.com","password":"password123"}
+                {"email":"ada@example.com","password":"password1234"}
                 """;
 
         mockMvc.perform(post("/api/auth/login").contentType("application/json").content(loginBody))
@@ -44,7 +44,7 @@ class AuthControllerTest {
     @Test
     void registerRejectsDuplicateEmail() throws Exception {
         String body = """
-                {"name":"Grace Hopper","email":"grace@example.com","password":"password123"}
+                {"name":"Grace Hopper","email":"grace@example.com","password":"password1234"}
                 """;
 
         mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))
@@ -58,7 +58,7 @@ class AuthControllerTest {
     @Test
     void loginRejectsWrongPassword() throws Exception {
         String body = """
-                {"name":"Alan Turing","email":"alan@example.com","password":"password123"}
+                {"name":"Alan Turing","email":"alan@example.com","password":"password1234"}
                 """;
         mockMvc.perform(post("/api/auth/register").contentType("application/json").content(body))
                 .andExpect(status().isCreated());

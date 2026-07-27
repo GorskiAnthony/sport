@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/auth/admin.guard';
 import { authGuard } from './core/auth/auth.guard';
 import { roleRedirectGuard } from './core/auth/role-redirect.guard';
+import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { DashboardLayout } from './layouts/dashboard-layout/dashboard-layout';
 import { PublicLayout } from './layouts/public-layout/public-layout';
 import { PublicLayoutNoFooter } from './layouts/public-layout-no-footer/public-layout-no-footer';
@@ -35,6 +37,16 @@ export const routes: Routes = [
     children: [
       { path: 'login', loadComponent: () => import('./features/auth/login/login').then((m) => m.LoginPage) },
       { path: 'register', loadComponent: () => import('./features/auth/register/register').then((m) => m.RegisterPage) },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password').then((m) => m.ForgotPasswordPage),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/auth/reset-password/reset-password').then((m) => m.ResetPasswordPage),
+      },
       {
         path: 'register/tournament',
         canActivate: [authGuard],
@@ -133,6 +145,40 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/settings/settings').then((m) => m.DashboardSettingsPage),
       },
     ],
+  },
+  {
+    path: 'admin',
+    component: AdminLayout,
+    canActivate: [authGuard, adminGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/admin/admin-overview/admin-overview').then((m) => m.AdminOverviewPage),
+      },
+      {
+        path: 'clients',
+        loadComponent: () => import('./features/admin/admin-clients/admin-clients').then((m) => m.AdminClientsPage),
+      },
+      {
+        path: 'clients/:id',
+        loadComponent: () =>
+          import('./features/admin/admin-client-detail/admin-client-detail').then((m) => m.AdminClientDetailPage),
+      },
+      {
+        path: 'tournaments',
+        loadComponent: () =>
+          import('./features/admin/admin-tournaments/admin-tournaments').then((m) => m.AdminTournamentsPage),
+      },
+      {
+        path: 'locations',
+        loadComponent: () =>
+          import('./features/admin/admin-locations/admin-locations').then((m) => m.AdminLocationsPage),
+      },
+    ],
+  },
+  {
+    path: 'print/tournaments/:id',
+    loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
   },
   { path: '**', loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFoundPage) },
 ];

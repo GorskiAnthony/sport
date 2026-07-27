@@ -56,13 +56,18 @@ public class SecurityConfig {
                         .accessDeniedHandler(jsonAuthErrorHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()
-                        // Actuator runs on a separate internal port (management.server.port) that's
-                        // never published outside the Docker network — that's the real security
-                        // boundary, not app-level JWT auth (which would be inconvenient for uptime
-                        // checks/ops tooling to use anyway).
+                        // permitAll() here isn't the security boundary: Actuator listens on a
+                        // separate port (management.server.port, default 8081) served by a
+                        // different embedded connector than the one this filter chain guards, so
+                        // app-level JWT auth can't cover it anyway. Whether that port is reachable
+                        // from outside the container is an infra/Dokploy config concern, not
+                        // something enforced by this class — see "Monitoring" in deploy.md for the
+                        // actual exposure model and the Basic Auth requirement if it's ever given a
+                        // public Dokploy domain.
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/share/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
@@ -73,6 +78,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teams/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

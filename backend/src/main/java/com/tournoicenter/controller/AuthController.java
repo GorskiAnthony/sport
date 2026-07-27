@@ -4,13 +4,14 @@ import com.tournoicenter.dto.auth.AuthResponse;
 import com.tournoicenter.dto.auth.ForgotPasswordRequest;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
+import com.tournoicenter.dto.auth.ResetPasswordRequest;
+import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,8 +34,17 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public Map<String, String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.email());
-        return Map.of("message", "Email de réinitialisation envoyé.");
+    }
+
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.newPassword());
+    }
+
+    @PostMapping("/logout")
+    public void logout(@AuthenticationPrincipal JwtPrincipal principal) {
+        authService.logout(principal);
     }
 }
