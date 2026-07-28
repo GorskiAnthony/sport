@@ -1,25 +1,46 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from '../../../core/auth/auth.service';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentDetail } from '../../../core/models/tournament.model';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { Standing, computeStandings } from '../../../shared/utils/standings';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { Button } from '../../../shared/ui/button/button';
 
 const TOURNAMENT_COLORS = ['bg-green-600', 'bg-blue-600', 'bg-purple-600'];
 
 @Component({
   selector: 'app-dashboard-standings-page',
   standalone: true,
-  imports: [StatusBadge],
+  imports: [RouterLink, StatusBadge, Button],
   templateUrl: './standings.html',
 })
 export class DashboardStandingsPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
+  private readonly authService = inject(AuthService);
 
   readonly tables = signal<{ tournament: TournamentDetail; rows: Standing[]; color: string }[]>([]);
   readonly loading = signal(true);
+
+  // Export PDF des classements : réservé aux plans payants (cf. page /pricing).
+  readonly canExportPdf = computed(() => (this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE');
+
+  // Tournoi en cours d'export : les autres sections passent en print:hidden le temps de l'impression
+  // (sinon window.print() imprime toute la page, tous tournois confondus).
+  readonly printingTournamentId = signal<number | null>(null);
+
+  exportPdf(tournamentId: number): void {
+    this.printingTournamentId.set(tournamentId);
+    setTimeout(() => window.print(), 0);
+  }
+
+  @HostListener('window:afterprint')
+  onAfterPrint(): void {
+    this.printingTournamentId.set(null);
+  }
 
   ngOnInit(): void {
     this.tournamentService.getMine().subscribe({
