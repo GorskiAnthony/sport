@@ -1,11 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { TeamService } from '../../../core/services/team.service';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { Team } from '../../../core/models/team.model';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
+
+interface ImportedRow {
+  name: string;
+  category: string;
+  contact: string;
+}
 
 interface TeamForm {
   name: string;
@@ -49,6 +57,7 @@ export class DashboardTeamsPage implements OnInit {
   readonly editId = signal<number | null>(null);
   readonly panelOpen = signal(false);
   readonly pending = signal<Team | null>(null);
+  readonly importing = signal(false);
 
   ngOnInit(): void {
     this.tournamentService.getMine().subscribe({
@@ -138,6 +147,78 @@ export class DashboardTeamsPage implements OnInit {
         },
       });
     }
+  }
+
+  /** CSV/Excel bulk import — most organizers already keep their team list in a spreadsheet,
+   *  and typing them one by one becomes painful once a tournament has dozens of teams (up to
+   *  128 per bracket now). Accepts "Nom,Catégorie,Contact" per line, with an optional header
+   *  row and either comma or semicolon as separator (French Excel exports use ";" by default
+   *  since "," is the decimal separator). */
+  onImportFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-selecting the same file if the organizer fixes and retries
+    if (!file) return;
+
+    const tournamentId = this.selectedTournamentId();
+    if (!tournamentId) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const rows = this.parseCsv(String(reader.result ?? ''));
+      if (rows.length === 0) {
+        this.toast.error("Aucune équipe reconnue dans le fichier. Format attendu : Nom,Catégorie,Contact.");
+        return;
+      }
+      this.importRows(tournamentId, rows);
+    };
+    reader.readAsText(file);
+  }
+
+  private parseCsv(text: string): ImportedRow[] {
+    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+    if (lines.length === 0) return [];
+
+    const delimiter = (lines[0].match(/;/g)?.length ?? 0) > (lines[0].match(/,/g)?.length ?? 0) ? ';' : ',';
+    const splitLine = (line: string): string[] =>
+      line.split(delimiter).map((cell) => cell.trim().replace(/^"(.*)"$/, '$1'));
+
+    const firstCell = splitLine(lines[0])[0]?.toLowerCase();
+    const dataLines = ['nom', 'name', 'équipe', 'equipe'].includes(firstCell) ? lines.slice(1) : lines;
+
+    return dataLines
+      .map((line) => {
+        const [name, category, contact] = splitLine(line);
+        return { name: name ?? '', category: category?.toUpperCase() || 'U15', contact: contact ?? '' };
+      })
+      .filter((row) => row.name.length > 0);
+  }
+
+  private importRows(tournamentId: number, rows: ImportedRow[]): void {
+    this.importing.set(true);
+    forkJoin(
+      rows.map((row) =>
+        this.teamService.create({ ...row, tournamentId }).pipe(
+          map((team) => ({ ok: true as const, team })),
+          catchError(() => of({ ok: false as const, team: null })),
+        ),
+      ),
+    ).subscribe((results) => {
+      this.importing.set(false);
+      const created = results.filter((r): r is { ok: true; team: Team } => r.ok).map((r) => r.team);
+      const failedCount = results.length - created.length;
+
+      if (created.length > 0) {
+        this.teams.update((list) => [...list, ...created]);
+      }
+      if (failedCount === 0) {
+        this.toast.success(`${created.length} équipe(s) importée(s).`, 'Import réussi');
+      } else if (created.length === 0) {
+        this.toast.error("Aucune équipe n'a pu être importée (limite de votre plan atteinte ?).");
+      } else {
+        this.toast.info(`${created.length} équipe(s) importée(s), ${failedCount} en échec (limite de votre plan ?).`, 'Import partiel');
+      }
+    });
   }
 
   confirmDelete(): void {

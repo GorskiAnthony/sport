@@ -12,9 +12,20 @@
   <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <h1 class="text-white text-2xl font-extrabold">Équipes</h1>
     @if (tournaments().length > 0) {
-      <button type="button" (click)="openAdd()" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-        + Ajouter
-      </button>
+      <div class="flex items-center gap-2">
+        <label
+          for="csv-import-input"
+          title="Fichier CSV avec une équipe par ligne : Nom,Catégorie,Contact (la catégorie et le contact sont optionnels)"
+          class="inline-flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+          [class.opacity-50]="importing()"
+        >
+          {{ importing() ? 'Import…' : 'Importer un CSV' }}
+        </label>
+        <input id="csv-import-input" type="file" accept=".csv,text/csv" class="sr-only" [disabled]="importing()" (change)="onImportFile($event)" />
+        <button type="button" (click)="openAdd()" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+          + Ajouter
+        </button>
+      </div>
     }
   </div>
 
