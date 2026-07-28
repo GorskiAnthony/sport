@@ -1,0 +1,235 @@
+@if (!isPro) {
+  <div class="max-w-lg mx-auto text-center py-16">
+    <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto mb-4" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v4a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V3M3 3v4a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V3M9 3v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3M5 9v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/></svg>
+    </div>
+    <h1 class="text-white text-xl font-bold mb-2">Buvette</h1>
+    <p class="text-slate-400 text-sm mb-6">Gérez un catalogue de produits et encaissez les ventes du jour J depuis un téléphone — réservé au plan Pro.</p>
+    <a routerLink="/pricing" class="inline-flex items-center px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors">
+      Voir les plans →
+    </a>
+  </div>
+} @else if (tournaments().length === 0 && !loading()) {
+  <p class="text-slate-400 text-sm text-center py-12">Créez d'abord un tournoi pour ouvrir sa buvette.</p>
+} @else {
+  <app-confirm-modal
+    [open]="!!pendingDeleteProduct()"
+    title="Supprimer le produit ?"
+    [description]="(pendingDeleteProduct()?.name ?? '') + ' sera retiré du catalogue.'"
+    confirmLabel="Supprimer"
+    [danger]="true"
+    (confirmed)="confirmDeleteProduct()"
+    (cancelled)="pendingDeleteProduct.set(null)"
+  />
+
+  <div class="max-w-3xl">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h1 class="text-white text-2xl font-extrabold">Buvette</h1>
+    </div>
+
+    <div class="flex flex-col gap-1.5 mb-6 max-w-xs">
+      <label for="buvette-tournament-select" class="text-slate-400 text-xs">Tournoi</label>
+      <select
+        id="buvette-tournament-select"
+        [value]="selectedTournamentId()"
+        (change)="onTournamentChange($event)"
+        class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        @for (t of tournaments(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex gap-1 mb-6 bg-[#161B22] border border-white/10 rounded-lg p-1 w-fit">
+      @for (t of ['caisse', 'produits', 'resume']; track t) {
+        <button
+          type="button"
+          (click)="switchTab($any(t))"
+          class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+          [class]="tab() === t ? 'bg-green-500 text-black' : 'text-slate-400 hover:text-white'"
+        >
+          {{ t === 'caisse' ? 'Caisse' : t === 'produits' ? 'Produits' : 'Résumé' }}
+        </button>
+      }
+    </div>
+
+    @if (tab() === 'caisse') {
+      @if (products().length === 0) {
+        <p class="text-slate-400 text-sm text-center py-12">
+          Aucun produit dans le catalogue. Ajoutez-en depuis l'onglet "Produits" pour commencer à encaisser.
+        </p>
+      } @else {
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          @for (product of products(); track product.id) {
+            <button
+              type="button"
+              (click)="addToCart(product)"
+              class="bg-[#161B22] border border-white/10 hover:border-green-500/40 rounded-xl p-4 text-left transition-colors"
+            >
+              <p class="text-white font-semibold text-sm truncate">{{ product.name }}</p>
+              <p class="text-green-400 font-mono text-sm mt-1">{{ formatPrice(product.price) }}</p>
+            </button>
+          }
+        </div>
+
+        <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden">
+          <div class="px-5 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="text-white text-sm font-semibold">Ticket en cours</h2>
+            @if (cart().length > 0) {
+              <button type="button" (click)="clearCart()" class="text-slate-400 hover:text-red-400 text-xs transition-colors">Vider</button>
+            }
+          </div>
+          @if (cart().length === 0) {
+            <p class="px-5 py-8 text-slate-500 text-sm text-center">Touchez un produit pour l'ajouter au ticket.</p>
+          } @else {
+            <ul class="divide-y divide-white/5">
+              @for (line of cart(); track line.product.id) {
+                <li class="px-5 py-3 flex items-center justify-between gap-3">
+                  <span class="text-slate-200 text-sm flex-1 truncate">{{ line.product.name }}</span>
+                  <div class="flex items-center gap-2">
+                    <button type="button" (click)="removeFromCart(line.product.id)" aria-label="Retirer" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors">−</button>
+                    <span class="text-white font-mono text-sm w-5 text-center">{{ line.quantity }}</span>
+                    <button type="button" (click)="addToCart(line.product)" aria-label="Ajouter" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors">+</button>
+                  </div>
+                  <span class="text-slate-400 font-mono text-sm w-16 text-right">{{ formatPrice(line.product.price * line.quantity) }}</span>
+                </li>
+              }
+            </ul>
+            <div class="px-5 py-4 border-t border-white/10 flex items-center justify-between">
+              <span class="text-white font-semibold">Total</span>
+              <span class="text-green-400 font-mono font-bold text-lg">{{ formatPrice(cartTotal()) }}</span>
+            </div>
+            <div class="px-5 pb-5">
+              <button
+                type="button"
+                (click)="checkout()"
+                [disabled]="submittingSale()"
+                class="w-full py-3 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg transition-colors disabled:opacity-50"
+              >
+                {{ submittingSale() ? 'Encaissement…' : 'Encaisser' }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (tab() === 'produits') {
+      <div class="flex justify-end mb-4">
+        <button type="button" (click)="openAddProduct()" class="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+          + Ajouter un produit
+        </button>
+      </div>
+
+      @if (productPanelOpen()) {
+        <div class="bg-[#161B22] border border-white/10 rounded-xl p-5 mb-6">
+          <h2 class="text-white font-semibold mb-4">{{ editingProductId() !== null ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+          <form (submit)="$event.preventDefault(); saveProduct()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label for="bv-name" class="text-slate-400 text-xs">Nom *</label>
+              <input id="bv-name" [value]="productForm().name" (input)="updateProductField('name', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Sandwich jambon" required />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="bv-price" class="text-slate-400 text-xs">Prix (€) *</label>
+              <input id="bv-price" type="text" inputmode="decimal" [value]="productForm().price" (input)="updateProductField('price', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="3.50" required />
+            </div>
+            <div class="sm:col-span-2 flex gap-3 justify-end">
+              <button type="button" (click)="productPanelOpen.set(false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">Annuler</button>
+              <button type="submit" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
+                {{ editingProductId() !== null ? 'Enregistrer' : 'Ajouter' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden">
+        @if (products().length === 0) {
+          <p class="px-5 py-8 text-slate-400 text-sm text-center">Aucun produit pour le moment.</p>
+        } @else {
+          <ul class="divide-y divide-white/5">
+            @for (product of products(); track product.id) {
+              <li class="px-5 py-3 flex items-center justify-between gap-3">
+                <span class="text-white font-medium text-sm">{{ product.name }}</span>
+                <div class="flex items-center gap-3">
+                  <span class="text-green-400 font-mono text-sm">{{ formatPrice(product.price) }}</span>
+                  <button type="button" (click)="openEditProduct(product)" aria-label="Modifier" class="w-7 h-7 flex items-center justify-center text-amber-400 hover:bg-amber-500/10 rounded transition-colors">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button type="button" (click)="pendingDeleteProduct.set(product)" aria-label="Supprimer" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    @if (tab() === 'resume') {
+      @if (loadingSummary()) {
+        <div class="bg-[#161B22] h-32 rounded-xl animate-pulse"></div>
+      } @else if (summary()) {
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+            <p class="text-slate-400 text-xs mb-1">Chiffre d'affaires</p>
+            <p class="text-green-400 font-mono font-bold text-2xl">{{ formatPrice(summary()!.totalRevenue) }}</p>
+          </div>
+          <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+            <p class="text-slate-400 text-xs mb-1">Ventes</p>
+            <p class="text-white font-mono font-bold text-2xl">{{ summary()!.saleCount }}</p>
+          </div>
+        </div>
+
+        @if (summary()!.byProduct.length > 0) {
+          <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden mb-6">
+            <div class="px-5 py-3 border-b border-white/10">
+              <h2 class="text-white text-sm font-semibold">Ventes par produit</h2>
+            </div>
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white/10">
+                  <th scope="col" class="text-left px-5 py-2.5 text-slate-400 text-xs font-semibold uppercase tracking-wider">Produit</th>
+                  <th scope="col" class="text-left px-5 py-2.5 text-slate-400 text-xs font-semibold uppercase tracking-wider">Qté</th>
+                  <th scope="col" class="text-left px-5 py-2.5 text-slate-400 text-xs font-semibold uppercase tracking-wider">CA</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of summary()!.byProduct; track row.productName) {
+                  <tr class="border-b border-white/10 last:border-0">
+                    <td class="px-5 py-3 text-white font-medium">{{ row.productName }}</td>
+                    <td class="px-5 py-3 text-slate-400">{{ row.quantitySold }}</td>
+                    <td class="px-5 py-3 text-green-400 font-mono">{{ formatPrice(row.revenue) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (sales().length > 0) {
+          <div class="bg-[#161B22] border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-5 py-3 border-b border-white/10">
+              <h2 class="text-white text-sm font-semibold">Historique des ventes</h2>
+            </div>
+            <ul class="divide-y divide-white/5">
+              @for (sale of sales(); track sale.id) {
+                <li class="px-5 py-3 flex items-center justify-between gap-3">
+                  <span class="text-slate-400 text-xs">{{ sale.createdAt | date: 'dd/MM HH:mm' }}</span>
+                  <span class="text-slate-300 text-sm flex-1 truncate px-3">
+                    {{ sale.items.length }} article{{ sale.items.length > 1 ? 's' : '' }}
+                  </span>
+                  <span class="text-white font-mono text-sm">{{ formatPrice(sale.total) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      } @else {
+        <p class="text-slate-400 text-sm text-center py-12">Aucune vente enregistrée pour le moment.</p>
+      }
+    }
+  </div>
+}

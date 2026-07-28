@@ -6,7 +6,7 @@ import { ToastContainer } from '../../shared/ui/toast-container/toast-container'
 interface DashboardNavItem {
   path: string;
   label: string;
-  icon: 'dashboard' | 'tournament' | 'teams' | 'matches' | 'standings' | 'messages' | 'settings';
+  icon: 'dashboard' | 'tournament' | 'teams' | 'matches' | 'standings' | 'buvette' | 'messages' | 'settings';
   end: boolean;
 }
 
@@ -16,6 +16,7 @@ const NAV: DashboardNavItem[] = [
   { path: '/dashboard/teams', label: 'Équipes', icon: 'teams', end: false },
   { path: '/dashboard/matches', label: 'Matchs', icon: 'matches', end: false },
   { path: '/dashboard/standings', label: 'Classements', icon: 'standings', end: false },
+  { path: '/dashboard/buvette', label: 'Buvette', icon: 'buvette', end: false },
   { path: '/dashboard/messages', label: 'Messages', icon: 'messages', end: false },
   { path: '/dashboard/settings', label: 'Paramètres', icon: 'settings', end: false },
 ];

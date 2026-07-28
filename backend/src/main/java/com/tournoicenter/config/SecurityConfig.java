@@ -74,6 +74,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/tournaments/*/sponsor-click").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/recent").authenticated()
+                        // Financial data — must stay ahead of the /api/tournaments/** permitAll below,
+                        // which would otherwise expose every organizer's buvette sales/revenue publicly.
+                        .requestMatchers(HttpMethod.GET, "/api/tournaments/*/buvette/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed/enriched").authenticated()

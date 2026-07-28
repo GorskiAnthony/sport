@@ -135,6 +135,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/standings/standings').then((m) => m.DashboardStandingsPage),
       },
       {
+        path: 'buvette',
+        loadComponent: () => import('./features/dashboard/buvette/buvette').then((m) => m.DashboardBuvettePage),
+      },
+      {
         path: 'messages',
         loadComponent: () => import('./features/dashboard/messages/messages').then((m) => m.DashboardMessagesPage),
       },

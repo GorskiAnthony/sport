@@ -84,6 +84,7 @@ const PLANS: Plan[] = [
       "Tournois jusqu'à 128 équipes dans un même bracket",
       'Règlement personnalisé affiché aux équipes',
       'Bannière sponsor avec suivi des clics',
+      'Buvette (caisse mobile + suivi des ventes)',
     ],
   },
 ];
