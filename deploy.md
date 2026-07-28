@@ -7,10 +7,17 @@ et `sport-frontend`), via `docker-compose.prod.yml`.
 ## Vue d'ensemble
 
 ```
-Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─┬─▶ /api/*  → backend:3000 (réseau interne)
-                                                                       └─▶ le reste → SPA Angular
+Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─┬─▶ /api/*        → backend:3000 (réseau interne)
+                                                                       └─▶ pages HTML   → serveur Node Angular SSR
+                                                                              (127.0.0.1:4000, même conteneur)
                                                                               backend ─▶ postgres (5432)
 ```
+
+- Le conteneur **frontend** fait tourner nginx **et** un serveur Node (Angular SSR) côte à côte (voir
+  `docker-entrypoint-ssr.sh`) : nginx sert les assets statiques et les pages prérendues au build, proxie `/api/*`
+  vers le backend comme avant, et proxie tout le reste vers le serveur Node qui rend les pages à la demande
+  (classement/organisateur/tournoi public — voir `frontend/src/app/app.routes.server.ts`). Limite connue : si le
+  process Node plante, nginx reste up mais ces pages répondent en 502 (pas de superviseur de process).
 
 - **frontend** et **backend** : images publiées automatiquement par `.github/workflows/release-*.yml` à chaque
   release (voir README.md pour la stratégie de branches `dev`/`main`).
