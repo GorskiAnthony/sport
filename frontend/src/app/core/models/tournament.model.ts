@@ -17,6 +17,7 @@ export interface TournamentSummary {
   format: string | null;
   icon: string | null;
   splitEnabled: boolean;
+  eventPassExpiresAt: string | null;
   organizerId: number;
   teamsCount: number;
   createdAt: string;

@@ -66,8 +66,6 @@ const PLANS: Plan[] = [
       'Équipes illimitées',
       'Résultats en temps réel',
       'Export PDF des classements',
-      // TODO: confirmer que cette feature existe ; elle sert à différencier de Pass Événement
-      'Historique de vos tournois',
       'Support par email',
     ],
   },
@@ -81,8 +79,6 @@ const PLANS: Plan[] = [
     pricing: { kind: 'recurring', monthly: 49, annual: 490 },
     features: [
       'Tout le plan Classic',
-      '2 000 – 3 000 connexions simultanées',
-      'Infra dédiée + SLA 99.9%',
       'Support prioritaire 24/7',
       "Tournois jusqu'à 128 équipes dans un même bracket",
       'Règlement personnalisé affiché aux équipes',

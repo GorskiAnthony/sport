@@ -6,6 +6,8 @@ import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 public class PlanLimitService {
 
@@ -35,7 +37,8 @@ public class PlanLimitService {
             return;
         }
         boolean hasActiveEventPass = tournamentRepository.findById(tournamentId)
-                .map(tournament -> tournament.getEventPassExpiresAt() != null)
+                .map(tournament -> tournament.getEventPassExpiresAt() != null
+                        && tournament.getEventPassExpiresAt().isAfter(Instant.now()))
                 .orElse(false);
         if (hasActiveEventPass) {
             return;

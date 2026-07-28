@@ -20,6 +20,7 @@ public record TournamentSummaryResponse(
         String format,
         String icon,
         boolean splitEnabled,
+        Instant eventPassExpiresAt,
         Long organizerId,
         int teamsCount,
         Instant createdAt,
@@ -29,7 +30,7 @@ public record TournamentSummaryResponse(
         return new TournamentSummaryResponse(
                 t.getId(), t.getName(), t.getSport(), t.getCategory(), t.getLocation(),
                 t.getStartDate(), t.getEndDate(), t.getStatus(), t.getMaxTeams(), t.getDescription(),
-                t.getFormat(), t.getIcon(), t.isSplitEnabled(), t.getOrganizer().getId(),
+                t.getFormat(), t.getIcon(), t.isSplitEnabled(), t.getEventPassExpiresAt(), t.getOrganizer().getId(),
                 t.getTeams().size(), t.getCreatedAt(), t.getUpdatedAt()
         );
     }

@@ -1,7 +1,7 @@
 <div class="max-w-5xl space-y-6 print:max-w-full print:bg-white">
   <div class="flex items-center justify-between gap-3 print:hidden">
     <h1 class="text-white text-2xl font-extrabold">Classements</h1>
-    @if (tables().length > 0 && !canExportPdf()) {
+    @if (tables().length > 0 && hasLockedPdfExport()) {
       <app-button text="Export PDF (Classic/Pro) →" variant="ghost" routerLink="/pricing" />
     }
   </div>
@@ -27,7 +27,7 @@
             <h2 [id]="'t-' + table.tournament.id" class="text-white text-sm font-semibold print:text-black">{{ table.tournament.name }}</h2>
           </div>
           <div class="flex items-center gap-2">
-            @if (canExportPdf()) {
+            @if (canExportPdf(table.tournament)) {
               <button
                 type="button"
                 (click)="exportPdf(table.tournament.id)"

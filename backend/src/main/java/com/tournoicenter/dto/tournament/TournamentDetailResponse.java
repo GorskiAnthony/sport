@@ -24,6 +24,7 @@ public record TournamentDetailResponse(
         String format,
         String icon,
         boolean splitEnabled,
+        Instant eventPassExpiresAt,
         Long organizerId,
         List<TeamResponse> teams,
         List<MatchResponse> matches,
@@ -34,7 +35,8 @@ public record TournamentDetailResponse(
         return new TournamentDetailResponse(
                 t.getId(), t.getName(), t.getSport(), t.getCategory(), t.getLocation(),
                 t.getStartDate(), t.getEndDate(), t.getStatus(), t.getMaxTeams(), t.getDescription(),
-                t.getRules(), t.getFormat(), t.getIcon(), t.isSplitEnabled(), t.getOrganizer().getId(),
+                t.getRules(), t.getFormat(), t.getIcon(), t.isSplitEnabled(), t.getEventPassExpiresAt(),
+                t.getOrganizer().getId(),
                 t.getTeams().stream().map(TeamResponse::from).toList(),
                 t.getMatches().stream().map(MatchResponse::from).toList(),
                 t.getCreatedAt(), t.getUpdatedAt()

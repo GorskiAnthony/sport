@@ -25,8 +25,18 @@ export class DashboardStandingsPage implements OnInit {
   readonly tables = signal<{ tournament: TournamentDetail; rows: Standing[]; color: string }[]>([]);
   readonly loading = signal(true);
 
-  // Export PDF des classements : réservé aux plans payants (cf. page /pricing).
-  readonly canExportPdf = computed(() => (this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE');
+  // Export PDF des classements : réservé aux plans payants, ou à un tournoi payé via Pass
+  // Événement tant que son crédit (7 jours après la fin) n'a pas expiré — un plan FREE ne
+  // suffit pas à lui seul à en priver un acheteur ponctuel du Pass.
+  canExportPdf(tournament: TournamentDetail): boolean {
+    if ((this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE') return true;
+    const expiresAt = tournament.eventPassExpiresAt;
+    return !!expiresAt && new Date(expiresAt).getTime() > Date.now();
+  }
+
+  readonly hasLockedPdfExport = computed(() =>
+    this.tables().some((t) => !this.canExportPdf(t.tournament)),
+  );
 
   // Tournoi en cours d'export : les autres sections passent en print:hidden le temps de l'impression
   // (sinon window.print() imprime toute la page, tous tournois confondus).
