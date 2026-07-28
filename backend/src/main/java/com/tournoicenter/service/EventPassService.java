@@ -70,7 +70,7 @@ public class EventPassService {
                             .setQuantity(1L)
                             .build())
                     .setSuccessUrl(clientUrl + "/dashboard/tournaments/new?eventPass=1")
-                    .setCancelUrl(clientUrl + "/pricing")
+                    .setCancelUrl(clientUrl + "/checkout/cancel")
                     .putMetadata("userId", String.valueOf(userId))
                     .putMetadata("type", "EVENT_PASS")
                     .build();

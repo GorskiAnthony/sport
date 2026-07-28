@@ -180,5 +180,15 @@ export const routes: Routes = [
     path: 'print/tournaments/:id',
     loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
   },
+  {
+    path: 'checkout/success',
+    loadComponent: () =>
+      import('./features/checkout/checkout-success/checkout-success').then((m) => m.CheckoutSuccessPage),
+  },
+  {
+    path: 'checkout/cancel',
+    loadComponent: () =>
+      import('./features/checkout/checkout-cancel/checkout-cancel').then((m) => m.CheckoutCancelPage),
+  },
   { path: '**', loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFoundPage) },
 ];

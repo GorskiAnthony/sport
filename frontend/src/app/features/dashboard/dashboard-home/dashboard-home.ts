@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { DashboardStatsService } from '../../../core/services/dashboard-stats.service';
 import { OrganizerDashboardStats } from '../../../core/models/dashboard-stats.model';
@@ -9,7 +10,7 @@ import { MATCH_STATUS_LABELS, TOURNAMENT_STATUS_LABELS } from '../../../shared/u
 @Component({
   selector: 'app-dashboard-home-page',
   standalone: true,
-  imports: [PageHeader],
+  imports: [PageHeader, RouterLink],
   templateUrl: './dashboard-home.html',
 })
 export class DashboardHomePage implements OnInit {

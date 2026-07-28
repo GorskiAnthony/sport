@@ -1,0 +1,16 @@
+<main class="min-h-screen bg-[#0D1117] flex flex-col items-center justify-center text-center px-6">
+  <div class="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-6" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  </div>
+  <h1 class="text-white text-3xl font-bold mb-3">Paiement réussi !</h1>
+  <p class="text-slate-400 mb-8 max-w-sm">
+    @if (planLabel) {
+      Vous êtes maintenant sur le plan <span class="text-white font-semibold">{{ planLabel }}</span>. Profitez de toutes ses fonctionnalités dès maintenant.
+    } @else {
+      Votre paiement a bien été confirmé.
+    }
+  </p>
+  <app-button text="Aller au tableau de bord" variant="primary" routerLink="/dashboard" className="px-8 py-3 text-base" />
+</main>
