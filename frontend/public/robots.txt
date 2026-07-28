@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /home/
+Disallow: /register/
+Disallow: /checkout/
+Disallow: /print/
+Allow: /
