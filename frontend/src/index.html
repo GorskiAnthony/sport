@@ -6,6 +6,17 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <!-- Filet de sécurité : pages qui n'appellent pas setPageMeta (auth, espace connecté...).
+       Pas d'og:url/og:image ici — fichier statique commun à tous les domaines possibles
+       (voir deploy.md), setPageMeta les fournit en absolu quand le contexte le permet. -->
+  <meta name="description" content="Créez, gérez et suivez vos tournois sportifs en temps réel, quel que soit votre sport.">
+  <meta property="og:site_name" content="Tournoi Center">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tournoi Center">
+  <meta property="og:description" content="Créez, gérez et suivez vos tournois sportifs en temps réel, quel que soit votre sport.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tournoi Center">
+  <meta name="twitter:description" content="Créez, gérez et suivez vos tournois sportifs en temps réel, quel que soit votre sport.">
 </head>
 <body>
   <app-root></app-root>

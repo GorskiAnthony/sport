@@ -1,4 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
@@ -16,13 +18,18 @@ import { setPageMeta } from '../../shared/utils/seo';
 })
 export class TournamentsPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
+  private readonly document = inject(DOCUMENT);
 
   readonly tournaments = signal<TournamentSummary[]>([]);
   readonly loading = signal(true);
   readonly skeletons = [1, 2, 3, 4, 5, 6];
 
   constructor() {
-    setPageMeta('Tournois', 'Parcourez les tournois sportifs organisés sur Tournoi Center : dates, lieux, équipes et classements en direct.');
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Tournois',
+      description: 'Parcourez les tournois sportifs organisés sur Tournoi Center : dates, lieux, équipes et classements en direct.',
+      url: this.document.location.origin + '/tournaments',
+    });
   }
 
   ngOnInit(): void {

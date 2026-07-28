@@ -15,7 +15,7 @@ import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
 import { formatDateFr } from '../../shared/utils/date';
-import { setPageMeta, setJsonLd } from '../../shared/utils/seo';
+import { setPageMeta, setJsonLd, setCanonical } from '../../shared/utils/seo';
 import { LucideStar } from '@lucide/angular';
 import { Meta, Title } from '@angular/platform-browser';
 
@@ -40,13 +40,16 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
   private readonly toast = inject(ToastService);
   private readonly liveUpdate = inject(LiveUpdateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly document = inject(DOCUMENT);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly document = inject(DOCUMENT);
   readonly auth = inject(AuthService);
 
   constructor() {
-    setPageMeta('Tournoi', 'Suivez ce tournoi en direct sur Tournoi Center : classement, matchs et équipes.');
+    setPageMeta(this.titleService, this.metaService, {
+      title: 'Tournoi',
+      description: 'Suivez ce tournoi en direct sur Tournoi Center : classement, matchs et équipes.',
+    });
   }
 
   private tournamentId = 0;
@@ -128,11 +131,19 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
       next: (tournament) => {
         this.tournament.set(tournament);
         this.loading.set(false);
-        this.titleService.setTitle(`${tournament.name} — Tournoi Center`);
-        this.metaService.updateTag({
-          name: 'description',
-          content: `${tournament.name} (${tournament.sport}) — ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`,
+
+        const origin = this.document.location.origin;
+        const canonicalUrl = `${origin}/t/${tournament.id}`;
+        const description = `${tournament.name} (${tournament.sport}) — ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`;
+
+        setPageMeta(this.titleService, this.metaService, {
+          title: tournament.name,
+          description,
+          url: canonicalUrl,
+          image: `${origin}/hero.png`,
+          type: 'article',
         });
+        setCanonical(this.document, canonicalUrl);
         setJsonLd(this.document, {
           '@context': 'https://schema.org',
           '@type': 'SportsEvent',
@@ -144,7 +155,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
           location: tournament.location?.trim()
             ? { '@type': 'Place', name: tournament.location }
             : undefined,
-          url: `${this.document.location.origin}/t/${tournament.id}`,
+          url: canonicalUrl,
         });
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { setPageMeta } from '../../shared/utils/seo';
 
@@ -10,7 +11,10 @@ import { setPageMeta } from '../../shared/utils/seo';
 })
 export class TeamsPage {
   constructor() {
-    setPageMeta('Équipes', 'Retrouvez les équipes inscrites sur Tournoi Center, tous sports et catégories confondus.');
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Équipes',
+      description: 'Retrouvez les équipes inscrites sur Tournoi Center, tous sports et catégories confondus.',
+    });
   }
 
   readonly teams = [

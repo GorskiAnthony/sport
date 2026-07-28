@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventPassService } from '../../core/services/event-pass.service';
@@ -154,7 +155,10 @@ export class PricingPage {
   readonly billing = signal<BillingPeriod>('monthly');
 
   constructor() {
-    setPageMeta('Tarifs', 'Classic, Pro ou Pass Événement : choisissez la formule adaptée à vos tournois, mensuelle ou annuelle.');
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Tarifs',
+      description: 'Classic, Pro ou Pass Événement : choisissez la formule adaptée à vos tournois, mensuelle ou annuelle.',
+    });
   }
 
   planCtaState(plan: Plan): PlanCtaState {

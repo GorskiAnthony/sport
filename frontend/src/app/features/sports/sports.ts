@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
@@ -23,7 +24,10 @@ const SHOWCASE_COUNTS: Record<string, number> = {
 })
 export class SportsPage {
   constructor() {
-    setPageMeta('Sports', 'Football, basketball, tennis, volleyball, rugby, esport, handball, futsal : découvrez tous les sports gérables sur Tournoi Center.');
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Sports',
+      description: 'Football, basketball, tennis, volleyball, rugby, esport, handball, futsal : découvrez tous les sports gérables sur Tournoi Center.',
+    });
   }
 
   readonly sports = SPORTS.map((sport) => ({

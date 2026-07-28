@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
+import { DOCUMENT, NgOptimizedImage } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin } from '@lucide/angular';
 import { Button } from '../../shared/ui/button/button';
@@ -25,12 +26,19 @@ interface Stat {
 })
 export class HomePage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
+  private readonly document = inject(DOCUMENT);
 
   readonly upcomingTournaments = signal<TournamentSummary[] | null>(null);
   readonly stats = signal<Stat[] | null>(null);
 
   constructor() {
-    setPageMeta('Organisez vos tournois sportifs', 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Tournoi Center gère le tableau, les classements et le partage avec vos spectateurs.');
+    const origin = this.document.location.origin;
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Organisez vos tournois sportifs',
+      description: 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Tournoi Center gère le tableau, les classements et le partage avec vos spectateurs.',
+      url: origin,
+      image: `${origin}/hero.png`,
+    });
   }
 
   ngOnInit(): void {

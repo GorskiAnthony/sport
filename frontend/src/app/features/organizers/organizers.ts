@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
 import { setPageMeta } from '../../shared/utils/seo';
@@ -11,7 +12,10 @@ import { setPageMeta } from '../../shared/utils/seo';
 })
 export class OrganizersPage {
   constructor() {
-    setPageMeta('Pour les organisateurs', 'Créez votre tournoi, ajoutez vos équipes et gérez les scores en direct : le classement se met à jour automatiquement.');
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Pour les organisateurs',
+      description: 'Créez votre tournoi, ajoutez vos équipes et gérez les scores en direct : le classement se met à jour automatiquement.',
+    });
   }
 
   readonly steps = [
