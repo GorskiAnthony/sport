@@ -7,7 +7,7 @@ import { ToastContainer } from '../../shared/ui/toast-container/toast-container'
 interface SpectatorNavItem {
   path: string;
   label: string;
-  icon: 'home' | 'tournament' | 'sports' | 'teams' | 'standings' | 'heart' | 'bell' | 'settings';
+  icon: 'home' | 'tournament' | 'sports' | 'standings' | 'heart' | 'bell' | 'settings';
   end: boolean;
 }
 
@@ -15,7 +15,6 @@ const NAV: SpectatorNavItem[] = [
   { path: '/home', label: 'Accueil', icon: 'home', end: true },
   { path: '/home/tournaments', label: 'Tournois', icon: 'tournament', end: false },
   { path: '/home/sports', label: 'Sports', icon: 'sports', end: false },
-  { path: '/home/teams', label: 'Équipes', icon: 'teams', end: false },
   { path: '/home/standings', label: 'Classements', icon: 'standings', end: false },
   { path: '/home/favorites', label: 'Favoris', icon: 'heart', end: false },
   { path: '/home/notifications', label: 'Notifications', icon: 'bell', end: false },

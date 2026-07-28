@@ -25,7 +25,7 @@ public class SitemapController {
     private final CorsProperties corsProperties;
 
     private static final List<String> STATIC_PATHS = List.of(
-            "", "tournaments", "teams", "sports", "pricing", "organizers", "about"
+            "", "tournaments", "sports", "pricing", "organizers", "about"
     );
 
     public SitemapController(TournamentService tournamentService, CorsProperties corsProperties) {

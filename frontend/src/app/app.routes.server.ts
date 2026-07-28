@@ -6,7 +6,6 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'sports', renderMode: RenderMode.Prerender },
   { path: 'organizers', renderMode: RenderMode.Prerender },
   { path: 'pricing', renderMode: RenderMode.Prerender },
-  { path: 'teams', renderMode: RenderMode.Prerender },
 
   // Contenu dynamique (tournois créés en continu) : rendu serveur à chaque requête, pas au build.
   { path: '', renderMode: RenderMode.Server },

@@ -12,7 +12,6 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Accueil', path: '/' },
   { label: 'Tournois', path: '/tournaments' },
   { label: 'Sports', path: '/sports' },
-  { label: 'Équipes', path: '/teams' },
   { label: 'Tarifs', path: '/pricing' },
   { label: 'À propos', path: '/about' },
 ];

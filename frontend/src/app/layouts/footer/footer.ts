@@ -15,7 +15,6 @@ interface FooterLink {
 export class Footer {
   readonly plateforme: FooterLink[] = [
     { label: 'Tournois', href: '/tournaments' },
-    { label: 'Équipes', href: '/teams' },
     { label: 'Organisateurs', href: '/organizers' },
     { label: 'Tarifs', href: '/pricing' },
   ];
