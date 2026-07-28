@@ -102,6 +102,13 @@ public class SubscriptionService {
                             .setPrice(priceId)
                             .build())
                     .setProrationBehavior(com.stripe.param.SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS)
+                    // Sans ceci, le comportement par défaut de Stripe laisse passer la mise à jour
+                    // même si le paiement immédiat de la proration échoue (carte refusée, 3DS requis...),
+                    // avec l'abonnement en status "past_due"/"incomplete" — et le code plus bas accordait
+                    // quand même le nouveau plan, sans jamais revenir en arrière tant que l'abonnement
+                    // n'était pas totalement annulé. error_if_incomplete fait échouer l'appel Stripe
+                    // (StripeException) dans ce cas, avant qu'on ne touche à user.plan.
+                    .setPaymentBehavior(com.stripe.param.SubscriptionUpdateParams.PaymentBehavior.ERROR_IF_INCOMPLETE)
                     .build();
 
             var updated = stripeClient.subscriptions().update(subscription.getStripeSubscriptionId(), params);
