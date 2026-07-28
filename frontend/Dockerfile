@@ -13,7 +13,11 @@ FROM nginx:1.27-alpine AS runtime
 # relocation symbol-not-found). nginx sert les assets statiques + le proxy /api comme avant, et
 # proxie en plus les routes SSR dynamiques (/, /tournaments, /t/:id) vers le serveur Node Angular
 # qui tourne dans le même conteneur — voir docker-entrypoint-ssr.sh pour le compromis "un seul conteneur".
-RUN apk add --no-cache nodejs
+# icu-data-full : le paquet nodejs d'Alpine embarque par défaut des données ICU réduites
+# (anglais uniquement) — new Date(...).toLocaleDateString('fr-FR', ...) ne plante pas mais
+# retombe silencieusement sur l'anglais ("Aug 20, 2026" au lieu de "20 août 2026"), constaté
+# dans les dates générées côté SSR (og:description, JSON-LD...).
+RUN apk add --no-cache nodejs icu-data-full
 WORKDIR /app
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # outputMode "server" ne génère plus de index.html à la racine (seules les routes prérendues en
