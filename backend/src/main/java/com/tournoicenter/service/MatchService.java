@@ -5,7 +5,6 @@ import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.NotificationType;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
-import com.tournoicenter.dto.match.MatchGoalRequest;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -18,13 +17,8 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class MatchService {
@@ -34,18 +28,16 @@ public class MatchService {
     private final TeamRepository teamRepository;
     private final NotificationService notificationService;
     private final TournamentLiveService tournamentLiveService;
-    private final ObjectMapper objectMapper;
     private final CacheManager cacheManager;
 
     public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
-                         NotificationService notificationService, TournamentLiveService tournamentLiveService, ObjectMapper objectMapper,
+                         NotificationService notificationService, TournamentLiveService tournamentLiveService,
                          CacheManager cacheManager) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
         this.notificationService = notificationService;
         this.tournamentLiveService = tournamentLiveService;
-        this.objectMapper = objectMapper;
         this.cacheManager = cacheManager;
     }
 
@@ -137,35 +129,6 @@ public class MatchService {
         evictTournamentDetailCache(tournament.getId());
 
         return MatchResponse.from(match);
-    }
-
-    @Transactional
-    public MatchResponse addGoal(Long id, Long requesterId, MatchGoalRequest request) {
-        Match match = getOrThrow(id);
-        requireOwner(match, requesterId);
-
-        Team scoringTeam = teamRepository.findById(request.teamId())
-                .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
-        if (!scoringTeam.getId().equals(match.getHomeTeam().getId()) && !scoringTeam.getId().equals(match.getAwayTeam().getId())) {
-            throw new ForbiddenException();
-        }
-
-        appendGoalEvent(match, scoringTeam);
-
-        Tournament tournament = match.getTournament();
-        String message = String.format("But de %s !", scoringTeam.getName());
-        notificationService.notifyFollowers(scoringTeam, tournament, match, NotificationType.GOAL_SCORED, message);
-        tournamentLiveService.notifyTournamentChanged(tournament.getId());
-        evictTournamentDetailCache(tournament.getId());
-
-        return MatchResponse.from(match);
-    }
-
-    private void appendGoalEvent(Match match, Team scoringTeam) {
-        List<Map<String, Object>> events = new ArrayList<>(
-                objectMapper.readValue(match.getEvents(), new TypeReference<List<Map<String, Object>>>() {}));
-        events.add(Map.of("type", "GOAL", "teamId", scoringTeam.getId(), "at", Instant.now().toString()));
-        match.setEvents(objectMapper.writeValueAsString(events));
     }
 
     @Transactional

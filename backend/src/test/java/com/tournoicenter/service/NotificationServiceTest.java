@@ -74,7 +74,7 @@ class NotificationServiceTest {
 
     @Test
     void findMineMapsRepositoryResults() {
-        Notification notification = new Notification(user(1L), tournament(), null, NotificationType.GOAL_SCORED, "But !");
+        Notification notification = new Notification(user(1L), tournament(), null, NotificationType.MATCH_STARTED, "Début !");
         when(notificationRepository.findByUserIdOrderByCreatedAtDesc(1L)).thenReturn(List.of(notification));
 
         assertThat(service.findMine(1L)).hasSize(1);
@@ -89,7 +89,7 @@ class NotificationServiceTest {
 
     @Test
     void markReadRejectsWhenRequesterIsNotTheOwner() {
-        Notification notification = new Notification(user(1L), tournament(), null, NotificationType.GOAL_SCORED, "But !");
+        Notification notification = new Notification(user(1L), tournament(), null, NotificationType.MATCH_STARTED, "Début !");
         when(notificationRepository.findById(5L)).thenReturn(Optional.of(notification));
 
         assertThatThrownBy(() -> service.markRead(5L, 2L)).isInstanceOf(ForbiddenException.class);
@@ -104,7 +104,7 @@ class NotificationServiceTest {
 
     @Test
     void markAllReadMarksEveryNotificationForUser() {
-        Notification a = new Notification(user(1L), tournament(), null, NotificationType.GOAL_SCORED, "But !");
+        Notification a = new Notification(user(1L), tournament(), null, NotificationType.MATCH_FINISHED, "Fin !");
         Notification b = new Notification(user(1L), tournament(), null, NotificationType.MATCH_STARTED, "Début !");
         when(notificationRepository.findByUserIdOrderByCreatedAtDesc(1L)).thenReturn(List.of(a, b));
 
@@ -122,7 +122,7 @@ class NotificationServiceTest {
         when(teamFollowRepository.findByTeamId(team.getId())).thenReturn(List.of(follow1, follow2));
         when(notificationRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.notifyFollowers(team, team.getTournament(), null, NotificationType.GOAL_SCORED, "But de Team A !");
+        service.notifyFollowers(team, team.getTournament(), null, NotificationType.MATCH_STARTED, "Team A a commencé !");
 
         verify(notificationRepository, times(2)).save(any(Notification.class));
         verify(messagingTemplate).convertAndSend(eq("/topic/notifications/1"), any(Object.class));

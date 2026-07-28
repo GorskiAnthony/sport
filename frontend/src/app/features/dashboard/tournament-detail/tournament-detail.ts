@@ -183,13 +183,6 @@ export class DashboardTournamentDetailPage implements OnInit {
     });
   }
 
-  addGoal(match: Match, team: Team): void {
-    this.matchService.addGoal(match.id, team.id).subscribe({
-      next: () => this.toast.success(`But de ${team.name} enregistré.`),
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
   isEditingCell(rowTeam: Team, colTeam: Team): boolean {
     const cell = this.editingCell();
     return cell !== null && cell.rowTeamId === rowTeam.id && cell.colTeamId === colTeam.id;

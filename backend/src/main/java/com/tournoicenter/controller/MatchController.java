@@ -1,7 +1,6 @@
 package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.ApiResponse;
-import com.tournoicenter.dto.match.MatchGoalRequest;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -50,13 +49,6 @@ public class MatchController {
     @PatchMapping("/{id}/start")
     public ApiResponse<MatchResponse> start(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
         return ApiResponse.of(matchService.start(id, principal.userId()));
-    }
-
-    @PostMapping("/{id}/goals")
-    public ApiResponse<MatchResponse> addGoal(@AuthenticationPrincipal JwtPrincipal principal,
-                                               @PathVariable Long id,
-                                               @Valid @RequestBody MatchGoalRequest request) {
-        return ApiResponse.of(matchService.addGoal(id, principal.userId(), request));
     }
 
     @DeleteMapping("/{id}")

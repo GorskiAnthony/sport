@@ -83,13 +83,6 @@ export class BracketTree {
     });
   }
 
-  addGoal(match: Match, team: Team): void {
-    this.matchService.addGoal(match.id, team.id).subscribe({
-      next: () => this.toast.success(`But de ${team.name} enregistré.`),
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
   saveScore(match: Match): void {
     const homeScore = Number(this.homeInput());
     const awayScore = Number(this.awayInput());

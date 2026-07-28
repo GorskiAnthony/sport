@@ -8,7 +8,6 @@ import { Notification, NotificationType } from '../../../core/models/notificatio
 const TYPE_ICONS: Record<NotificationType, string> = {
   MATCH_STARTED: 'play',
   MATCH_FINISHED: 'flag',
-  GOAL_SCORED: 'goal',
 };
 
 @Component({
