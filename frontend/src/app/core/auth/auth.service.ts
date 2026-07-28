@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, Role, User } from '../models/user.model';
@@ -21,6 +22,10 @@ interface LoginPayload {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  // Pas de localStorage côté serveur (SSR) : le user "connecté" n'existe que dans le
+  // navigateur, l'app y est rendue déconnectée puis réhydratée avec le vrai état côté client.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
 
   readonly currentUser = this.currentUserSignal.asReadonly();
@@ -56,13 +61,15 @@ export class AuthService {
       this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
     }
 
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    if (this.isBrowser) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+    }
     this.currentUserSignal.set(null);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return this.isBrowser ? localStorage.getItem(TOKEN_KEY) : null;
   }
 
   updatePlan(plan: User['plan']): void {
@@ -70,7 +77,9 @@ export class AuthService {
     if (!current) return;
 
     const updated: User = { ...current, plan };
-    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    if (this.isBrowser) {
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    }
     this.currentUserSignal.set(updated);
   }
 
@@ -80,19 +89,24 @@ export class AuthService {
   refreshUser(): Observable<User> {
     return this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(
       tap((user) => {
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        if (this.isBrowser) {
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }
         this.currentUserSignal.set(user);
       }),
     );
   }
 
   private persistSession(response: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, response.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    if (this.isBrowser) {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    }
     this.currentUserSignal.set(response.user);
   }
 
   private readStoredUser(): User | null {
+    if (!this.isBrowser) return null;
     try {
       const stored = localStorage.getItem(USER_KEY);
       return stored ? (JSON.parse(stored) as User) : null;
