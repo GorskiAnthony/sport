@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class SubscriptionService {
@@ -148,15 +147,32 @@ public class SubscriptionService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Webhook signature invalide.");
         }
 
-        Optional<StripeObject> dataObject = event.getDataObjectDeserializer().getObject();
-        if (dataObject.isEmpty()) {
+        // getObject() ne désérialise que si l'apiVersion de l'événement correspond exactement à
+        // celle figée dans le SDK stripe-java (Stripe.API_VERSION) : dès que le compte Stripe
+        // avance vers une version d'API plus récente que celle du SDK, getObject() renvoie
+        // silencieusement Optional.empty() (pas d'exception) et cette méthode ne faisait plus rien
+        // — le webhook répondait quand même 200 à Stripe, laissant croire que tout allait bien
+        // pendant que User.plan restait figé en base. deserializeUnsafe() reparse le JSON brut de
+        // l'événement sans cette vérification de version.
+        var deserializer = event.getDataObjectDeserializer();
+        StripeObject dataObject;
+        try {
+            dataObject = deserializer.getObject().orElse(null);
+            if (dataObject == null) {
+                log.warn("Désérialisation Stripe stricte en échec pour l'événement {} (type {}, apiVersion {}) "
+                                + "— probable écart de version entre le SDK et le compte Stripe ; fallback sur deserializeUnsafe().",
+                        event.getId(), event.getType(), event.getApiVersion());
+                dataObject = deserializer.deserializeUnsafe();
+            }
+        } catch (com.stripe.exception.EventDataObjectDeserializationException e) {
+            log.error("Impossible de désérialiser l'événement Stripe {} (type {})", event.getId(), event.getType(), e);
             return;
         }
 
         switch (event.getType()) {
-            case "checkout.session.completed" -> onCheckoutCompleted((Session) dataObject.get());
-            case "customer.subscription.updated" -> onSubscriptionUpdated((com.stripe.model.Subscription) dataObject.get());
-            case "customer.subscription.deleted" -> onSubscriptionDeleted((com.stripe.model.Subscription) dataObject.get());
+            case "checkout.session.completed" -> onCheckoutCompleted((Session) dataObject);
+            case "customer.subscription.updated" -> onSubscriptionUpdated((com.stripe.model.Subscription) dataObject);
+            case "customer.subscription.deleted" -> onSubscriptionDeleted((com.stripe.model.Subscription) dataObject);
             default -> {
                 // événement non géré, ignoré volontairement
             }
