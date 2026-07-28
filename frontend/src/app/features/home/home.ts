@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin } from '@lucide/angular';
 import { Button } from '../../shared/ui/button/button';
@@ -19,7 +20,7 @@ interface Stat {
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [Button, RouterLink, SportIcon, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin],
+  imports: [Button, RouterLink, SportIcon, NgOptimizedImage, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin],
   templateUrl: './home.html',
 })
 export class HomePage implements OnInit {
