@@ -24,6 +24,8 @@ interface Plan {
   pricing: Pricing;
 }
 
+type PlanCtaState = 'current' | 'manage' | 'switch' | 'default';
+
 interface EventPass {
   name: string;
   description: string;
@@ -149,6 +151,20 @@ export class PricingPage {
   readonly loadingPlan = signal<string | null>(null);
   readonly loadingEventPass = signal(false);
   readonly billing = signal<BillingPeriod>('monthly');
+
+  planCtaState(plan: Plan): PlanCtaState {
+    if (!this.authService.isAuthenticated()) {
+      return 'default';
+    }
+
+    const currentPlan = this.authService.currentUser()?.plan ?? 'FREE';
+    if (plan.id.toUpperCase() === currentPlan) {
+      return 'current';
+    }
+
+    // Repasser au gratuit revient à résilier l'abonnement en cours, pas à en créer un nouveau.
+    return plan.id === 'free' ? 'manage' : 'switch';
+  }
 
   priceInfo(plan: Plan): { amount: string; period: string; note?: string } {
     if (plan.pricing.kind === 'fixed') {

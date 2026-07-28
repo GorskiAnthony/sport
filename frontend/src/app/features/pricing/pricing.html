@@ -47,13 +47,32 @@
           }
         </ul>
 
-        <app-button
-          [text]="loadingPlan() === plan.id ? 'Chargement…' : plan.cta"
-          [variant]="plan.highlighted ? 'primary' : 'outline'"
-          className="w-full justify-center"
-          [disabled]="loadingPlan() === plan.id"
-          (clicked)="selectPlan(plan)"
-        />
+        @switch (planCtaState(plan)) {
+          @case ('current') {
+            <app-button text="Plan actuel" variant="outline" className="w-full justify-center opacity-60" [disabled]="true" />
+          }
+          @case ('manage') {
+            <app-button text="Gérer mon abonnement" variant="outline" className="w-full justify-center" routerLink="/dashboard/settings" />
+          }
+          @case ('switch') {
+            <app-button
+              [text]="loadingPlan() === plan.id ? 'Chargement…' : 'Passer à ce plan'"
+              [variant]="plan.highlighted ? 'primary' : 'outline'"
+              className="w-full justify-center"
+              [disabled]="loadingPlan() === plan.id"
+              (clicked)="selectPlan(plan)"
+            />
+          }
+          @default {
+            <app-button
+              [text]="loadingPlan() === plan.id ? 'Chargement…' : plan.cta"
+              [variant]="plan.highlighted ? 'primary' : 'outline'"
+              className="w-full justify-center"
+              [disabled]="loadingPlan() === plan.id"
+              (clicked)="selectPlan(plan)"
+            />
+          }
+        }
       </div>
     }
   </div>
