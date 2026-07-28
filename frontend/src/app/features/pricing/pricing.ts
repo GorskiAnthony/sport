@@ -84,9 +84,8 @@ const PLANS: Plan[] = [
       '2 000 – 3 000 connexions simultanées',
       'Infra dédiée + SLA 99.9%',
       'Support prioritaire 24/7',
-      // TODO: confirmer la limite technique réelle du bracket unique avant split automatique
-      "Tournois scindables (split) jusqu'à 48 équipes dans un même bracket",
-      'Règles personnalisées',
+      "Tournois jusqu'à 128 équipes dans un même bracket",
+      'Règlement personnalisé affiché aux équipes',
     ],
   },
 ];
@@ -121,8 +120,8 @@ const FAQ = [
     a: "Oui, sans carte bancaire requise. Vous pouvez l'utiliser indéfiniment.",
   },
   {
-    q: "Qu'est-ce qu'un tournoi scindable (Pro) ?",
-    a: 'Un gros tournoi peut être automatiquement divisé en deux sous-tournois parallèles avec classements fusionnés.',
+    q: 'Y a-t-il une limite au nombre d\'équipes (Pro) ?',
+    a: "Les plans Classic et Pro n'ont pas de limite d'équipes au global, mais un même bracket (poule ou tableau à élimination directe) est plafonné à 128 équipes pour rester lisible et performant.",
   },
   {
     q: 'Quelle différence entre le Pass Événement et un abonnement ?',

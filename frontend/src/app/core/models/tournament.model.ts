@@ -25,6 +25,7 @@ export interface TournamentSummary {
 
 export interface TournamentDetail
   extends Omit<TournamentSummary, 'teamsCount'> {
+  rules: string | null;
   teams: Team[];
   matches: Match[];
 }
@@ -44,6 +45,7 @@ export interface TournamentRequest {
   endDate: string;
   maxTeams: number;
   description?: string;
+  rules?: string;
   format?: string;
   splitEnabled?: boolean;
   useEventPass?: boolean;

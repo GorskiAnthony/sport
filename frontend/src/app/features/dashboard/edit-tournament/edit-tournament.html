@@ -34,6 +34,24 @@
           class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
         ></textarea>
       </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="et-rules" class="text-slate-300 text-sm font-medium">Règlement personnalisé</label>
+        @if (isPro) {
+          <textarea
+            id="et-rules"
+            rows="4"
+            placeholder="Nombre de joueurs par équipe, durée des matchs, règles spécifiques…"
+            [value]="rules()"
+            (input)="rules.set($any($event.target).value)"
+            class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+          ></textarea>
+        } @else {
+          <div class="flex items-center justify-between gap-3 bg-[#0D1117] border border-white/10 rounded-lg px-4 py-3">
+            <p class="text-slate-500 text-sm">Réservé au plan Pro — affichez un règlement personnalisé aux équipes et spectateurs.</p>
+            <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
+          </div>
+        }
+      </div>
       <div class="flex justify-end">
         <app-button [text]="saving() ? 'Enregistrement…' : 'Enregistrer'" variant="primary" type="submit" [disabled]="saving()" />
       </div>

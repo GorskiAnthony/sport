@@ -136,6 +136,13 @@ public class TournamentService {
         if (request.description() != null) tournament.setDescription(request.description());
         if (request.format() != null) tournament.setFormat(request.format());
         if (request.splitEnabled() != null) tournament.setSplitEnabled(request.splitEnabled());
+        if (request.rules() != null) {
+            boolean hasContent = !request.rules().isBlank();
+            if (hasContent && !PlanLimits.of(tournament.getOrganizer().getPlan()).customRules()) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "Le règlement personnalisé est réservé au plan Pro.");
+            }
+            tournament.setRules(request.rules());
+        }
     }
 
     private Tournament getOrThrow(Long id) {

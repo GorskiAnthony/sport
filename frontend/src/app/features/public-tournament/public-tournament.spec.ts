@@ -20,6 +20,7 @@ const TOURNAMENT: TournamentDetail = {
   status: 'ONGOING',
   maxTeams: 8,
   description: null,
+  rules: null,
   format: null,
   icon: null,
   splitEnabled: false,

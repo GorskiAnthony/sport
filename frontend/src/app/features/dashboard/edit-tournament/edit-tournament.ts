@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
@@ -39,6 +40,9 @@ export class DashboardEditTournamentPage implements OnInit {
   private readonly router = inject(Router);
   private readonly tournamentService = inject(TournamentService);
   private readonly toast = inject(ToastService);
+  private readonly authService = inject(AuthService);
+
+  readonly isPro = this.authService.currentUser()?.plan === 'PRO';
 
   readonly sports = SPORTS;
   readonly categories = CATEGORIES;
@@ -57,6 +61,7 @@ export class DashboardEditTournamentPage implements OnInit {
   readonly endDate = signal('');
   readonly maxTeams = signal('');
   readonly description = signal('');
+  readonly rules = signal('');
 
   readonly errors = signal<FormErrors>({});
 
@@ -77,6 +82,7 @@ export class DashboardEditTournamentPage implements OnInit {
         this.endDate.set(tournament.endDate);
         this.maxTeams.set(String(tournament.maxTeams));
         this.description.set(tournament.description ?? '');
+        this.rules.set(tournament.rules ?? '');
         this.loadingInitial.set(false);
       },
       error: () => {
@@ -115,6 +121,7 @@ export class DashboardEditTournamentPage implements OnInit {
         endDate: this.endDate(),
         maxTeams: Number(this.maxTeams()) || 14,
         description: this.description() || undefined,
+        rules: this.isPro ? this.rules() || undefined : undefined,
       })
       .subscribe({
         next: () => {

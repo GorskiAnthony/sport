@@ -45,6 +45,9 @@ public class Tournament {
     @Column
     private String description;
 
+    @Column(columnDefinition = "TEXT")
+    private String rules;
+
     @Column
     private String format;
 
@@ -164,6 +167,14 @@ public class Tournament {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getRules() {
+        return rules;
+    }
+
+    public void setRules(String rules) {
+        this.rules = rules;
     }
 
     public String getFormat() {

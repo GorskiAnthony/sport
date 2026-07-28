@@ -30,7 +30,9 @@ public class SingleEliminationGenerator implements BracketGenerator {
             4, "Demi-finales",
             8, "Quarts de finale",
             16, "Huitièmes de finale",
-            32, "Seizièmes de finale"
+            32, "Seizièmes de finale",
+            64, "Trente-deuxièmes de finale",
+            128, "Soixante-quatrièmes de finale"
     );
 
     @Override
