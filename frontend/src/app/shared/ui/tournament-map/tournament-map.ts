@@ -62,7 +62,11 @@ export class TournamentMap implements OnChanges, OnDestroy {
 
   private async renderMap(lat: number, lon: number, precise: boolean): Promise<void> {
     if (!this.mapEl) return;
-    const L = await import('leaflet');
+    // esbuild ne détecte pas les exports nommés du bundle UMD de leaflet (factory imbriquée non
+    // analysable statiquement) : le namespace dynamique ne contient donc que `default`, pas
+    // `.map`/`.tileLayer`/`.marker` directement.
+    const leafletModule = await import('leaflet');
+    const L = ((leafletModule as unknown as { default?: typeof leafletModule }).default ?? leafletModule);
 
     this.map = L.map(this.mapEl.nativeElement, {
       center: [lat, lon],
