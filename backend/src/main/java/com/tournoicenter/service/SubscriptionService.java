@@ -15,6 +15,8 @@ import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.SubscriptionRepository;
 import com.tournoicenter.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,8 @@ import java.util.Optional;
 
 @Service
 public class SubscriptionService {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -77,6 +81,7 @@ public class SubscriptionService {
             Session session = stripeClient.checkout().sessions().create(params);
             return session.getUrl();
         } catch (StripeException e) {
+            log.error("Échec de création de session Stripe (checkout abonnement) pour l'utilisateur {}", userId, e);
             throw new ApiException(HttpStatus.BAD_GATEWAY, "Erreur Stripe lors de la création de la session.");
         }
     }
@@ -95,6 +100,7 @@ public class SubscriptionService {
                     .build();
             return stripeClient.billingPortal().sessions().create(params).getUrl();
         } catch (StripeException e) {
+            log.error("Échec d'ouverture du portail Stripe pour l'utilisateur {}", userId, e);
             throw new ApiException(HttpStatus.BAD_GATEWAY, "Erreur Stripe lors de l'ouverture du portail.");
         }
     }
@@ -163,6 +169,7 @@ public class SubscriptionService {
         } catch (StripeException e) {
             // Le plan de l'utilisateur est déjà à jour ; l'historique local de l'abonnement
             // sera resynchronisé au prochain événement webhook si celui-ci échoue.
+            log.warn("Échec de synchronisation de l'abonnement Stripe {} pour l'utilisateur {}", stripeSubscriptionId, user.getId(), e);
         }
     }
 
