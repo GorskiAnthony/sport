@@ -179,6 +179,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
   },
   {
+    path: 'print/tournaments/:id/planning',
+    loadComponent: () => import('./features/print-planning/print-planning').then((m) => m.PrintPlanningPage),
+  },
+  {
     path: 'checkout/success',
     loadComponent: () =>
       import('./features/checkout/checkout-success/checkout-success').then((m) => m.CheckoutSuccessPage),

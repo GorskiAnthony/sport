@@ -19,6 +19,7 @@
       [open]="shareOpen()"
       [tournamentId]="tournament()!.id"
       [name]="tournament()!.name"
+      [format]="tournament()!.format"
       [sport]="tournament()!.sport"
       [location]="tournament()!.location"
       [startDate]="tournament()!.startDate"
@@ -87,6 +88,7 @@
       </div>
     } @else if (tournament()!.format === 'GROUP_KNOCKOUT') {
       @if (knockoutMatches().length === 0) {
+        <app-round-planning [groups]="groupPhases()" />
         <app-group-standings [groups]="groupPhases()" />
         <div class="flex justify-end">
           <button
@@ -116,6 +118,8 @@
         </div>
       }
     } @else {
+      <app-round-planning [groups]="roundPlanningGroups()" />
+
       <div class="bg-[#161B22] border border-white/10 rounded-xl p-5 overflow-x-auto">
         <table class="border-separate" style="border-spacing: 4px" aria-label="Grille des résultats">
           <thead>

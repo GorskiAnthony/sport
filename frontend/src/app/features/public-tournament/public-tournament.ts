@@ -12,6 +12,7 @@ import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
+import { RoundPlanning } from '../../shared/ui/round-planning/round-planning';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
 import { formatDateFr } from '../../shared/utils/date';
@@ -29,7 +30,7 @@ const GROUP_PHASE_PREFIX = 'Groupe ';
 @Component({
   selector: 'app-public-tournament-page',
   standalone: true,
-  imports: [RouterLink, GroupStandings, SportIcon, TournamentMap, LucideStar],
+  imports: [RouterLink, GroupStandings, RoundPlanning, SportIcon, TournamentMap, LucideStar],
   templateUrl: './public-tournament.html',
 })
 export class PublicTournamentPage implements OnInit, OnDestroy {
@@ -87,6 +88,18 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
       const teams = t.teams.filter((team) => teamIds.has(team.id));
       return { label, teams, matches };
     });
+  });
+
+  /** Round-by-round planning ("who plays who, and who rests, each round") for the pool formats —
+   *  a plain "next match" list doesn't make the rotation obvious to a casual spectator/referee,
+   *  since round-robin/group phases all share one `phase` label for the whole pool. Not used for
+   *  SINGLE_ELIMINATION, where phaseGroups() below already reads as one round per knockout phase. */
+  readonly roundPlanningGroups = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t) return [];
+    if (t.format === 'GROUP_KNOCKOUT') return this.groupStandingsData();
+    if (t.format === 'ROUND_ROBIN') return [{ label: 'Poule unique', teams: t.teams, matches: t.matches }];
+    return [];
   });
 
   readonly phaseGroups = computed<PhaseGroup[]>(() => {

@@ -12,6 +12,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
 import { GroupStandings, StandingsGroup } from '../../../shared/ui/group-standings/group-standings';
+import { RoundPlanning } from '../../../shared/ui/round-planning/round-planning';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
@@ -25,7 +26,7 @@ const GROUP_PHASE_PREFIX = 'Groupe ';
 @Component({
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, RoundPlanning, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
@@ -86,6 +87,15 @@ export class DashboardTournamentDetailPage implements OnInit {
       const teams = t.teams.filter((team) => teamIds.has(team.id));
       return { label, teams, matches };
     });
+  });
+
+  /** Round-by-round planning for a pure round-robin pool ("who plays who, and who rests, each
+   *  round") — for GROUP_KNOCKOUT this reuses groupPhases() directly since each group is its own
+   *  pool already. */
+  readonly roundPlanningGroups = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t || t.format !== 'ROUND_ROBIN') return [];
+    return [{ label: 'Poule unique', teams: t.teams, matches: t.matches }];
   });
 
   /** Only teams that appear in a knockout-phase match — never the full tournament team list.

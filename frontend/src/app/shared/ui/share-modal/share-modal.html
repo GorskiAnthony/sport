@@ -63,15 +63,27 @@
         }
       </div>
 
-      <div class="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          (click)="print()"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-        >
-          <svg lucidePrinter class="w-4 h-4"></svg>
-          Imprimer l'affiche
-        </button>
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            (click)="print()"
+            class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <svg lucidePrinter class="w-4 h-4"></svg>
+            Imprimer l'affiche
+          </button>
+          @if (showPlanningPrint()) {
+            <button
+              type="button"
+              (click)="printPlanning()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <svg lucidePrinter class="w-4 h-4"></svg>
+              Imprimer le planning
+            </button>
+          }
+        </div>
         <button type="button" (click)="close()" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">
           Fermer
         </button>

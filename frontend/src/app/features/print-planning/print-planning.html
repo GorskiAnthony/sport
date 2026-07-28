@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-white text-[#0D1117] p-8 print:p-0 print:min-h-0">
+  @if (loading()) {
+    <p class="text-slate-500">Chargement…</p>
+  } @else if (!tournament()) {
+    <p class="text-slate-500">Tournoi introuvable.</p>
+  } @else {
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center justify-between gap-4 mb-6 print:hidden">
+        <p class="text-green-600 text-xs font-bold uppercase tracking-[0.2em]">Tournoi Center</p>
+        <button
+          type="button"
+          (click)="print()"
+          class="px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors"
+        >
+          Imprimer
+        </button>
+      </div>
+
+      <h1 class="text-2xl font-extrabold mb-1">{{ tournament()!.name }}</h1>
+      <p class="text-slate-600 text-sm mb-8">
+        {{ tournament()!.category }} · {{ tournament()!.sport }} · {{ dateRange(tournament()!) }}
+        @if (tournament()!.location) {
+          · {{ tournament()!.location }}
+        }
+      </p>
+
+      @if (groups().length === 0) {
+        <p class="text-slate-500">Aucun planning disponible pour ce tournoi.</p>
+      } @else {
+        <div class="space-y-8">
+          @for (group of groups(); track group.label) {
+            <div class="break-inside-avoid-page">
+              <h2 class="text-lg font-bold border-b-2 border-[#0D1117] pb-1.5 mb-3">{{ group.label }}</h2>
+              <div class="space-y-4">
+                @for (round of group.rounds; track round.label) {
+                  <div class="break-inside-avoid-page">
+                    <div class="flex items-center justify-between gap-3 mb-1.5">
+                      <h3 class="text-sm font-bold uppercase tracking-wide text-slate-700">{{ round.label }}</h3>
+                      @if (round.date) {
+                        <span class="text-slate-500 text-sm font-mono">{{ round.date | date: 'HH:mm' }}</span>
+                      }
+                    </div>
+                    <table class="w-full text-sm border-collapse">
+                      <tbody>
+                        @for (match of round.matches; track match.id) {
+                          <tr class="border-b border-slate-200">
+                            <td class="py-1.5 pr-2 text-right w-[45%]">{{ match.homeTeam.name }}</td>
+                            <td class="py-1.5 px-2 text-center text-slate-400 font-mono">vs</td>
+                            <td class="py-1.5 pl-2 w-[45%]">{{ match.awayTeam.name }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                    @if (round.restingTeams.length > 0) {
+                      <p class="text-slate-500 text-xs mt-1">Au repos : {{ restingLabel(round.restingTeams) }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
