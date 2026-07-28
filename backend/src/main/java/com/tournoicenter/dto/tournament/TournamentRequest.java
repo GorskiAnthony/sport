@@ -21,6 +21,7 @@ public record TournamentRequest(
         @Min(2) @Max(48) Integer maxTeams,
         String description,
         String format,
-        Boolean splitEnabled
+        Boolean splitEnabled,
+        Boolean useEventPass
 ) {
 }

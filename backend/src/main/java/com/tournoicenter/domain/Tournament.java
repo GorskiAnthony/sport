@@ -54,6 +54,9 @@ public class Tournament {
     @Column(name = "split_enabled", nullable = false)
     private boolean splitEnabled = false;
 
+    @Column(name = "event_pass_expires_at")
+    private Instant eventPassExpiresAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
@@ -185,6 +188,14 @@ public class Tournament {
 
     public void setSplitEnabled(boolean splitEnabled) {
         this.splitEnabled = splitEnabled;
+    }
+
+    public Instant getEventPassExpiresAt() {
+        return eventPassExpiresAt;
+    }
+
+    public void setEventPassExpiresAt(Instant eventPassExpiresAt) {
+        this.eventPassExpiresAt = eventPassExpiresAt;
     }
 
     public User getOrganizer() {

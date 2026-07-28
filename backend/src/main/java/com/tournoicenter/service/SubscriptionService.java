@@ -9,14 +9,17 @@ import com.stripe.model.checkout.Session;
 import com.tournoicenter.config.CorsProperties;
 import com.tournoicenter.config.StripeProperties;
 import com.tournoicenter.domain.Plan;
+import com.tournoicenter.domain.Subscription;
 import com.tournoicenter.domain.User;
 import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ResourceNotFoundException;
+import com.tournoicenter.repository.SubscriptionRepository;
 import com.tournoicenter.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -25,21 +28,26 @@ import java.util.Optional;
 public class SubscriptionService {
 
     private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final StripeClient stripeClient;
     private final StripeProperties stripeProperties;
     private final CorsProperties corsProperties;
+    private final EventPassService eventPassService;
 
-    public SubscriptionService(UserRepository userRepository, StripeClient stripeClient,
-                                StripeProperties stripeProperties, CorsProperties corsProperties) {
+    public SubscriptionService(UserRepository userRepository, SubscriptionRepository subscriptionRepository,
+                                StripeClient stripeClient, StripeProperties stripeProperties,
+                                CorsProperties corsProperties, EventPassService eventPassService) {
         this.userRepository = userRepository;
+        this.subscriptionRepository = subscriptionRepository;
         this.stripeClient = stripeClient;
         this.stripeProperties = stripeProperties;
         this.corsProperties = corsProperties;
+        this.eventPassService = eventPassService;
     }
 
     @Transactional
-    public String createCheckoutSession(Long userId, String plan) {
-        String priceId = priceIdFor(plan);
+    public String createCheckoutSession(Long userId, String plan, String period) {
+        String priceId = priceIdFor(plan, period);
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
 
         try {
@@ -63,6 +71,7 @@ public class SubscriptionService {
                     .setCancelUrl(clientUrl + "/pricing")
                     .putMetadata("userId", String.valueOf(userId))
                     .putMetadata("plan", plan.toUpperCase(Locale.ROOT))
+                    .putMetadata("priceId", priceId)
                     .build();
 
             Session session = stripeClient.checkout().sessions().create(params);
@@ -106,6 +115,7 @@ public class SubscriptionService {
 
         switch (event.getType()) {
             case "checkout.session.completed" -> onCheckoutCompleted((Session) dataObject.get());
+            case "customer.subscription.updated" -> onSubscriptionUpdated((com.stripe.model.Subscription) dataObject.get());
             case "customer.subscription.deleted" -> onSubscriptionDeleted((com.stripe.model.Subscription) dataObject.get());
             default -> {
                 // événement non géré, ignoré volontairement
@@ -117,21 +127,72 @@ public class SubscriptionService {
         Map<String, String> metadata = session.getMetadata();
         if (metadata == null) return;
 
+        if ("EVENT_PASS".equals(metadata.get("type"))) {
+            eventPassService.onCheckoutCompleted(session);
+            return;
+        }
+
         String userIdRaw = metadata.get("userId");
         String planRaw = metadata.get("plan");
+        String priceId = metadata.get("priceId");
         if (userIdRaw == null || planRaw == null) return;
 
-        userRepository.findById(Long.valueOf(userIdRaw)).ifPresent(user -> user.setPlan(Plan.valueOf(planRaw)));
+        userRepository.findById(Long.valueOf(userIdRaw)).ifPresent(user -> {
+            user.setPlan(Plan.valueOf(planRaw));
+            upsertSubscription(user, session.getSubscription(), priceId);
+        });
+    }
+
+    private void upsertSubscription(User user, String stripeSubscriptionId, String priceId) {
+        if (stripeSubscriptionId == null) return;
+
+        try {
+            var stripeSubscription = stripeClient.subscriptions().retrieve(stripeSubscriptionId);
+            String status = stripeSubscription.getStatus();
+            Instant currentPeriodEnd = currentPeriodEndOf(stripeSubscription);
+
+            Subscription subscription = subscriptionRepository.findByUserId(user.getId()).orElse(null);
+            if (subscription == null) {
+                subscriptionRepository.save(new Subscription(user, stripeSubscriptionId, priceId, status, currentPeriodEnd));
+            } else {
+                subscription.setStripeSubscriptionId(stripeSubscriptionId);
+                subscription.setStripePriceId(priceId);
+                subscription.setStatus(status);
+                subscription.setCurrentPeriodEnd(currentPeriodEnd);
+            }
+        } catch (StripeException e) {
+            // Le plan de l'utilisateur est déjà à jour ; l'historique local de l'abonnement
+            // sera resynchronisé au prochain événement webhook si celui-ci échoue.
+        }
+    }
+
+    private void onSubscriptionUpdated(com.stripe.model.Subscription subscription) {
+        subscriptionRepository.findByStripeSubscriptionId(subscription.getId()).ifPresent(local -> {
+            local.setStatus(subscription.getStatus());
+            local.setCurrentPeriodEnd(currentPeriodEndOf(subscription));
+        });
+    }
+
+    /** Depuis l'API Stripe 2025+, current_period_end vit sur chaque SubscriptionItem
+     *  (facturation par ligne) plutôt que sur la Subscription elle-même. */
+    private Instant currentPeriodEndOf(com.stripe.model.Subscription subscription) {
+        return subscription.getItems().getData().stream()
+                .findFirst()
+                .map(item -> Instant.ofEpochSecond(item.getCurrentPeriodEnd()))
+                .orElse(Instant.now());
     }
 
     private void onSubscriptionDeleted(com.stripe.model.Subscription subscription) {
         userRepository.findByStripeId(subscription.getCustomer()).ifPresent(user -> user.setPlan(Plan.FREE));
+        subscriptionRepository.findByStripeSubscriptionId(subscription.getId())
+                .ifPresent(local -> local.setStatus("canceled"));
     }
 
-    private String priceIdFor(String plan) {
+    private String priceIdFor(String plan, String period) {
+        boolean annual = "annual".equalsIgnoreCase(period);
         String priceId = switch (plan.toLowerCase(Locale.ROOT)) {
-            case "classic" -> stripeProperties.priceClassic();
-            case "pro" -> stripeProperties.pricePro();
+            case "classic" -> annual ? stripeProperties.priceClassicAnnual() : stripeProperties.priceClassic();
+            case "pro" -> annual ? stripeProperties.priceProAnnual() : stripeProperties.pricePro();
             default -> null;
         };
         if (priceId == null || priceId.isBlank()) {

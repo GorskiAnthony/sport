@@ -83,9 +83,10 @@
     </div>
 
     <app-button
-      [text]="eventPass.cta"
+      [text]="loadingEventPass() ? 'Chargement…' : eventPass.cta"
       variant="outline"
       className="w-full md:w-auto justify-center flex-shrink-0"
+      [disabled]="loadingEventPass()"
       (clicked)="selectEventPass()"
     />
   </div>

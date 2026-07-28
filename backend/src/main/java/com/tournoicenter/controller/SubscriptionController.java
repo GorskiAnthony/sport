@@ -25,7 +25,7 @@ public class SubscriptionController {
 
     @PostMapping("/checkout")
     public CheckoutUrlResponse checkout(@AuthenticationPrincipal JwtPrincipal principal, @Valid @RequestBody CheckoutRequest request) {
-        return new CheckoutUrlResponse(subscriptionService.createCheckoutSession(principal.userId(), request.plan()));
+        return new CheckoutUrlResponse(subscriptionService.createCheckoutSession(principal.userId(), request.plan(), request.period()));
     }
 
     @PostMapping("/portal")

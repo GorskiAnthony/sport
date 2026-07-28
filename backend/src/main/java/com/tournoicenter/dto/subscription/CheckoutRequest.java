@@ -2,5 +2,5 @@ package com.tournoicenter.dto.subscription;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record CheckoutRequest(@NotBlank String plan) {
+public record CheckoutRequest(@NotBlank String plan, String period) {
 }

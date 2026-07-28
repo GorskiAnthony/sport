@@ -46,4 +46,5 @@ export interface TournamentRequest {
   description?: string;
   format?: string;
   splitEnabled?: boolean;
+  useEventPass?: boolean;
 }

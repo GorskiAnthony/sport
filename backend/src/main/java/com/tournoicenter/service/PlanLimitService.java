@@ -34,6 +34,12 @@ public class PlanLimitService {
         if (limits.maxTeams() == Integer.MAX_VALUE) {
             return;
         }
+        boolean hasActiveEventPass = tournamentRepository.findById(tournamentId)
+                .map(tournament -> tournament.getEventPassExpiresAt() != null)
+                .orElse(false);
+        if (hasActiveEventPass) {
+            return;
+        }
         long count = teamRepository.countByTournamentId(tournamentId);
         if (count >= limits.maxTeams()) {
             throw new PlanLimitExceededException(

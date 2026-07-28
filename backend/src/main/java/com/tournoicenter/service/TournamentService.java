@@ -1,10 +1,12 @@
 package com.tournoicenter.service;
 
+import com.tournoicenter.domain.EventPassPurchase;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.tournament.TournamentDetailResponse;
 import com.tournoicenter.dto.tournament.TournamentRequest;
 import com.tournoicenter.dto.tournament.TournamentSummaryResponse;
+import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ForbiddenException;
 import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
@@ -13,6 +15,7 @@ import com.tournoicenter.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +28,16 @@ public class TournamentService {
     private final UserRepository userRepository;
     private final PlanLimitService planLimitService;
     private final MatchRepository matchRepository;
+    private final EventPassService eventPassService;
 
     public TournamentService(TournamentRepository tournamentRepository, UserRepository userRepository,
-                              PlanLimitService planLimitService, MatchRepository matchRepository) {
+                              PlanLimitService planLimitService, MatchRepository matchRepository,
+                              EventPassService eventPassService) {
         this.tournamentRepository = tournamentRepository;
         this.userRepository = userRepository;
         this.planLimitService = planLimitService;
         this.matchRepository = matchRepository;
+        this.eventPassService = eventPassService;
     }
 
     /** Cached briefly (see application.yml) — the public tournament list is hit by every
@@ -67,7 +73,15 @@ public class TournamentService {
     @Transactional
     public TournamentSummaryResponse create(Long organizerId, TournamentRequest request) {
         User organizer = userRepository.getReferenceById(organizerId);
-        planLimitService.checkTournamentLimit(organizerId, organizer.getPlan());
+
+        boolean useEventPass = Boolean.TRUE.equals(request.useEventPass());
+        EventPassPurchase credit = null;
+        if (useEventPass) {
+            credit = eventPassService.findAvailableCredit(organizerId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Aucun Pass Événement disponible."));
+        } else {
+            planLimitService.checkTournamentLimit(organizerId, organizer.getPlan());
+        }
 
         Tournament tournament = new Tournament(
                 request.name(), request.sport(), request.category(), request.location(),
@@ -77,7 +91,13 @@ public class TournamentService {
         );
         applyOptionalFields(tournament, request);
 
-        return TournamentSummaryResponse.from(tournamentRepository.save(tournament));
+        Tournament saved = tournamentRepository.save(tournament);
+
+        if (credit != null) {
+            eventPassService.consumeCredit(credit, saved);
+        }
+
+        return TournamentSummaryResponse.from(saved);
     }
 
     @Caching(evict = {

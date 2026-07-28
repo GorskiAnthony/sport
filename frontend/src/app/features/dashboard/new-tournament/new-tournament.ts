@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TeamService } from '../../../core/services/team.service';
 import { BracketService } from '../../../core/services/bracket.service';
+import { EventPassService } from '../../../core/services/event-pass.service';
 import { TournamentFormat } from '../../../core/models/bracket.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -63,8 +64,10 @@ export class DashboardNewTournamentPage implements OnInit {
   private readonly teamService = inject(TeamService);
   private readonly bracketService = inject(BracketService);
   private readonly authService = inject(AuthService);
+  private readonly eventPassService = inject(EventPassService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly sports = SPORTS;
   readonly categories = CATEGORIES;
@@ -75,6 +78,9 @@ export class DashboardNewTournamentPage implements OnInit {
   readonly cancelOpen = signal(false);
   readonly createdTournamentId = signal<number | null>(null);
   readonly finishing = signal(false);
+  readonly useEventPass = signal(false);
+  readonly confirmingEventPass = signal(false);
+  readonly eventPassConfirmFailed = signal(false);
 
   readonly name = signal('');
   readonly sport = signal('');
@@ -92,6 +98,11 @@ export class DashboardNewTournamentPage implements OnInit {
   readonly teams = signal<TeamRow[]>([]);
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('eventPass') === '1') {
+      this.confirmEventPass();
+      return;
+    }
+
     const plan = this.authService.currentUser()?.plan ?? 'FREE';
     const limit = MAX_TOURNAMENTS_BY_PLAN[plan] ?? 1;
     this.tournamentService.getMine().subscribe((tournaments) => {
@@ -99,6 +110,34 @@ export class DashboardNewTournamentPage implements OnInit {
         this.planBlocked.set(true);
       }
     });
+  }
+
+  private confirmEventPass(attempt = 0): void {
+    this.confirmingEventPass.set(true);
+    this.eventPassConfirmFailed.set(false);
+    this.eventPassService.credits().subscribe({
+      next: (res) => {
+        if (res.available) {
+          this.useEventPass.set(true);
+          this.confirmingEventPass.set(false);
+          return;
+        }
+        if (attempt >= 9) {
+          this.confirmingEventPass.set(false);
+          this.eventPassConfirmFailed.set(true);
+          return;
+        }
+        setTimeout(() => this.confirmEventPass(attempt + 1), 1500);
+      },
+      error: () => {
+        this.confirmingEventPass.set(false);
+        this.eventPassConfirmFailed.set(true);
+      },
+    });
+  }
+
+  retryEventPassConfirmation(): void {
+    this.confirmEventPass();
   }
 
   private validate(): FormErrors {
@@ -131,6 +170,7 @@ export class DashboardNewTournamentPage implements OnInit {
         endDate: this.endDate(),
         maxTeams: Number(this.maxTeams()) || 14,
         description: this.description() || undefined,
+        useEventPass: this.useEventPass() || undefined,
       })
       .subscribe({
         next: (created) => {

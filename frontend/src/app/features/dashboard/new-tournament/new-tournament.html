@@ -1,4 +1,23 @@
-@if (planBlocked()) {
+@if (confirmingEventPass()) {
+  <div class="max-w-lg mx-auto text-center py-16">
+    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mx-auto mb-4 animate-pulse" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>
+    <h1 class="text-white text-xl font-bold mb-2">Confirmation du paiement…</h1>
+    <p class="text-slate-400 text-sm">Un instant, on vérifie votre Pass Événement auprès de Stripe.</p>
+  </div>
+} @else if (eventPassConfirmFailed()) {
+  <div class="max-w-lg mx-auto text-center py-16">
+    <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto mb-4" aria-hidden="true">
+      <svg lucideLock class="w-6 h-6"></svg>
+    </div>
+    <h1 class="text-white text-xl font-bold mb-2">Paiement non confirmé</h1>
+    <p class="text-slate-400 text-sm mb-6">Le paiement n'a pas encore été confirmé. Si vous venez de payer, réessayez dans un instant.</p>
+    <button type="button" (click)="retryEventPassConfirmation()" class="inline-flex items-center px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black font-semibold text-sm rounded-lg transition-colors">
+      Réessayer
+    </button>
+  </div>
+} @else if (planBlocked() && !useEventPass()) {
   <div class="max-w-lg mx-auto text-center py-16">
     <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto mb-4" aria-hidden="true">
       <svg lucideLock class="w-6 h-6"></svg>
@@ -45,6 +64,12 @@
         <span class="text-sm font-medium hidden sm:block" [class]="step() >= 2 ? 'text-white' : 'text-slate-400'">Équipes</span>
       </div>
     </div>
+
+    @if (useEventPass()) {
+      <div class="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium">
+        <span>✓ Pass Événement actif — ce tournoi n'est pas soumis aux limites de votre plan.</span>
+      </div>
+    }
 
     @if (step() === 1) {
       <form (submit)="$event.preventDefault(); submitStepOne()" class="bg-[#161B22] border border-white/10 rounded-xl p-5 space-y-4">

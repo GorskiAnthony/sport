@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { EventPassService } from '../../core/services/event-pass.service';
 import { PlanTier, SubscriptionService } from '../../core/services/subscription.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
@@ -138,6 +139,7 @@ const FAQ = [
 export class PricingPage {
   private readonly authService = inject(AuthService);
   private readonly subscriptionService = inject(SubscriptionService);
+  private readonly eventPassService = inject(EventPassService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
@@ -145,6 +147,7 @@ export class PricingPage {
   readonly eventPass = EVENT_PASS;
   readonly faq = FAQ;
   readonly loadingPlan = signal<string | null>(null);
+  readonly loadingEventPass = signal(false);
   readonly billing = signal<BillingPeriod>('monthly');
 
   priceInfo(plan: Plan): { amount: string; period: string; note?: string } {
@@ -176,10 +179,8 @@ export class PricingPage {
       return;
     }
 
-    // TODO: brancher Stripe avec la période sélectionnée (mensuel/annuel) —
-    // le endpoint /subscriptions/checkout ne prend actuellement que le plan.
     this.loadingPlan.set(plan.id);
-    this.subscriptionService.checkout(plan.id as PlanTier).subscribe({
+    this.subscriptionService.checkout(plan.id as PlanTier, this.billing()).subscribe({
       next: (res) => {
         window.location.href = res.url;
       },
@@ -194,7 +195,23 @@ export class PricingPage {
   }
 
   selectEventPass(): void {
-    // TODO: brancher Stripe (paiement unique de 12€, hors abonnement) — endpoint backend à créer
-    this.toast.info("Le paiement à l'unité arrive bientôt.", 'Bientôt disponible');
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/register']);
+      return;
+    }
+
+    this.loadingEventPass.set(true);
+    this.eventPassService.checkout().subscribe({
+      next: (res) => {
+        window.location.href = res.url;
+      },
+      error: () => {
+        this.loadingEventPass.set(false);
+        this.toast.error(
+          'Une erreur est survenue lors de la création de la session de paiement.',
+          'Erreur',
+        );
+      },
+    });
   }
 }

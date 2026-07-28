@@ -73,6 +73,9 @@ app:
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
     price-classic: ${STRIPE_PRICE_CLASSIC:}
     price-pro: ${STRIPE_PRICE_PRO:}
+    price-classic-annual: ${STRIPE_PRICE_CLASSIC_ANNUAL:}
+    price-pro-annual: ${STRIPE_PRICE_PRO_ANNUAL:}
+    price-event-pass: ${STRIPE_PRICE_EVENT_PASS:}
   emailjs:
     service-id: ${EMAILJS_SERVICE_ID:}
     template-id: ${EMAILJS_TEMPLATE_ID:}
