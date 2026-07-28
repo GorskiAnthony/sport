@@ -6,6 +6,7 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
+import { setPageMeta } from '../../shared/utils/seo';
 
 @Component({
   selector: 'app-tournaments-page',
@@ -19,6 +20,10 @@ export class TournamentsPage implements OnInit {
   readonly tournaments = signal<TournamentSummary[]>([]);
   readonly loading = signal(true);
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+
+  constructor() {
+    setPageMeta('Tournois', 'Parcourez les tournois sportifs organisés sur Tournoi Center : dates, lieux, équipes et classements en direct.');
+  }
 
   ngOnInit(): void {
     this.tournamentService.getAll().subscribe({

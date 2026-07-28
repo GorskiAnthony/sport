@@ -6,6 +6,7 @@ import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
 import { SPORTS } from '../../shared/utils/sports';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type FeatureIcon = 'trophy' | 'shuffle' | 'chart' | 'link';
 
@@ -26,6 +27,10 @@ export class HomePage implements OnInit {
 
   readonly upcomingTournaments = signal<TournamentSummary[] | null>(null);
   readonly stats = signal<Stat[] | null>(null);
+
+  constructor() {
+    setPageMeta('Organisez vos tournois sportifs', 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Tournoi Center gère le tableau, les classements et le partage avec vos spectateurs.');
+  }
 
   ngOnInit(): void {
     this.tournamentService.getAll().subscribe({

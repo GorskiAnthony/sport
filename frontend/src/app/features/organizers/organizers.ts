@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
+import { setPageMeta } from '../../shared/utils/seo';
 
 @Component({
   selector: 'app-organizers-page',
@@ -9,6 +10,10 @@ import { Button } from '../../shared/ui/button/button';
   templateUrl: './organizers.html',
 })
 export class OrganizersPage {
+  constructor() {
+    setPageMeta('Pour les organisateurs', 'Créez votre tournoi, ajoutez vos équipes et gérez les scores en direct : le classement se met à jour automatiquement.');
+  }
+
   readonly steps = [
     { n: 1, title: 'Créez votre compte', desc: "Inscrivez-vous gratuitement en moins de 2 minutes." },
     { n: 2, title: 'Créez votre tournoi', desc: 'Renseignez les infos : sport, catégorie, dates, lieu, format.' },

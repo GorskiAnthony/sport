@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
 import { BillingPeriod, BillingToggle } from './billing-toggle/billing-toggle';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type Pricing =
   | { kind: 'fixed'; price: string; period: string }
@@ -151,6 +152,10 @@ export class PricingPage {
   readonly loadingPlan = signal<string | null>(null);
   readonly loadingEventPass = signal(false);
   readonly billing = signal<BillingPeriod>('monthly');
+
+  constructor() {
+    setPageMeta('Tarifs', 'Classic, Pro ou Pass Événement : choisissez la formule adaptée à vos tournois, mensuelle ou annuelle.');
+  }
 
   planCtaState(plan: Plan): PlanCtaState {
     if (!this.authService.isAuthenticated()) {

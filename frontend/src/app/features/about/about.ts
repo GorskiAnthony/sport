@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { LucideTarget, LucideZap, LucideShieldCheck } from '@lucide/angular';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type ValueIcon = 'target' | 'zap' | 'shield';
 
@@ -11,6 +12,10 @@ type ValueIcon = 'target' | 'zap' | 'shield';
   templateUrl: './about.html',
 })
 export class AboutPage {
+  constructor() {
+    setPageMeta('À propos', 'Tournoi Center simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.');
+  }
+
   readonly values: { icon: ValueIcon; title: string; desc: string }[] = [
     {
       icon: 'target',

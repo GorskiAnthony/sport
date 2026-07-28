@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { setPageMeta } from '../../shared/utils/seo';
 
 @Component({
   selector: 'app-teams-page',
@@ -8,6 +9,10 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
   templateUrl: './teams.html',
 })
 export class TeamsPage {
+  constructor() {
+    setPageMeta('Équipes', 'Retrouvez les équipes inscrites sur Tournoi Center, tous sports et catégories confondus.');
+  }
+
   readonly teams = [
     { id: 1, name: 'Paris FC', city: 'Paris', category: 'U15', sport: 'Football', initials: 'PFC' },
     { id: 2, name: 'OM Academy', city: 'Marseille', category: 'U15', sport: 'Football', initials: 'OMA' },

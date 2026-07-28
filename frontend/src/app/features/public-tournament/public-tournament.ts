@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -14,7 +15,9 @@ import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
 import { formatDateFr } from '../../shared/utils/date';
+import { setPageMeta, setJsonLd } from '../../shared/utils/seo';
 import { LucideStar } from '@lucide/angular';
+import { Meta, Title } from '@angular/platform-browser';
 
 interface PhaseGroup {
   label: string;
@@ -36,7 +39,15 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
   private readonly teamService = inject(TeamService);
   private readonly toast = inject(ToastService);
   private readonly liveUpdate = inject(LiveUpdateService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
+  private readonly document = inject(DOCUMENT);
   readonly auth = inject(AuthService);
+
+  constructor() {
+    setPageMeta('Tournoi', 'Suivez ce tournoi en direct sur Tournoi Center : classement, matchs et équipes.');
+  }
 
   private tournamentId = 0;
   private unsubscribeLive: (() => void) | null = null;
@@ -101,7 +112,11 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     }
     this.tournamentId = id;
     this.load(true);
-    this.unsubscribeLive = this.liveUpdate.subscribeToTournament(id, () => this.load(false));
+    // Connexion WebSocket réservée au navigateur : window.location n'existe pas côté SSR,
+    // et on ne veut de toute façon pas ouvrir une vraie connexion live depuis le rendu serveur.
+    if (this.isBrowser) {
+      this.unsubscribeLive = this.liveUpdate.subscribeToTournament(id, () => this.load(false));
+    }
   }
 
   ngOnDestroy(): void {
@@ -113,6 +128,24 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
       next: (tournament) => {
         this.tournament.set(tournament);
         this.loading.set(false);
+        this.titleService.setTitle(`${tournament.name} — Tournoi Center`);
+        this.metaService.updateTag({
+          name: 'description',
+          content: `${tournament.name} (${tournament.sport}) — ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`,
+        });
+        setJsonLd(this.document, {
+          '@context': 'https://schema.org',
+          '@type': 'SportsEvent',
+          name: tournament.name,
+          startDate: tournament.startDate,
+          endDate: tournament.endDate,
+          eventStatus: 'https://schema.org/EventScheduled',
+          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+          location: tournament.location?.trim()
+            ? { '@type': 'Place', name: tournament.location }
+            : undefined,
+          url: `${this.document.location.origin}/t/${tournament.id}`,
+        });
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
           this.tournamentService.recordView(this.tournamentId).subscribe({ error: () => {} });
