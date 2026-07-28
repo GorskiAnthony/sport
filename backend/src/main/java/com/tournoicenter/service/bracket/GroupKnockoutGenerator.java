@@ -57,12 +57,11 @@ public class GroupKnockoutGenerator implements BracketGenerator {
             groups.get(i % groupCount).add(shuffled.get(i));
         }
 
-        List<Match> matches = new ArrayList<>();
+        List<String> labels = new ArrayList<>(groups.size());
         for (int g = 0; g < groups.size(); g++) {
-            String label = groupLabel(g);
-            matches.addAll(RoundRobinPairing.pairEveryTeamOnce(tournament, groups.get(g), label));
+            labels.add(groupLabel(g));
         }
-        return matches;
+        return RoundRobinPairing.pairAllGroups(tournament, groups, labels);
     }
 
     private void validate(List<Team> teams, Integer groupCount) {
