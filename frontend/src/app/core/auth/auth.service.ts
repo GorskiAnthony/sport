@@ -74,6 +74,18 @@ export class AuthService {
     this.currentUserSignal.set(updated);
   }
 
+  /** Le plan stocké côté client date du dernier login/register (ou du dernier appel à
+   *  updatePlan) : après un paiement Stripe (checkout hébergé, mis à jour par webhook côté
+   *  serveur), rien ne le rafraîchit spontanément. À appeler au retour d'un checkout réussi. */
+  refreshUser(): Observable<User> {
+    return this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(
+      tap((user) => {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        this.currentUserSignal.set(user);
+      }),
+    );
+  }
+
   private persistSession(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.token);
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));

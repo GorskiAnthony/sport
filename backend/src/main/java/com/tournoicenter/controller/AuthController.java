@@ -5,6 +5,7 @@ import com.tournoicenter.dto.auth.ForgotPasswordRequest;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.ResetPasswordRequest;
+import com.tournoicenter.dto.auth.UserResponse;
 import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.service.AuthService;
 import jakarta.validation.Valid;
@@ -46,5 +47,13 @@ public class AuthController {
     @PostMapping("/logout")
     public void logout(@AuthenticationPrincipal JwtPrincipal principal) {
         authService.logout(principal);
+    }
+
+    /** Le plan renvoyé au login est figé dans le JWT jusqu'à sa réémission ; cet endpoint
+     *  relit l'utilisateur en base pour que le front puisse se resynchroniser après un
+     *  changement d'abonnement Stripe (webhook) sans attendre une reconnexion. */
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal JwtPrincipal principal) {
+        return authService.getCurrentUser(principal.userId());
     }
 }

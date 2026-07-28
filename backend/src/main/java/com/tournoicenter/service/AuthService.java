@@ -11,6 +11,7 @@ import com.tournoicenter.exception.AccountLockedException;
 import com.tournoicenter.exception.EmailNotFoundException;
 import com.tournoicenter.exception.EmailTakenException;
 import com.tournoicenter.exception.InvalidResetTokenException;
+import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.exception.WrongPasswordException;
 import com.tournoicenter.repository.PasswordResetTokenRepository;
 import com.tournoicenter.repository.UserRepository;
@@ -126,6 +127,12 @@ public class AuthService {
      *  stayed valid (usable by anyone who'd captured it) for up to its full 7-day lifetime. */
     public void logout(JwtPrincipal principal) {
         tokenRevocationService.revoke(principal.tokenId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        return UserResponse.from(user);
     }
 
     private String generateToken() {

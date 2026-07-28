@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
@@ -22,7 +22,7 @@ const PLAN_BADGE_CLASSES: Record<string, string> = {
   imports: [RouterLink],
   templateUrl: './settings.html',
 })
-export class DashboardSettingsPage {
+export class DashboardSettingsPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly subscriptionService = inject(SubscriptionService);
   private readonly toast = inject(ToastService);
@@ -30,6 +30,12 @@ export class DashboardSettingsPage {
   readonly user = this.authService.currentUser;
   readonly name = signal(this.user()?.name ?? '');
   readonly portalLoading = signal(false);
+
+  ngOnInit(): void {
+    // Retour possible depuis le portail de facturation Stripe (annulation/downgrade) : le plan
+    // local peut être obsolète tant qu'on n'a pas resynchronisé avec le serveur.
+    this.authService.refreshUser().subscribe({ error: () => {} });
+  }
 
   planLabel(): string {
     return PLAN_LABELS[this.user()?.plan ?? 'FREE'];
