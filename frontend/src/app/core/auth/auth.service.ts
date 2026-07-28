@@ -65,6 +65,15 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  updatePlan(plan: User['plan']): void {
+    const current = this.currentUserSignal();
+    if (!current) return;
+
+    const updated: User = { ...current, plan };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this.currentUserSignal.set(updated);
+  }
+
   private persistSession(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.token);
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));

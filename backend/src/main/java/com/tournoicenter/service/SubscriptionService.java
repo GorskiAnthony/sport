@@ -86,6 +86,40 @@ public class SubscriptionService {
         }
     }
 
+    @Transactional
+    public String changePlan(Long userId, String plan, String period) {
+        String priceId = priceIdFor(plan, period);
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        Subscription subscription = subscriptionRepository.findByUserId(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Aucun abonnement actif à modifier."));
+
+        try {
+            var stripeSubscription = stripeClient.subscriptions().retrieve(subscription.getStripeSubscriptionId());
+            String itemId = stripeSubscription.getItems().getData().get(0).getId();
+
+            var params = com.stripe.param.SubscriptionUpdateParams.builder()
+                    .addItem(com.stripe.param.SubscriptionUpdateParams.Item.builder()
+                            .setId(itemId)
+                            .setPrice(priceId)
+                            .build())
+                    .setProrationBehavior(com.stripe.param.SubscriptionUpdateParams.ProrationBehavior.CREATE_PRORATIONS)
+                    .build();
+
+            var updated = stripeClient.subscriptions().update(subscription.getStripeSubscriptionId(), params);
+
+            String newPlan = plan.toUpperCase(Locale.ROOT);
+            user.setPlan(Plan.valueOf(newPlan));
+            subscription.setStripePriceId(priceId);
+            subscription.setStatus(updated.getStatus());
+            subscription.setCurrentPeriodEnd(currentPeriodEndOf(updated));
+
+            return newPlan;
+        } catch (StripeException e) {
+            log.error("Échec du changement de plan Stripe pour l'utilisateur {}", userId, e);
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "Erreur Stripe lors du changement de plan.");
+        }
+    }
+
     @Transactional(readOnly = true)
     public String createPortalSession(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));

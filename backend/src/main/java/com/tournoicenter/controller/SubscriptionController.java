@@ -2,6 +2,7 @@ package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.subscription.CheckoutRequest;
 import com.tournoicenter.dto.subscription.CheckoutUrlResponse;
+import com.tournoicenter.dto.subscription.PlanChangeResponse;
 import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.service.SubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,11 @@ public class SubscriptionController {
     @PostMapping("/checkout")
     public CheckoutUrlResponse checkout(@AuthenticationPrincipal JwtPrincipal principal, @Valid @RequestBody CheckoutRequest request) {
         return new CheckoutUrlResponse(subscriptionService.createCheckoutSession(principal.userId(), request.plan(), request.period()));
+    }
+
+    @PostMapping("/change-plan")
+    public PlanChangeResponse changePlan(@AuthenticationPrincipal JwtPrincipal principal, @Valid @RequestBody CheckoutRequest request) {
+        return new PlanChangeResponse(subscriptionService.changePlan(principal.userId(), request.plan(), request.period()));
     }
 
     @PostMapping("/portal")

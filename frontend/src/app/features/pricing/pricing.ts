@@ -195,6 +195,13 @@ export class PricingPage {
       return;
     }
 
+    // Déjà un abonnement payant en cours : on modifie l'abonnement Stripe existant
+    // (proratisé) plutôt que d'en ouvrir un second par-dessus.
+    if ((this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE') {
+      this.changePlan(plan);
+      return;
+    }
+
     this.loadingPlan.set(plan.id);
     this.subscriptionService.checkout(plan.id as PlanTier, this.billing()).subscribe({
       next: (res) => {
@@ -206,6 +213,21 @@ export class PricingPage {
           'Une erreur est survenue lors de la création de la session de paiement.',
           'Erreur',
         );
+      },
+    });
+  }
+
+  private changePlan(plan: Plan): void {
+    this.loadingPlan.set(plan.id);
+    this.subscriptionService.changePlan(plan.id as PlanTier, this.billing()).subscribe({
+      next: (res) => {
+        this.loadingPlan.set(null);
+        this.authService.updatePlan(res.plan);
+        this.router.navigate(['/checkout/success'], { queryParams: { plan: plan.id } });
+      },
+      error: () => {
+        this.loadingPlan.set(null);
+        this.toast.error('Une erreur est survenue lors du changement de plan.', 'Erreur');
       },
     });
   }
