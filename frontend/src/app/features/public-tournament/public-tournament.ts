@@ -195,6 +195,16 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
   }
 
+  /** Fires the click count before navigating away — window.open happens synchronously in the
+   *  same click handler so it isn't blocked as an unexpected popup by the browser, while the
+   *  tracking call itself doesn't need to be awaited. */
+  sponsorClick(): void {
+    const url = this.tournament()?.sponsorClickUrl;
+    if (!url) return;
+    this.tournamentService.recordSponsorClick(this.tournamentId).subscribe({ error: () => {} });
+    window.open(url, '_blank', 'noopener');
+  }
+
   isFollowing(teamId: number): boolean {
     return this.followedTeamIds().has(teamId);
   }

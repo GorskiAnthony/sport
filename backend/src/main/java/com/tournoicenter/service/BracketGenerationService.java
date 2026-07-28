@@ -84,6 +84,7 @@ public class BracketGenerationService {
 
         List<Match> matches = generator.generateInitialRound(tournament, teams, groupCount);
         tournament.setFormat(format.name());
+        TerrainAssigner.assign(tournament, matches);
 
         List<MatchResponse> saved = matchRepository.saveAll(matches).stream().map(MatchResponse::from).toList();
         tournamentLiveService.notifyTournamentChanged(tournamentId);
@@ -183,6 +184,7 @@ public class BracketGenerationService {
 
         List<Team> qualifiers = computeSeededQualifiers(byPhase);
         List<Match> knockoutRound1 = singleEliminationGenerator.generateInitialRound(tournament, qualifiers);
+        TerrainAssigner.assign(tournament, knockoutRound1);
         List<MatchResponse> saved = matchRepository.saveAll(knockoutRound1).stream().map(MatchResponse::from).toList();
         tournamentLiveService.notifyTournamentChanged(tournamentId);
         return new BracketAdvanceResponse(saved, false, null);
@@ -241,6 +243,7 @@ public class BracketGenerationService {
             return new BracketAdvanceResponse(List.of(), true, champion);
         }
 
+        TerrainAssigner.assign(tournament, result.nextRoundMatches());
         List<MatchResponse> saved = matchRepository.saveAll(result.nextRoundMatches()).stream()
                 .map(MatchResponse::from).toList();
         tournamentLiveService.notifyTournamentChanged(tournamentId);

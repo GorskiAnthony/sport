@@ -65,6 +65,7 @@ const PLANS: Plan[] = [
       'Tournois illimités',
       'Équipes illimitées',
       'Résultats en temps réel',
+      'Planning multi-terrains',
       'Export PDF des classements',
       'Support par email',
     ],
@@ -82,6 +83,7 @@ const PLANS: Plan[] = [
       'Support prioritaire 24/7',
       "Tournois jusqu'à 128 équipes dans un même bracket",
       'Règlement personnalisé affiché aux équipes',
+      'Bannière sponsor avec suivi des clics',
     ],
   },
 ];

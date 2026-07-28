@@ -32,6 +32,26 @@
       }
     </div>
 
+    @if (tournament()!.sponsorLogoUrl || tournament()!.sponsorName) {
+      <button
+        type="button"
+        (click)="sponsorClick()"
+        [disabled]="!tournament()!.sponsorClickUrl"
+        class="w-full bg-[#161B22] border border-white/10 rounded-2xl p-4 flex items-center gap-4 transition-colors"
+        [class]="tournament()!.sponsorClickUrl ? 'hover:border-green-500/30 cursor-pointer' : 'cursor-default'"
+      >
+        @if (tournament()!.sponsorLogoUrl) {
+          <img [src]="tournament()!.sponsorLogoUrl" alt="" class="h-12 w-auto rounded-lg object-contain bg-white/5 p-1 flex-shrink-0" />
+        }
+        <div class="text-left min-w-0">
+          <p class="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Partenaire du tournoi</p>
+          @if (tournament()!.sponsorName) {
+            <p class="text-white text-sm font-semibold truncate">{{ tournament()!.sponsorName }}</p>
+          }
+        </div>
+      </button>
+    }
+
     @if (tournament()!.rules) {
       <div class="bg-[#161B22] border border-white/10 rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-white/10">

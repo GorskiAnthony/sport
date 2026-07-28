@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/tournaments/*/sponsor-click").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/recent").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()

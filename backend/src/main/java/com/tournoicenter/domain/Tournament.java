@@ -48,6 +48,24 @@ public class Tournament {
     @Column(columnDefinition = "TEXT")
     private String rules;
 
+    /** Comma-separated terrain/pitch names (e.g. "Terrain A,Terrain B") — deliberately a flat
+     *  string rather than a child entity: organizers just need short labels to cycle matches
+     *  across, not a managed resource with its own lifecycle. See TerrainAssigner. */
+    @Column(columnDefinition = "TEXT")
+    private String terrains;
+
+    @Column(name = "sponsor_name")
+    private String sponsorName;
+
+    @Column(name = "sponsor_logo_url", columnDefinition = "TEXT")
+    private String sponsorLogoUrl;
+
+    @Column(name = "sponsor_click_url", columnDefinition = "TEXT")
+    private String sponsorClickUrl;
+
+    @Column(name = "sponsor_clicks", nullable = false)
+    private int sponsorClicks = 0;
+
     @Column
     private String format;
 
@@ -175,6 +193,46 @@ public class Tournament {
 
     public void setRules(String rules) {
         this.rules = rules;
+    }
+
+    public String getTerrains() {
+        return terrains;
+    }
+
+    public void setTerrains(String terrains) {
+        this.terrains = terrains;
+    }
+
+    public String getSponsorName() {
+        return sponsorName;
+    }
+
+    public void setSponsorName(String sponsorName) {
+        this.sponsorName = sponsorName;
+    }
+
+    public String getSponsorLogoUrl() {
+        return sponsorLogoUrl;
+    }
+
+    public void setSponsorLogoUrl(String sponsorLogoUrl) {
+        this.sponsorLogoUrl = sponsorLogoUrl;
+    }
+
+    public String getSponsorClickUrl() {
+        return sponsorClickUrl;
+    }
+
+    public void setSponsorClickUrl(String sponsorClickUrl) {
+        this.sponsorClickUrl = sponsorClickUrl;
+    }
+
+    public int getSponsorClicks() {
+        return sponsorClicks;
+    }
+
+    public void setSponsorClicks(int sponsorClicks) {
+        this.sponsorClicks = sponsorClicks;
     }
 
     public String getFormat() {

@@ -44,9 +44,10 @@
                       <tbody>
                         @for (match of round.matches; track match.id) {
                           <tr class="border-b border-slate-200">
-                            <td class="py-1.5 pr-2 text-right w-[45%]">{{ match.homeTeam.name }}</td>
+                            <td class="py-1.5 pr-2 text-right w-[42%]">{{ match.homeTeam.name }}</td>
                             <td class="py-1.5 px-2 text-center text-slate-400 font-mono">vs</td>
-                            <td class="py-1.5 pl-2 w-[45%]">{{ match.awayTeam.name }}</td>
+                            <td class="py-1.5 pl-2 w-[42%]">{{ match.awayTeam.name }}</td>
+                            <td class="py-1.5 pl-2 text-slate-500 text-xs whitespace-nowrap">{{ match.venue }}</td>
                           </tr>
                         }
                       </tbody>

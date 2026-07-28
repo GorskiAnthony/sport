@@ -132,10 +132,20 @@ public class TournamentService {
         tournamentRepository.delete(tournament);
     }
 
+    /** No ownership check: the click comes from an anonymous spectator on the public page, not
+     *  the organizer — see SecurityConfig, this endpoint is deliberately unauthenticated. */
+    @CacheEvict(value = "tournamentDetail", key = "#id")
+    @Transactional
+    public void recordSponsorClick(Long id) {
+        Tournament tournament = getOrThrow(id);
+        tournament.setSponsorClicks(tournament.getSponsorClicks() + 1);
+    }
+
     private void applyOptionalFields(Tournament tournament, TournamentRequest request) {
         if (request.description() != null) tournament.setDescription(request.description());
         if (request.format() != null) tournament.setFormat(request.format());
         if (request.splitEnabled() != null) tournament.setSplitEnabled(request.splitEnabled());
+        if (request.terrains() != null) tournament.setTerrains(request.terrains());
         if (request.rules() != null) {
             boolean hasContent = !request.rules().isBlank();
             if (hasContent && !PlanLimits.of(tournament.getOrganizer().getPlan()).customRules()) {
@@ -143,6 +153,30 @@ public class TournamentService {
             }
             tournament.setRules(request.rules());
         }
+        applySponsorFields(tournament, request);
+    }
+
+    /** All three sponsor fields share one Pro gate: leaving any of them non-blank without the
+     *  plan is rejected, but clearing them (blank) is always allowed regardless of plan — e.g. a
+     *  downgraded organizer must still be able to remove a banner they can no longer configure. */
+    private void applySponsorFields(Tournament tournament, TournamentRequest request) {
+        boolean touchesSponsor = request.sponsorName() != null || request.sponsorLogoUrl() != null
+                || request.sponsorClickUrl() != null;
+        if (!touchesSponsor) return;
+
+        boolean hasContent = hasText(request.sponsorName()) || hasText(request.sponsorLogoUrl())
+                || hasText(request.sponsorClickUrl());
+        if (hasContent && !PlanLimits.of(tournament.getOrganizer().getPlan()).sponsorBanner()) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "La bannière sponsor est réservée au plan Pro.");
+        }
+
+        if (request.sponsorName() != null) tournament.setSponsorName(request.sponsorName());
+        if (request.sponsorLogoUrl() != null) tournament.setSponsorLogoUrl(request.sponsorLogoUrl());
+        if (request.sponsorClickUrl() != null) tournament.setSponsorClickUrl(request.sponsorClickUrl());
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Tournament getOrThrow(Long id) {

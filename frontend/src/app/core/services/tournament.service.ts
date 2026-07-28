@@ -53,6 +53,12 @@ export class TournamentService {
       .pipe(map(() => undefined));
   }
 
+  recordSponsorClick(id: number): Observable<void> {
+    return this.http
+      .post<ApiResponse<{ recorded: boolean }>>(`${this.baseUrl}/${id}/sponsor-click`, {})
+      .pipe(map(() => undefined));
+  }
+
   getRecentlyViewed(): Observable<RecentTournament[]> {
     return this.http
       .get<ApiResponse<RecentTournament[]>>(`${this.baseUrl}/recent`)

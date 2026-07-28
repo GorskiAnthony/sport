@@ -27,6 +27,11 @@ export interface TournamentSummary {
 export interface TournamentDetail
   extends Omit<TournamentSummary, 'teamsCount'> {
   rules: string | null;
+  terrains: string | null;
+  sponsorName: string | null;
+  sponsorLogoUrl: string | null;
+  sponsorClickUrl: string | null;
+  sponsorClicks: number;
   teams: Team[];
   matches: Match[];
 }
@@ -47,6 +52,10 @@ export interface TournamentRequest {
   maxTeams: number;
   description?: string;
   rules?: string;
+  terrains?: string;
+  sponsorName?: string;
+  sponsorLogoUrl?: string;
+  sponsorClickUrl?: string;
   format?: string;
   splitEnabled?: boolean;
   useEventPass?: boolean;

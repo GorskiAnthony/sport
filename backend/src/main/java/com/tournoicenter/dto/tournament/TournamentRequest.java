@@ -22,6 +22,10 @@ public record TournamentRequest(
         @Min(2) @Max(128) Integer maxTeams,
         String description,
         @Size(max = 5000) String rules,
+        @Size(max = 1000) String terrains,
+        @Size(max = 255) String sponsorName,
+        String sponsorLogoUrl,
+        String sponsorClickUrl,
         String format,
         Boolean splitEnabled,
         Boolean useEventPass

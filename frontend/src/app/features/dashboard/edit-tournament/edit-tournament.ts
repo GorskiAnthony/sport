@@ -62,6 +62,11 @@ export class DashboardEditTournamentPage implements OnInit {
   readonly maxTeams = signal('');
   readonly description = signal('');
   readonly rules = signal('');
+  readonly terrains = signal('');
+  readonly sponsorName = signal('');
+  readonly sponsorLogoUrl = signal('');
+  readonly sponsorClickUrl = signal('');
+  readonly sponsorClicks = signal(0);
 
   readonly errors = signal<FormErrors>({});
 
@@ -83,6 +88,11 @@ export class DashboardEditTournamentPage implements OnInit {
         this.maxTeams.set(String(tournament.maxTeams));
         this.description.set(tournament.description ?? '');
         this.rules.set(tournament.rules ?? '');
+        this.terrains.set(tournament.terrains ?? '');
+        this.sponsorName.set(tournament.sponsorName ?? '');
+        this.sponsorLogoUrl.set(tournament.sponsorLogoUrl ?? '');
+        this.sponsorClickUrl.set(tournament.sponsorClickUrl ?? '');
+        this.sponsorClicks.set(tournament.sponsorClicks);
         this.loadingInitial.set(false);
       },
       error: () => {
@@ -90,6 +100,14 @@ export class DashboardEditTournamentPage implements OnInit {
         this.loadingInitial.set(false);
       },
     });
+  }
+
+  onSponsorLogoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.sponsorLogoUrl.set((ev.target?.result as string) ?? '');
+    reader.readAsDataURL(file);
   }
 
   private validate(): FormErrors {
@@ -122,6 +140,10 @@ export class DashboardEditTournamentPage implements OnInit {
         maxTeams: Number(this.maxTeams()) || 14,
         description: this.description() || undefined,
         rules: this.isPro ? this.rules() || undefined : undefined,
+        terrains: this.terrains() || undefined,
+        sponsorName: this.isPro ? this.sponsorName() || undefined : undefined,
+        sponsorLogoUrl: this.isPro ? this.sponsorLogoUrl() || undefined : undefined,
+        sponsorClickUrl: this.isPro ? this.sponsorClickUrl() || undefined : undefined,
       })
       .subscribe({
         next: () => {

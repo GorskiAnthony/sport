@@ -71,4 +71,12 @@ public class TournamentController {
         tournamentViewService.recordView(principal.userId(), id);
         return ApiResponse.of(Map.of("recorded", true));
     }
+
+    /** Deliberately unauthenticated — fired from the public tournament page, which anonymous
+     *  spectators can view without an account (see SecurityConfig). */
+    @PostMapping("/{id}/sponsor-click")
+    public ApiResponse<Map<String, Boolean>> recordSponsorClick(@PathVariable Long id) {
+        tournamentService.recordSponsorClick(id);
+        return ApiResponse.of(Map.of("recorded", true));
+    }
 }
