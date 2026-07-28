@@ -29,9 +29,20 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"],
+            "server": "src/main.server.ts",
+            "outputMode": "server",
+            "security": {
+              // Le même build Docker doit fonctionner derrière n'importe quel domaine sans
+              // reconstruction (voir docker-compose.prod.yml / deploy.md) : impossible de figer
+              // un hostname ici. La protection SSRF que ce champ apporte est déjà assurée au
+              // niveau réseau — le serveur Node SSR n'est joignable que depuis nginx sur le
+              // réseau Docker interne, jamais exposé directement à Internet.
+              "allowedHosts": ["*"]
+            },
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {
