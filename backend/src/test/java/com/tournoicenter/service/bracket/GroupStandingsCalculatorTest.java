@@ -68,6 +68,24 @@ class GroupStandingsCalculatorTest {
     }
 
     @Test
+    void forfeitCreditsWinWithoutAffectingGoalDifference() {
+        Team a = new Team("A", "u15", tournament);
+        Team b = new Team("B", "u15", tournament);
+        Match match = new Match(tournament, a, b, "Groupe A", Instant.now());
+        match.setStatus(MatchStatus.FORFEIT);
+        match.setForfeitedTeam(b);
+
+        List<GroupStandingsCalculator.Standing> standings = GroupStandingsCalculator.compute(List.of(match));
+
+        GroupStandingsCalculator.Standing standingA = standings.stream().filter(s -> s.team().equals(a)).findFirst().orElseThrow();
+        GroupStandingsCalculator.Standing standingB = standings.stream().filter(s -> s.team().equals(b)).findFirst().orElseThrow();
+        assertThat(standingA.points()).isEqualTo(3);
+        assertThat(standingA.goalDifference()).isEqualTo(0);
+        assertThat(standingB.points()).isEqualTo(0);
+        assertThat(standingB.goalDifference()).isEqualTo(0);
+    }
+
+    @Test
     void ignoresUnfinishedMatchesForScoringButStillCountsTeams() {
         Team a = new Team("A", "u15", tournament);
         Team b = new Team("B", "u15", tournament);

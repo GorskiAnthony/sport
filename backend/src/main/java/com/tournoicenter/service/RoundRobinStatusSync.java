@@ -25,7 +25,8 @@ final class RoundRobinStatusSync {
             return;
         }
 
-        boolean allFinished = !matches.isEmpty() && matches.stream().allMatch(m -> m.getStatus() == MatchStatus.FINISHED);
+        boolean allFinished = !matches.isEmpty() && matches.stream()
+                .allMatch(m -> m.getStatus() == MatchStatus.FINISHED || m.getStatus() == MatchStatus.FORFEIT);
         if (allFinished) {
             tournament.setStatus(TournamentStatus.FINISHED);
         } else if (tournament.getStatus() == TournamentStatus.UPCOMING) {

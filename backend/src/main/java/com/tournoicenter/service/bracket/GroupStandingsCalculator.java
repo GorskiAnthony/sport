@@ -1,6 +1,7 @@
 package com.tournoicenter.service.bracket;
 
 import com.tournoicenter.domain.Match;
+import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.Team;
 
 import java.util.ArrayList;
@@ -35,6 +36,14 @@ public final class GroupStandingsCalculator {
             points.putIfAbsent(away, 0);
             goalDifference.putIfAbsent(home, 0);
             goalDifference.putIfAbsent(away, 0);
+
+            if (match.getStatus() == MatchStatus.FORFEIT) {
+                // No fabricated score (see Match.forfeitedTeam) — credit the win without touching
+                // goal difference, since there's no real result to derive one from.
+                Team forfeited = match.getForfeitedTeam();
+                points.merge(forfeited.equals(home) ? away : home, 3, Integer::sum);
+                continue;
+            }
 
             Integer homeScore = match.getHomeScore();
             Integer awayScore = match.getAwayScore();

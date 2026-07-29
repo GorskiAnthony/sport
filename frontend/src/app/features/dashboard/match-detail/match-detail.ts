@@ -7,11 +7,13 @@ import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MATCH_STATUS_LABELS } from '../../../shared/utils/labels';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
+import { Team } from '../../../core/models/team.model';
 
 @Component({
   selector: 'app-dashboard-match-detail-page',
   standalone: true,
-  imports: [RouterLink, DatePipe, StatusBadge],
+  imports: [RouterLink, DatePipe, StatusBadge, ConfirmModal],
   templateUrl: './match-detail.html',
 })
 export class DashboardMatchDetailPage implements OnInit {
@@ -29,6 +31,8 @@ export class DashboardMatchDetailPage implements OnInit {
   readonly homeFairPlayInput = signal('');
   readonly awayFairPlayInput = signal('');
   readonly saving = signal(false);
+  readonly pendingForfeit = signal<Team | null>(null);
+  readonly recordingForfeit = signal(false);
 
   ngOnInit(): void {
     // Same staleness concern as the other Pro-gated pages: an organizer who just upgraded
@@ -92,6 +96,26 @@ export class DashboardMatchDetailPage implements OnInit {
       },
       error: () => {
         this.saving.set(false);
+        this.toast.error('Une erreur est survenue.');
+      },
+    });
+  }
+
+  confirmForfeit(): void {
+    const match = this.match();
+    const team = this.pendingForfeit();
+    if (!match || !team) return;
+
+    this.recordingForfeit.set(true);
+    this.matchService.recordForfeit(match.id, team.id).subscribe({
+      next: (updated) => {
+        this.match.set(updated);
+        this.recordingForfeit.set(false);
+        this.pendingForfeit.set(null);
+        this.toast.success(`${team.name} déclarée forfait.`, 'Enregistré');
+      },
+      error: () => {
+        this.recordingForfeit.set(false);
         this.toast.error('Une erreur est survenue.');
       },
     });

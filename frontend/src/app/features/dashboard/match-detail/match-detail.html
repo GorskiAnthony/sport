@@ -7,6 +7,16 @@
 } @else if (!match()) {
   <p class="text-slate-400">Match introuvable. <a routerLink="/dashboard/matches" class="text-green-400">← Retour aux matchs</a></p>
 } @else {
+  <app-confirm-modal
+    [open]="!!pendingForfeit()"
+    title="Déclarer forfait ?"
+    [description]="(pendingForfeit()?.name ?? '') + ' sera déclarée forfait sur ce match — la victoire est automatiquement attribuée à l\'adversaire, sans score.'"
+    confirmLabel="Déclarer forfait"
+    [danger]="true"
+    (confirmed)="confirmForfeit()"
+    (cancelled)="pendingForfeit.set(null)"
+  />
+
   <div class="max-w-3xl space-y-5">
     <div class="bg-[#161B22] border border-white/10 rounded-xl text-center py-8 px-5">
       <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">{{ match()!.phase }}</p>
@@ -16,11 +26,18 @@
           <p class="text-white text-sm font-semibold">{{ match()!.homeTeam.name }}</p>
         </div>
         <div class="text-center">
-          <div class="flex items-center gap-4">
-            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.homeScore ?? '–' }}</span>
-            <span class="text-slate-400 text-3xl">–</span>
-            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.awayScore ?? '–' }}</span>
-          </div>
+          @if (match()!.status === 'FORFEIT') {
+            <p class="text-white text-xl font-bold">Forfait</p>
+            <p class="text-slate-400 text-xs mt-1">
+              {{ match()!.forfeitedTeamId === match()!.homeTeam.id ? match()!.homeTeam.name : match()!.awayTeam.name }}
+            </p>
+          } @else {
+            <div class="flex items-center gap-4">
+              <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.homeScore ?? '–' }}</span>
+              <span class="text-slate-400 text-3xl">–</span>
+              <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.awayScore ?? '–' }}</span>
+            </div>
+          }
           <app-status-badge class="inline-block mt-2" [status]="match()!.status" [label]="statusLabel(match()!.status)" />
         </div>
         <div class="text-center w-28">
@@ -67,6 +84,19 @@
             <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
           </div>
         }
+      </div>
+    </div>
+
+    <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+      <h2 class="text-white text-sm font-semibold mb-1">Forfait</h2>
+      <p class="text-slate-500 text-xs mb-4">Une équipe ne s'est pas présentée ? Déclarez-la forfait : la victoire est attribuée à l'adversaire, sans avoir à inventer un score.</p>
+      <div class="flex gap-3">
+        <button type="button" (click)="pendingForfeit.set(match()!.homeTeam)" class="px-4 py-2 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">
+          {{ match()!.homeTeam.name }} forfait
+        </button>
+        <button type="button" (click)="pendingForfeit.set(match()!.awayTeam)" class="px-4 py-2 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">
+          {{ match()!.awayTeam.name }} forfait
+        </button>
       </div>
     </div>
   </div>

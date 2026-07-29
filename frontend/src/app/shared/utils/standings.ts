@@ -36,23 +36,33 @@ export function computeStandings(tournament: { teams: Team[]; matches: Match[] }
   });
 
   tournament.matches
-    .filter((m) => m.homeScore !== null && m.awayScore !== null)
+    .filter((m) => m.status === 'FORFEIT' || (m.homeScore !== null && m.awayScore !== null))
     .forEach((m) => {
       const homeName = m.homeTeam.name;
       const awayName = m.awayTeam.name;
       if (!stats[homeName]) stats[homeName] = emptyStanding(homeName);
       if (!stats[awayName]) stats[awayName] = emptyStanding(awayName);
+      addFairPlay(homeName, m.homeFairPlay);
+      addFairPlay(awayName, m.awayFairPlay);
+      stats[homeName].j++;
+      stats[awayName].j++;
+
+      if (m.status === 'FORFEIT') {
+        // No real score to add to bp/bc (see Match.forfeitedTeamId) — only the win/loss counts.
+        const winnerName = m.forfeitedTeamId === m.homeTeam.id ? awayName : homeName;
+        const loserName = winnerName === homeName ? awayName : homeName;
+        stats[winnerName].v++;
+        stats[winnerName].pts += 3;
+        stats[loserName].d++;
+        return;
+      }
 
       const homeScore = m.homeScore as number;
       const awayScore = m.awayScore as number;
-      stats[homeName].j++;
-      stats[awayName].j++;
       stats[homeName].bp += homeScore;
       stats[homeName].bc += awayScore;
       stats[awayName].bp += awayScore;
       stats[awayName].bc += homeScore;
-      addFairPlay(homeName, m.homeFairPlay);
-      addFairPlay(awayName, m.awayFairPlay);
 
       if (homeScore > awayScore) {
         stats[homeName].v++;

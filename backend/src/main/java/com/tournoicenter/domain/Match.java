@@ -43,6 +43,14 @@ public class Match {
     @Column(name = "away_fair_play")
     private Integer awayFairPlay;
 
+    /** Set only when status is FORFEIT — the team that didn't show up. homeScore/awayScore stay
+     *  null: a forfeit has no real result to record, and fabricating one (e.g. "3-0") would bake
+     *  in a football-specific convention that makes no sense for every other sport this app
+     *  supports. See MatchService.recordForfeit. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forfeited_team_id")
+    private Team forfeitedTeam;
+
     @Column(nullable = false)
     private String phase;
 
@@ -137,6 +145,14 @@ public class Match {
 
     public void setAwayFairPlay(Integer awayFairPlay) {
         this.awayFairPlay = awayFairPlay;
+    }
+
+    public Team getForfeitedTeam() {
+        return forfeitedTeam;
+    }
+
+    public void setForfeitedTeam(Team forfeitedTeam) {
+        this.forfeitedTeam = forfeitedTeam;
     }
 
     public String getPhase() {

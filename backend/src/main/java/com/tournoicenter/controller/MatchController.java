@@ -1,6 +1,7 @@
 package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.ApiResponse;
+import com.tournoicenter.dto.match.MatchForfeitRequest;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -44,6 +45,13 @@ public class MatchController {
                                                    @PathVariable Long id,
                                                    @Valid @RequestBody MatchScoreRequest request) {
         return ApiResponse.of(matchService.updateScore(id, principal.userId(), request));
+    }
+
+    @PatchMapping("/{id}/forfeit")
+    public ApiResponse<MatchResponse> recordForfeit(@AuthenticationPrincipal JwtPrincipal principal,
+                                                      @PathVariable Long id,
+                                                      @Valid @RequestBody MatchForfeitRequest request) {
+        return ApiResponse.of(matchService.recordForfeit(id, principal.userId(), request.teamId()));
     }
 
     @PatchMapping("/{id}/start")

@@ -59,6 +59,9 @@ export class BracketTree {
   }
 
   winnerTeamId(match: Match): number | null {
+    if (match.status === 'FORFEIT') {
+      return match.forfeitedTeamId === match.homeTeam.id ? match.awayTeam.id : match.homeTeam.id;
+    }
     if (match.homeScore === null || match.awayScore === null || match.homeScore === match.awayScore) return null;
     return match.homeScore > match.awayScore ? match.homeTeam.id : match.awayTeam.id;
   }

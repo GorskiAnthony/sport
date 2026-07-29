@@ -17,6 +17,8 @@ export class StatusBadge {
         return 'bg-green-500/20 text-green-400';
       case 'FINISHED':
         return 'bg-slate-500/20 text-slate-300';
+      case 'FORFEIT':
+        return 'bg-red-500/20 text-red-400';
       default:
         return 'bg-amber-500/20 text-amber-400';
     }

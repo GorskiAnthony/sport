@@ -156,7 +156,9 @@
                   <li class="flex items-center justify-between gap-3 bg-[#0D1117] rounded-lg px-4 py-2.5 text-sm">
                     <span class="text-slate-200 flex-1 text-right truncate">{{ match.homeTeam.name }}</span>
                     <span class="font-mono text-white font-semibold px-3 whitespace-nowrap">
-                      @if (match.homeScore !== null && match.awayScore !== null) {
+                      @if (match.status === 'FORFEIT') {
+                        <span class="text-red-400 text-xs font-semibold">Forfait</span>
+                      } @else if (match.homeScore !== null && match.awayScore !== null) {
                         {{ match.homeScore }} – {{ match.awayScore }}
                       } @else if (match.status === 'ONGOING') {
                         <span class="inline-flex items-center gap-1.5 text-green-400">

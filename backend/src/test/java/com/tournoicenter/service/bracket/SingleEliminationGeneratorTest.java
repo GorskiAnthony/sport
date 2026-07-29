@@ -105,6 +105,24 @@ class SingleEliminationGeneratorTest {
         assertThat(result.champion()).isEqualTo(teams.get(0));
     }
 
+    @Test
+    void advanceCreditsWinToTheNonForfeitingTeam() {
+        Tournament tournament = tournament();
+        List<Team> teams = teams(tournament, 4);
+        List<Match> round1 = generator.generateInitialRound(tournament, teams);
+        // Match 0: home team forfeits, away team should advance without any score.
+        round1.get(0).setStatus(MatchStatus.FORFEIT);
+        round1.get(0).setForfeitedTeam(round1.get(0).getHomeTeam());
+        finishWithHomeWin(List.of(round1.get(1)));
+
+        BracketAdvanceResult result = generator.advance(tournament, round1, List.of(), 1);
+
+        assertThat(result.nextRoundMatches()).hasSize(1);
+        Match finalMatch = result.nextRoundMatches().get(0);
+        assertThat(List.of(finalMatch.getHomeTeam(), finalMatch.getAwayTeam()))
+                .containsExactlyInAnyOrder(round1.get(0).getAwayTeam(), round1.get(1).getHomeTeam());
+    }
+
     private void finishWithHomeWin(List<Match> matches) {
         for (Match match : matches) {
             match.setHomeScore(2);

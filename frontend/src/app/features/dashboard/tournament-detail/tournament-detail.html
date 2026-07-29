@@ -168,7 +168,12 @@
                               class="w-full h-full rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition-colors flex items-center justify-center"
                               [attr.aria-label]="row.name + ' vs ' + col.name"
                             >
-                              @if (scoreFor(match, row) !== null && scoreFor(match, col) !== null) {
+                              @if (match.status === 'FORFEIT') {
+                                <span class="font-mono text-[10px] leading-tight text-center">
+                                  <span class="block" [class]="match.forfeitedTeamId === row.id ? 'text-slate-500' : 'text-green-400 font-bold'">F</span>
+                                  <span class="block" [class]="match.forfeitedTeamId === col.id ? 'text-slate-500' : 'text-green-400 font-bold'">F</span>
+                                </span>
+                              } @else if (scoreFor(match, row) !== null && scoreFor(match, col) !== null) {
                                 <span class="font-mono text-sm leading-tight text-center">
                                   <span class="block" [class]="scoreFor(match, row)! > scoreFor(match, col)! ? 'text-green-400 font-bold' : scoreFor(match, row) === scoreFor(match, col) ? 'text-slate-300' : 'text-red-400'">{{ scoreFor(match, row) }}</span>
                                   <span class="block" [class]="scoreFor(match, col)! > scoreFor(match, row)! ? 'text-green-400 font-bold' : scoreFor(match, row) === scoreFor(match, col) ? 'text-slate-300' : 'text-red-400'">{{ scoreFor(match, col) }}</span>

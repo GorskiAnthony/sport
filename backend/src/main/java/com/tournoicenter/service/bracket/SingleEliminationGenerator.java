@@ -69,6 +69,11 @@ public class SingleEliminationGenerator implements BracketGenerator {
                                          List<Team> byeTeamsCarriedOver, int nextRoundIndex) {
         List<Team> winners = new ArrayList<>();
         for (Match match : currentRoundMatches) {
+            if (match.getStatus() == MatchStatus.FORFEIT) {
+                Team forfeited = match.getForfeitedTeam();
+                winners.add(forfeited.equals(match.getHomeTeam()) ? match.getAwayTeam() : match.getHomeTeam());
+                continue;
+            }
             if (match.getStatus() != MatchStatus.FINISHED || match.getHomeScore() == null || match.getAwayScore() == null) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Le tour en cours n'est pas terminé.");
             }

@@ -121,6 +121,41 @@ public class MatchService {
         return MatchResponse.from(match);
     }
 
+    /** No fabricated score — see Match.forfeitedTeam. The other team is credited a win with no
+     *  effect on goal difference (GroupStandingsCalculator) and treated as the automatic winner
+     *  for bracket advancement (SingleEliminationGenerator.advance). */
+    @Transactional
+    public MatchResponse recordForfeit(Long id, Long requesterId, Long forfeitingTeamId) {
+        Match match = getOrThrow(id);
+        requireOwner(match, requesterId);
+
+        Team forfeitingTeam;
+        if (forfeitingTeamId.equals(match.getHomeTeam().getId())) {
+            forfeitingTeam = match.getHomeTeam();
+        } else if (forfeitingTeamId.equals(match.getAwayTeam().getId())) {
+            forfeitingTeam = match.getAwayTeam();
+        } else {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Cette équipe ne participe pas à ce match.");
+        }
+
+        match.setForfeitedTeam(forfeitingTeam);
+        match.setStatus(MatchStatus.FORFEIT);
+        match.setHomeScore(null);
+        match.setAwayScore(null);
+
+        Tournament tournament = match.getTournament();
+        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
+
+        String message = String.format("Le match %s vs %s est terminé (forfait de %s).",
+                match.getHomeTeam().getName(), match.getAwayTeam().getName(), forfeitingTeam.getName());
+        notificationService.notifyFollowers(match.getHomeTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
+        notificationService.notifyFollowers(match.getAwayTeam(), tournament, match, NotificationType.MATCH_FINISHED, message);
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
+        evictTournamentDetailCache(tournament.getId());
+
+        return MatchResponse.from(match);
+    }
+
     @Transactional
     public MatchResponse start(Long id, Long requesterId) {
         Match match = getOrThrow(id);

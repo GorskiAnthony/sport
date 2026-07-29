@@ -103,7 +103,9 @@
                   <td class="px-5 py-4 text-slate-300">{{ m.awayTeam.name }}</td>
                   <td class="px-5 py-4 text-slate-400 text-xs">{{ m.date | date: 'dd/MM/yy HH:mm' }}</td>
                   <td class="px-5 py-4">
-                    @if (m.homeScore !== null && m.awayScore !== null) {
+                    @if (m.status === 'FORFEIT') {
+                      <span class="text-red-400 text-xs font-semibold">Forfait</span>
+                    } @else if (m.homeScore !== null && m.awayScore !== null) {
                       <span class="font-mono text-sm">
                         <span [class]="m.homeScore === m.awayScore ? 'text-slate-300' : m.homeScore > m.awayScore ? 'text-green-400 font-bold' : 'text-red-400'">{{ m.homeScore }}</span>
                         <span class="text-slate-400 mx-1">–</span>
