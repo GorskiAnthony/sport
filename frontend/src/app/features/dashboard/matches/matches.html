@@ -99,8 +99,8 @@
             } @else {
               @for (m of matches(); track m.id) {
                 <tr class="border-b border-white/10 last:border-0 hover:bg-white/[0.02]">
-                  <td class="px-5 py-4 text-slate-300">{{ m.homeTeam.name }}</td>
-                  <td class="px-5 py-4 text-slate-300">{{ m.awayTeam.name }}</td>
+                  <td class="px-5 py-4" [class]="m.status === 'FORFEIT' && m.forfeitedTeamId === m.homeTeam.id ? 'text-slate-600 line-through' : 'text-slate-300'">{{ m.homeTeam.name }}</td>
+                  <td class="px-5 py-4" [class]="m.status === 'FORFEIT' && m.forfeitedTeamId === m.awayTeam.id ? 'text-slate-600 line-through' : 'text-slate-300'">{{ m.awayTeam.name }}</td>
                   <td class="px-5 py-4 text-slate-400 text-xs">{{ m.date | date: 'dd/MM/yy HH:mm' }}</td>
                   <td class="px-5 py-4">
                     @if (m.status === 'FORFEIT') {

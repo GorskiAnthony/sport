@@ -28,7 +28,7 @@
               } @else if (followed.lastMatch) {
                 <p class="text-slate-400 text-xs mt-1">
                   @if (followed.lastMatch.status === 'FORFEIT') {
-                    Dernier match : {{ followed.lastMatch.homeTeam.name }} vs {{ followed.lastMatch.awayTeam.name }} — forfait
+                    Dernier match : {{ followed.lastMatch.homeTeam.name }} vs {{ followed.lastMatch.awayTeam.name }} — forfait de {{ followed.lastMatch.forfeitedTeamId === followed.lastMatch.homeTeam.id ? followed.lastMatch.homeTeam.name : followed.lastMatch.awayTeam.name }}
                   } @else {
                     Dernier match : {{ followed.lastMatch.homeTeam.name }} {{ followed.lastMatch.homeScore }} - {{ followed.lastMatch.awayScore }} {{ followed.lastMatch.awayTeam.name }}
                   }

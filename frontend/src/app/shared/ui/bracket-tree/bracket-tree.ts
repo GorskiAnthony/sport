@@ -58,6 +58,10 @@ export class BracketTree {
     return ((2 * index + 1) / (2 * count)) * 100;
   }
 
+  isForfeited(match: Match, teamId: number): boolean {
+    return match.status === 'FORFEIT' && match.forfeitedTeamId === teamId;
+  }
+
   winnerTeamId(match: Match): number | null {
     if (match.status === 'FORFEIT') {
       return match.forfeitedTeamId === match.homeTeam.id ? match.awayTeam.id : match.homeTeam.id;

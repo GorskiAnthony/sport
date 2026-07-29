@@ -154,7 +154,7 @@
               <ul class="space-y-2">
                 @for (match of group.matches; track match.id) {
                   <li class="flex items-center justify-between gap-3 bg-[#0D1117] rounded-lg px-4 py-2.5 text-sm">
-                    <span class="text-slate-200 flex-1 text-right truncate">{{ match.homeTeam.name }}</span>
+                    <span class="flex-1 text-right truncate" [class]="isForfeited(match, match.homeTeam.id) ? 'text-slate-600 line-through' : 'text-slate-200'">{{ match.homeTeam.name }}</span>
                     <span class="font-mono text-white font-semibold px-3 whitespace-nowrap">
                       @if (match.status === 'FORFEIT') {
                         <span class="text-red-400 text-xs font-semibold">Forfait</span>
@@ -172,7 +172,7 @@
                         <span class="text-slate-600">–</span>
                       }
                     </span>
-                    <span class="text-slate-200 flex-1 truncate">{{ match.awayTeam.name }}</span>
+                    <span class="flex-1 truncate" [class]="isForfeited(match, match.awayTeam.id) ? 'text-slate-600 line-through' : 'text-slate-200'">{{ match.awayTeam.name }}</span>
                   </li>
                 }
               </ul>

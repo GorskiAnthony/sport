@@ -195,6 +195,10 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
   }
 
+  isForfeited(match: Match, teamId: number): boolean {
+    return match.status === 'FORFEIT' && match.forfeitedTeamId === teamId;
+  }
+
   /** Fires the click count before navigating away — window.open happens synchronously in the
    *  same click handler so it isn't blocked as an unexpected popup by the browser, while the
    *  tracking call itself doesn't need to be awaited. */

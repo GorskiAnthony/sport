@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { StandingsGroup } from '../group-standings/group-standings';
+import { Match } from '../../../core/models/match.model';
 import { Team } from '../../../core/models/team.model';
 import { Round, groupMatchesIntoRounds } from '../../utils/rounds';
 
@@ -27,5 +28,9 @@ export class RoundPlanning {
 
   restingLabel(teams: Team[]): string {
     return teams.map((team) => team.name).join(', ');
+  }
+
+  isForfeited(match: Match, teamId: number): boolean {
+    return match.status === 'FORFEIT' && match.forfeitedTeamId === teamId;
   }
 }
