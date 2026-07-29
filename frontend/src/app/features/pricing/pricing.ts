@@ -85,6 +85,7 @@ const PLANS: Plan[] = [
       'Règlement personnalisé affiché aux équipes',
       'Bannière sponsor avec suivi des clics',
       'Buvette (caisse mobile + suivi des ventes)',
+      'Note fair-play par équipe',
     ],
   },
 ];

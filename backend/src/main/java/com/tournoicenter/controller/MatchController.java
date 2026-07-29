@@ -42,7 +42,7 @@ public class MatchController {
     @PatchMapping("/{id}/score")
     public ApiResponse<MatchResponse> updateScore(@AuthenticationPrincipal JwtPrincipal principal,
                                                    @PathVariable Long id,
-                                                   @RequestBody MatchScoreRequest request) {
+                                                   @Valid @RequestBody MatchScoreRequest request) {
         return ApiResponse.of(matchService.updateScore(id, principal.userId(), request));
     }
 

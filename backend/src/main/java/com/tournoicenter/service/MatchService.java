@@ -8,6 +8,7 @@ import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
+import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ForbiddenException;
 import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
@@ -15,6 +16,7 @@ import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,6 +99,14 @@ public class MatchService {
         match.setStatus(MatchStatus.FINISHED);
 
         Tournament tournament = match.getTournament();
+
+        boolean touchesFairPlay = request.homeFairPlay() != null || request.awayFairPlay() != null;
+        if (touchesFairPlay && !PlanLimits.of(tournament.getOrganizer().getPlan()).fairPlay()) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "La note fair-play est réservée au plan Pro.");
+        }
+        if (request.homeFairPlay() != null) match.setHomeFairPlay(request.homeFairPlay());
+        if (request.awayFairPlay() != null) match.setAwayFairPlay(request.awayFairPlay());
+
         RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
 
         if (!wasFinished) {

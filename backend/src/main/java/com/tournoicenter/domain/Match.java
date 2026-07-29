@@ -34,6 +34,15 @@ public class Match {
     @Column(name = "away_score")
     private Integer awayScore;
 
+    /** Sportsmanship note out of 10 (10 = exemplaire), entered alongside the score — see
+     *  MatchService.updateScore. Independent of homeScore/awayScore: a team can win 5-0 with a
+     *  poor fair-play note, or lose 0-5 with a perfect one. */
+    @Column(name = "home_fair_play")
+    private Integer homeFairPlay;
+
+    @Column(name = "away_fair_play")
+    private Integer awayFairPlay;
+
     @Column(nullable = false)
     private String phase;
 
@@ -112,6 +121,22 @@ public class Match {
 
     public void setAwayScore(Integer awayScore) {
         this.awayScore = awayScore;
+    }
+
+    public Integer getHomeFairPlay() {
+        return homeFairPlay;
+    }
+
+    public void setHomeFairPlay(Integer homeFairPlay) {
+        this.homeFairPlay = homeFairPlay;
+    }
+
+    public Integer getAwayFairPlay() {
+        return awayFairPlay;
+    }
+
+    public void setAwayFairPlay(Integer awayFairPlay) {
+        this.awayFairPlay = awayFairPlay;
     }
 
     public String getPhase() {
