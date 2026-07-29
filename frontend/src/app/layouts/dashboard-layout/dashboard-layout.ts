@@ -1,8 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastContainer } from '../../shared/ui/toast-container/toast-container';
 import { DashboardRightPanel } from './right-panel/right-panel';
+
+const COLLAPSE_KEY = 'dashboardSidebarCollapsed';
 
 interface DashboardNavItem {
   path: string;
@@ -31,10 +34,12 @@ const NAV: DashboardNavItem[] = [
 export class DashboardLayout {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly nav = NAV;
   readonly user = this.authService.currentUser;
   readonly sidebarOpen = signal(false);
+  readonly collapsed = signal(this.isBrowser && localStorage.getItem(COLLAPSE_KEY) === 'true');
   readonly initials = computed(() => {
     const name = this.user()?.name ?? '';
     return name.split(' ').map((part) => part[0]).join('').toUpperCase().slice(0, 2);
@@ -46,6 +51,12 @@ export class DashboardLayout {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  toggleCollapsed(): void {
+    const next = !this.collapsed();
+    this.collapsed.set(next);
+    if (this.isBrowser) localStorage.setItem(COLLAPSE_KEY, String(next));
   }
 
   logout(): void {

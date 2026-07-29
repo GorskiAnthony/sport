@@ -8,17 +8,39 @@
     [class.translate-x-0]="sidebarOpen()"
     [class.-translate-x-full]="!sidebarOpen()"
   >
-    <aside class="w-56 lg:w-44 h-full bg-[#0D1117] border-r border-white/10 flex flex-col" aria-label="Navigation du tableau de bord">
-      <div class="px-4 py-4 border-b border-white/10 flex items-center justify-between">
+    <aside
+      class="h-full bg-[#0D1117] border-r border-white/10 flex flex-col transition-[width] duration-200 flex-shrink-0"
+      [class.w-60]="!collapsed()"
+      [class.w-16]="collapsed()"
+      aria-label="Navigation du tableau de bord"
+    >
+      <div class="px-4 py-4 border-b border-white/10 flex items-center" [class.justify-between]="!collapsed()" [class.justify-center]="collapsed()">
         <a routerLink="/" aria-label="Tournoi Center — retour au site">
           <img src="/logo_white.png" alt="Tournoi Center" class="h-8 w-auto" />
         </a>
-        <button (click)="closeSidebar()" class="lg:hidden w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Fermer la navigation">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+        @if (!collapsed()) {
+          <button (click)="closeSidebar()" class="lg:hidden w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Fermer la navigation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        }
       </div>
+
+      <button
+        (click)="toggleCollapsed()"
+        class="flex items-center gap-1.5 px-3 py-2 mx-3 mt-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-xs flex-shrink-0"
+        [class.justify-center]="collapsed()"
+        [attr.aria-label]="collapsed() ? 'Agrandir la navigation' : 'Réduire la navigation'"
+        [attr.title]="collapsed() ? 'Agrandir' : null"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200 flex-shrink-0" [class.rotate-180]="collapsed()" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        @if (!collapsed()) {
+          <span>Réduire</span>
+        }
+      </button>
 
       <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto" aria-label="Menu principal">
         @for (item of nav; track item.path) {
@@ -28,7 +50,9 @@
             routerLinkActive="bg-green-500/20 text-green-400 font-medium"
             (click)="closeSidebar()"
             [attr.aria-label]="item.label"
+            [attr.title]="collapsed() ? item.label : null"
             class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors duration-150"
+            [class.justify-center]="collapsed()"
           >
             @switch (item.icon) {
               @case ('dashboard') {
@@ -77,18 +101,28 @@
                 </svg>
               }
             }
-            <span>{{ item.label }}</span>
+            @if (!collapsed()) {
+              <span>{{ item.label }}</span>
+            }
           </a>
         }
       </nav>
 
       <div class="px-3 pb-4 border-t border-white/10 pt-4">
-        <button (click)="logout()" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full" aria-label="Se déconnecter">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <button
+          (click)="logout()"
+          class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors w-full"
+          [class.justify-center]="collapsed()"
+          [attr.title]="collapsed() ? 'Déconnexion' : null"
+          aria-label="Se déconnecter"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" aria-hidden="true">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Déconnexion
+          @if (!collapsed()) {
+            Déconnexion
+          }
         </button>
       </div>
     </aside>
