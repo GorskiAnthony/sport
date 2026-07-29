@@ -39,6 +39,11 @@
             </div>
           }
           <app-status-badge class="inline-block mt-2" [status]="match()!.status" [label]="statusLabel(match()!.status)" />
+          @if (match()!.status === 'SCHEDULED') {
+            <button type="button" (click)="startMatch()" [disabled]="startingMatch()" class="block mx-auto mt-2 text-xs text-green-400 hover:text-green-300 font-semibold disabled:opacity-50">
+              ▶ Démarrer le match
+            </button>
+          }
         </div>
         <div class="text-center w-28">
           <p class="text-white text-sm font-semibold">{{ match()!.awayTeam.name }}</p>

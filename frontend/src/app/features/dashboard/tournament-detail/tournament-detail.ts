@@ -2,7 +2,6 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
-import { MatchService } from '../../../core/services/match.service';
 import { BracketService } from '../../../core/services/bracket.service';
 import { TournamentFormat } from '../../../core/models/bracket.model';
 import { TournamentDetail } from '../../../core/models/tournament.model';
@@ -32,7 +31,6 @@ const GROUP_PHASE_PREFIX = 'Groupe ';
 export class DashboardTournamentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly tournamentService = inject(TournamentService);
-  private readonly matchService = inject(MatchService);
   private readonly bracketService = inject(BracketService);
   private readonly toast = inject(ToastService);
 
@@ -48,14 +46,6 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly advancing = signal(false);
 
   readonly shareOpen = signal(false);
-
-  /** Identifies the exact grid cell (row team id, col team id) being edited — not just the
-   *  match id, since round robin shows each match twice (mirrored), and only the clicked
-   *  cell should switch to edit mode, not its mirror. */
-  readonly editingCell = signal<{ rowTeamId: number; colTeamId: number } | null>(null);
-  readonly homeInput = signal('');
-  readonly awayInput = signal('');
-  readonly savingScore = signal(false);
 
   readonly standings = computed<Standing[]>(() => {
     const t = this.tournament();
@@ -179,25 +169,6 @@ export class DashboardTournamentDetailPage implements OnInit {
     });
   }
 
-  cancelEdit(): void {
-    this.editingCell.set(null);
-  }
-
-  startMatch(match: Match): void {
-    this.matchService.start(match.id).subscribe({
-      next: () => {
-        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
-        this.load();
-      },
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
-  isEditingCell(rowTeam: Team, colTeam: Team): boolean {
-    const cell = this.editingCell();
-    return cell !== null && cell.rowTeamId === rowTeam.id && cell.colTeamId === colTeam.id;
-  }
-
   /** The match connecting two teams, regardless of which one is stored as home/away. */
   matchBetween(a: Team, b: Team): Match | undefined {
     return this.tournament()?.matches.find(
@@ -207,42 +178,5 @@ export class DashboardTournamentDetailPage implements OnInit {
 
   scoreFor(match: Match, team: Team): number | null {
     return match.homeTeam.id === team.id ? match.homeScore : match.awayScore;
-  }
-
-  startGridEdit(match: Match, rowTeam: Team, colTeam: Team): void {
-    const rowIsHome = match.homeTeam.id === rowTeam.id;
-    this.editingCell.set({ rowTeamId: rowTeam.id, colTeamId: colTeam.id });
-    this.homeInput.set(this.scoreOrEmpty(rowIsHome ? match.homeScore : match.awayScore));
-    this.awayInput.set(this.scoreOrEmpty(rowIsHome ? match.awayScore : match.homeScore));
-  }
-
-  saveGridScore(match: Match, rowTeam: Team): void {
-    const rowScore = Number(this.homeInput());
-    const colScore = Number(this.awayInput());
-    if (Number.isNaN(rowScore) || Number.isNaN(colScore) || rowScore < 0 || colScore < 0) {
-      this.toast.error('Merci de saisir un score valide.');
-      return;
-    }
-
-    const rowIsHome = match.homeTeam.id === rowTeam.id;
-    const homeScore = rowIsHome ? rowScore : colScore;
-    const awayScore = rowIsHome ? colScore : rowScore;
-
-    this.savingScore.set(true);
-    this.matchService.updateScore(match.id, { homeScore, awayScore }).subscribe({
-      next: () => {
-        this.savingScore.set(false);
-        this.editingCell.set(null);
-        this.load();
-      },
-      error: () => {
-        this.savingScore.set(false);
-        this.toast.error('Une erreur est survenue.');
-      },
-    });
-  }
-
-  private scoreOrEmpty(score: number | null): string {
-    return score !== null ? String(score) : '';
   }
 }

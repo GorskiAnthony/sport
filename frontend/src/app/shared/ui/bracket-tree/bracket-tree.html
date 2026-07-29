@@ -10,48 +10,21 @@
             @for (node of round.nodes; track $index) {
               <div class="bg-[#161B22] border border-white/10 rounded-lg px-3 py-2 h-20 flex flex-col justify-center gap-1">
                 @if (node.match; as match) {
-                  @if (editingMatchId() === match.id) {
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-white text-xs truncate flex-1">{{ match.homeTeam.name }}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        [value]="homeInput()"
-                        (input)="homeInput.set($any($event.target).value)"
-                        [attr.aria-label]="'Score ' + match.homeTeam.name"
-                        class="w-10 bg-[#0D1117] border border-white/10 rounded px-1 py-0.5 text-xs font-mono font-semibold text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      />
+                  <a [routerLink]="['/dashboard/matches', match.id]" class="block w-full" [attr.aria-label]="match.homeTeam.name + ' vs ' + match.awayTeam.name">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs truncate" [class]="isForfeited(match, match.homeTeam.id) ? 'text-slate-600 line-through' : winnerTeamId(match) === match.homeTeam.id ? 'text-white font-semibold' : 'text-slate-400'">{{ match.homeTeam.name }}</span>
+                      <span class="text-xs font-mono flex-shrink-0" [class]="winnerTeamId(match) === match.homeTeam.id ? 'text-green-400 font-bold' : 'text-slate-400'">{{ match.status === 'FORFEIT' ? 'F' : (match.homeScore ?? '–') }}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-white text-xs truncate flex-1">{{ match.awayTeam.name }}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        [value]="awayInput()"
-                        (input)="awayInput.set($any($event.target).value)"
-                        [attr.aria-label]="'Score ' + match.awayTeam.name"
-                        class="w-10 bg-[#0D1117] border border-white/10 rounded px-1 py-0.5 text-xs font-mono font-semibold text-white text-center focus:outline-none focus:ring-1 focus:ring-green-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      />
+                    <div class="flex items-center justify-between gap-1 mt-1.5">
+                      <span class="text-xs truncate" [class]="isForfeited(match, match.awayTeam.id) ? 'text-slate-600 line-through' : winnerTeamId(match) === match.awayTeam.id ? 'text-white font-semibold' : 'text-slate-400'">{{ match.awayTeam.name }}</span>
+                      <span class="text-xs font-mono flex-shrink-0" [class]="winnerTeamId(match) === match.awayTeam.id ? 'text-green-400 font-bold' : 'text-slate-400'">{{ match.status === 'FORFEIT' ? 'F' : (match.awayScore ?? '–') }}</span>
                     </div>
-                    <div class="flex justify-end gap-1.5 mt-0.5">
-                      <button type="button" (click)="cancelEdit()" aria-label="Annuler" class="px-2 py-0.5 rounded-full bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white text-[9px] font-semibold leading-none transition-colors">Annuler</button>
-                      <button type="button" (click)="saveScore(match)" [disabled]="saving()" aria-label="Valider le score" class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 text-[9px] font-bold leading-none disabled:opacity-50 transition-colors">✓ OK</button>
-                    </div>
-                  } @else {
-                    <button type="button" (click)="startEdit(match)" class="w-full text-left" [attr.aria-label]="'Modifier le score ' + match.homeTeam.name + ' vs ' + match.awayTeam.name">
-                      <div class="flex items-center justify-between gap-1">
-                        <span class="text-xs truncate" [class]="isForfeited(match, match.homeTeam.id) ? 'text-slate-600 line-through' : winnerTeamId(match) === match.homeTeam.id ? 'text-white font-semibold' : 'text-slate-400'">{{ match.homeTeam.name }}</span>
-                        <span class="text-xs font-mono flex-shrink-0" [class]="winnerTeamId(match) === match.homeTeam.id ? 'text-green-400 font-bold' : 'text-slate-400'">{{ match.status === 'FORFEIT' ? 'F' : (match.homeScore ?? '–') }}</span>
-                      </div>
-                      <div class="flex items-center justify-between gap-1 mt-1.5">
-                        <span class="text-xs truncate" [class]="isForfeited(match, match.awayTeam.id) ? 'text-slate-600 line-through' : winnerTeamId(match) === match.awayTeam.id ? 'text-white font-semibold' : 'text-slate-400'">{{ match.awayTeam.name }}</span>
-                        <span class="text-xs font-mono flex-shrink-0" [class]="winnerTeamId(match) === match.awayTeam.id ? 'text-green-400 font-bold' : 'text-slate-400'">{{ match.status === 'FORFEIT' ? 'F' : (match.awayScore ?? '–') }}</span>
-                      </div>
-                    </button>
                     @if (match.status === 'SCHEDULED') {
-                      <button type="button" (click)="startMatch(match)" class="mt-1 text-[10px] text-green-400 hover:text-green-300 font-semibold">▶ Démarrer</button>
+                      <span class="mt-1 block text-[10px] text-green-400 font-semibold">▶ À démarrer</span>
+                    } @else if (match.status === 'ONGOING') {
+                      <span class="mt-1 block text-[10px] text-green-400 font-semibold">● En cours</span>
                     }
-                  }
+                  </a>
                 } @else if (node.byeTeam; as team) {
                   <span class="text-white text-xs font-semibold truncate">{{ team.name }}</span>
                   <span class="text-slate-400 text-[10px]">Qualifié(e) d'office</span>

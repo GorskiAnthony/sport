@@ -33,6 +33,7 @@ export class DashboardMatchDetailPage implements OnInit {
   readonly saving = signal(false);
   readonly pendingForfeit = signal<Team | null>(null);
   readonly recordingForfeit = signal(false);
+  readonly startingMatch = signal(false);
 
   ngOnInit(): void {
     // Same staleness concern as the other Pro-gated pages: an organizer who just upgraded
@@ -96,6 +97,24 @@ export class DashboardMatchDetailPage implements OnInit {
       },
       error: () => {
         this.saving.set(false);
+        this.toast.error('Une erreur est survenue.');
+      },
+    });
+  }
+
+  startMatch(): void {
+    const match = this.match();
+    if (!match) return;
+
+    this.startingMatch.set(true);
+    this.matchService.start(match.id).subscribe({
+      next: (updated) => {
+        this.match.set(updated);
+        this.startingMatch.set(false);
+        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
+      },
+      error: () => {
+        this.startingMatch.set(false);
         this.toast.error('Une erreur est survenue.');
       },
     });

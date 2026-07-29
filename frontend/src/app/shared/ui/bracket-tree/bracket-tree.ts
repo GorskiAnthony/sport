@@ -1,8 +1,7 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Match } from '../../../core/models/match.model';
 import { Team } from '../../../core/models/team.model';
-import { MatchService } from '../../../core/services/match.service';
-import { ToastService } from '../../../core/services/toast.service';
 
 interface BracketNode {
   match: Match | null;
@@ -22,20 +21,12 @@ interface ConnectorSegment {
 @Component({
   selector: 'app-bracket-tree',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './bracket-tree.html',
 })
 export class BracketTree {
-  private readonly matchService = inject(MatchService);
-  private readonly toast = inject(ToastService);
-
   readonly teams = input.required<Team[]>();
   readonly matches = input.required<Match[]>();
-  readonly scoreUpdated = output<void>();
-
-  readonly editingMatchId = signal<number | null>(null);
-  readonly homeInput = signal('');
-  readonly awayInput = signal('');
-  readonly saving = signal(false);
 
   readonly rounds = computed<BracketRound[]>(() => this.buildRounds(this.teams(), this.matches()));
 
@@ -68,48 +59,6 @@ export class BracketTree {
     }
     if (match.homeScore === null || match.awayScore === null || match.homeScore === match.awayScore) return null;
     return match.homeScore > match.awayScore ? match.homeTeam.id : match.awayTeam.id;
-  }
-
-  startEdit(match: Match): void {
-    this.editingMatchId.set(match.id);
-    this.homeInput.set(match.homeScore !== null ? String(match.homeScore) : '');
-    this.awayInput.set(match.awayScore !== null ? String(match.awayScore) : '');
-  }
-
-  cancelEdit(): void {
-    this.editingMatchId.set(null);
-  }
-
-  startMatch(match: Match): void {
-    this.matchService.start(match.id).subscribe({
-      next: () => {
-        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
-        this.scoreUpdated.emit();
-      },
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
-  saveScore(match: Match): void {
-    const homeScore = Number(this.homeInput());
-    const awayScore = Number(this.awayInput());
-    if (Number.isNaN(homeScore) || Number.isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
-      this.toast.error('Merci de saisir un score valide.');
-      return;
-    }
-
-    this.saving.set(true);
-    this.matchService.updateScore(match.id, { homeScore, awayScore }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.editingMatchId.set(null);
-        this.scoreUpdated.emit();
-      },
-      error: () => {
-        this.saving.set(false);
-        this.toast.error('Une erreur est survenue.');
-      },
-    });
   }
 
   private buildRounds(teams: Team[], matches: Match[]): BracketRound[] {
