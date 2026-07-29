@@ -18,6 +18,8 @@
   />
 
   <div class="max-w-3xl space-y-5">
+    <a [routerLink]="['/dashboard/tournaments', match()!.tournamentId]" class="inline-block text-slate-400 hover:text-white text-sm transition-colors">← Retour au tournoi</a>
+
     <div class="bg-[#161B22] border border-white/10 rounded-xl text-center py-8 px-5">
       <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">{{ match()!.phase }}</p>
       <p class="text-slate-400 text-xs mb-6">{{ match()!.date | date: 'dd/MM/yyyy HH:mm' }} @if (match()!.venue) { · {{ match()!.venue }} }</p>
