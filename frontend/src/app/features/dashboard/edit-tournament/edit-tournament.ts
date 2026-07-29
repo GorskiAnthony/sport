@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -42,7 +42,7 @@ export class DashboardEditTournamentPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly authService = inject(AuthService);
 
-  readonly isPro = this.authService.currentUser()?.plan === 'PRO';
+  readonly isPro = computed(() => this.authService.currentUser()?.plan === 'PRO');
 
   readonly sports = SPORTS;
   readonly categories = CATEGORIES;
@@ -71,6 +71,11 @@ export class DashboardEditTournamentPage implements OnInit {
   readonly errors = signal<FormErrors>({});
 
   ngOnInit(): void {
+    // The organizer's plan may have just changed (Stripe checkout, portal) without this browser
+    // tab knowing yet — checkout-success/settings already refresh it, but an organizer landing
+    // here directly (bookmark, direct nav) wouldn't otherwise see it until their next login.
+    this.authService.refreshUser().subscribe({ error: () => {} });
+
     if (!this.tournamentId) {
       this.notFound.set(true);
       this.loadingInitial.set(false);
@@ -139,11 +144,11 @@ export class DashboardEditTournamentPage implements OnInit {
         endDate: this.endDate(),
         maxTeams: Number(this.maxTeams()) || 14,
         description: this.description() || undefined,
-        rules: this.isPro ? this.rules() || undefined : undefined,
+        rules: this.isPro() ? this.rules() || undefined : undefined,
         terrains: this.terrains() || undefined,
-        sponsorName: this.isPro ? this.sponsorName() || undefined : undefined,
-        sponsorLogoUrl: this.isPro ? this.sponsorLogoUrl() || undefined : undefined,
-        sponsorClickUrl: this.isPro ? this.sponsorClickUrl() || undefined : undefined,
+        sponsorName: this.isPro() ? this.sponsorName() || undefined : undefined,
+        sponsorLogoUrl: this.isPro() ? this.sponsorLogoUrl() || undefined : undefined,
+        sponsorClickUrl: this.isPro() ? this.sponsorClickUrl() || undefined : undefined,
       })
       .subscribe({
         next: () => {

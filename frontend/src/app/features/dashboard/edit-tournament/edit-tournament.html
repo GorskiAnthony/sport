@@ -45,7 +45,7 @@
       </div>
       <div class="flex flex-col gap-1.5">
         <label for="et-rules" class="text-slate-300 text-sm font-medium">Règlement personnalisé</label>
-        @if (isPro) {
+        @if (isPro()) {
           <textarea
             id="et-rules"
             rows="4"
@@ -64,11 +64,11 @@
       <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between">
           <label class="text-slate-300 text-sm font-medium">Bannière sponsor</label>
-          @if (isPro && sponsorClicks() > 0) {
+          @if (isPro() && sponsorClicks() > 0) {
             <span class="text-green-400 text-xs font-semibold">{{ sponsorClicks() }} clic{{ sponsorClicks() > 1 ? 's' : '' }}</span>
           }
         </div>
-        @if (isPro) {
+        @if (isPro()) {
           <div class="space-y-3">
             <app-form-input id="et-sponsor-name" label="Nom du sponsor" placeholder="Ma Banque Locale" [(value)]="sponsorName" />
             <div class="flex items-center gap-3">

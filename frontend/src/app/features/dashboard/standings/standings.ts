@@ -53,6 +53,10 @@ export class DashboardStandingsPage implements OnInit {
   }
 
   ngOnInit(): void {
+    // Same staleness concern as edit-tournament.ts/buvette.ts: an organizer who just upgraded
+    // shouldn't have to visit Paramètres first for the PDF export gate to notice.
+    this.authService.refreshUser().subscribe({ error: () => {} });
+
     this.tournamentService.getMine().subscribe({
       next: (summaries) => {
         if (summaries.length === 0) {

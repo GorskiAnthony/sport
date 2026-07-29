@@ -29,7 +29,7 @@ export class DashboardBuvettePage implements OnInit {
   private readonly buvetteService = inject(BuvetteService);
   private readonly toast = inject(ToastService);
 
-  readonly isPro = this.authService.currentUser()?.plan === 'PRO';
+  readonly isPro = computed(() => this.authService.currentUser()?.plan === 'PRO');
 
   readonly tournaments = signal<TournamentSummary[]>([]);
   readonly selectedTournamentId = signal<number | null>(null);
@@ -54,10 +54,10 @@ export class DashboardBuvettePage implements OnInit {
   );
 
   ngOnInit(): void {
-    if (!this.isPro) {
-      this.loading.set(false);
-      return;
-    }
+    // Same staleness concern as edit-tournament.ts — an organizer landing here right after
+    // upgrading shouldn't have to know to visit Paramètres first for the page to notice.
+    this.authService.refreshUser().subscribe({ error: () => {} });
+
     this.tournamentService.getMine().subscribe({
       next: (tournaments) => {
         this.tournaments.set(tournaments);
