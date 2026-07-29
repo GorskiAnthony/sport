@@ -1,0 +1,80 @@
+<div class="bg-[#161B22] border border-white/10 rounded-xl p-4">
+  <h2 class="text-white text-sm font-semibold mb-3">Prochains matchs</h2>
+  @if (loadingMatches()) {
+    <div class="space-y-2">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="h-9 bg-white/5 rounded-lg animate-pulse"></div>
+      }
+    </div>
+  } @else if (upcomingMatches().length === 0) {
+    <p class="text-slate-500 text-xs">Aucun match programmé dans les 14 prochains jours.</p>
+  } @else {
+    <ul class="space-y-1">
+      @for (match of upcomingMatches(); track match.id) {
+        <li>
+          <a [routerLink]="['/dashboard/matches', match.id]" class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg hover:bg-white/5 transition-colors text-xs">
+            <span class="text-slate-300 truncate">{{ match.homeTeam.name }} – {{ match.awayTeam.name }}</span>
+            <span class="text-slate-500 flex-shrink-0">{{ match.date | date: 'dd/MM HH:mm' }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<div class="bg-[#161B22] border border-white/10 rounded-xl p-4">
+  <div class="flex items-center justify-between gap-2 mb-3">
+    <h2 class="text-white text-sm font-semibold">Notifications</h2>
+    @if (unreadCount() > 0) {
+      <button type="button" (click)="markAllRead()" class="text-green-400 hover:text-green-300 text-[11px] font-semibold">Tout marquer lu</button>
+    }
+  </div>
+  @if (loadingNotifications()) {
+    <div class="space-y-2">
+      @for (i of [1, 2]; track i) {
+        <div class="h-9 bg-white/5 rounded-lg animate-pulse"></div>
+      }
+    </div>
+  } @else if (notifications().length === 0) {
+    <p class="text-slate-500 text-xs">Aucune notification pour le moment.</p>
+  } @else {
+    <ul class="space-y-1">
+      @for (n of notifications(); track n.id) {
+        <li>
+          <a
+            [routerLink]="n.matchId ? ['/dashboard/matches', n.matchId] : ['/dashboard/tournaments', n.tournamentId]"
+            (click)="markRead(n)"
+            class="block px-2.5 py-2 rounded-lg transition-colors text-xs truncate"
+            [class]="n.read ? 'text-slate-400 hover:bg-white/5' : 'text-white bg-green-500/[0.06] hover:bg-green-500/[0.1]'"
+          >
+            {{ n.message }}
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<div class="bg-[#161B22] border border-white/10 rounded-xl p-4">
+  <h2 class="text-white text-sm font-semibold mb-3">Mes favoris</h2>
+  @if (loadingFollowed()) {
+    <div class="space-y-2">
+      @for (i of [1, 2]; track i) {
+        <div class="h-9 bg-white/5 rounded-lg animate-pulse"></div>
+      }
+    </div>
+  } @else if (followedTeams().length === 0) {
+    <p class="text-slate-500 text-xs">Suivez une équipe depuis la page d'un tournoi pour la retrouver ici.</p>
+  } @else {
+    <ul class="space-y-1">
+      @for (f of followedTeams(); track f.team.id) {
+        <li>
+          <a [routerLink]="['/t', f.team.tournamentId]" class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg hover:bg-white/5 transition-colors text-xs">
+            <span class="text-slate-300 truncate">{{ f.team.name }}</span>
+            <span class="text-slate-500 truncate flex-shrink-0 max-w-[40%]">{{ f.tournamentName }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>

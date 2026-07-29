@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastContainer } from '../../shared/ui/toast-container/toast-container';
+import { DashboardRightPanel } from './right-panel/right-panel';
 
 interface DashboardNavItem {
   path: string;
@@ -24,7 +25,7 @@ const NAV: DashboardNavItem[] = [
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainer],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainer, DashboardRightPanel],
   templateUrl: './dashboard-layout.html',
 })
 export class DashboardLayout {
