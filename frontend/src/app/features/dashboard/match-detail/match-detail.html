@@ -53,43 +53,45 @@
 
     <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
       <h2 class="text-white text-sm font-semibold mb-4">Modifier le score</h2>
-      <form (submit)="$event.preventDefault(); saveScore()" class="flex items-end gap-4">
-        <div class="flex flex-col gap-1.5">
-          <label for="home-score" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
-          <input id="home-score" type="number" min="0" [value]="homeScoreInput()" (input)="homeScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+      <form (submit)="$event.preventDefault(); saveScore()" class="space-y-5">
+        <div class="flex items-end gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="home-score" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
+            <input id="home-score" type="number" min="0" [value]="homeScoreInput()" (input)="homeScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <span class="text-slate-400 pb-2">–</span>
+          <div class="flex flex-col gap-1.5">
+            <label for="away-score" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
+            <input id="away-score" type="number" min="0" [value]="awayScoreInput()" (input)="awayScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
         </div>
-        <span class="text-slate-400 pb-2">–</span>
-        <div class="flex flex-col gap-1.5">
-          <label for="away-score" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
-          <input id="away-score" type="number" min="0" [value]="awayScoreInput()" (input)="awayScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+
+        <div class="pt-5 border-t border-white/10">
+          <label class="text-slate-400 text-xs block mb-3">Note fair-play (sur 10)</label>
+          @if (isPro()) {
+            <div class="flex items-end gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label for="home-fair-play" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
+                <input id="home-fair-play" type="number" min="0" max="10" [value]="homeFairPlayInput()" (input)="homeFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+              <span class="text-slate-400 pb-2">–</span>
+              <div class="flex flex-col gap-1.5">
+                <label for="away-fair-play" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
+                <input id="away-fair-play" type="number" min="0" max="10" [value]="awayFairPlayInput()" (input)="awayFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+            </div>
+          } @else {
+            <div class="flex items-center justify-between gap-3 bg-[#0D1117] border border-white/10 rounded-lg px-4 py-3">
+              <p class="text-slate-500 text-sm">Réservé au plan Pro — notez le comportement de chaque équipe et affichez un classement fair-play.</p>
+              <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
+            </div>
+          }
         </div>
+
         <button type="submit" [disabled]="saving()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50">
-          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer le score et le fair-play' }}
         </button>
       </form>
-
-      <div class="mt-5 pt-5 border-t border-white/10">
-        <label class="text-slate-400 text-xs block mb-3">Note fair-play (sur 10)</label>
-        @if (isPro()) {
-          <div class="flex items-end gap-4">
-            <div class="flex flex-col gap-1.5">
-              <label for="home-fair-play" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
-              <input id="home-fair-play" type="number" min="0" max="10" [value]="homeFairPlayInput()" (input)="homeFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-            <span class="text-slate-400 pb-2">–</span>
-            <div class="flex flex-col gap-1.5">
-              <label for="away-fair-play" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
-              <input id="away-fair-play" type="number" min="0" max="10" [value]="awayFairPlayInput()" (input)="awayFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-            <p class="text-slate-500 text-xs pb-2.5">Enregistrée avec le score, ci-dessus.</p>
-          </div>
-        } @else {
-          <div class="flex items-center justify-between gap-3 bg-[#0D1117] border border-white/10 rounded-lg px-4 py-3">
-            <p class="text-slate-500 text-sm">Réservé au plan Pro — notez le comportement de chaque équipe et affichez un classement fair-play.</p>
-            <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
-          </div>
-        }
-      </div>
     </div>
 
     <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
