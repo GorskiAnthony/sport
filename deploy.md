@@ -215,6 +215,79 @@ sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au 
    instance a aujourd'hui son propre état ; un vrai chantier, à ne lancer que si le trafic doit rester élevé
    durablement, pas pour un pic ponctuel.
 
+## Rotation des logs
+
+`docker-compose.prod.yml` plafonne les logs des 3 services (ancre YAML `x-default-logging`,
+driver `json-file`, `max-size: 10m` / `max-file: 5`, soit 50 Mo max par service). Sans ça, le
+driver `json-file` par défaut de Docker n'a **aucune limite** — sur un serveur qui tourne des
+mois sans interruption, les logs (nginx access logs côté `frontend`, logs Spring Boot côté
+`backend`) grossissent indéfiniment et peuvent finir par saturer le disque (même symptôme qu'un
+disque plein en local, mais côté serveur).
+
+Rien à faire côté Dokploy pour ça, c'est géré directement par le compose. Pour consulter les
+anciens logs déjà tournés manuellement (debug) :
+```bash
+docker inspect --format='{{.LogPath}}' <conteneur>
+```
+
+## Sauvegardes
+
+Le backup natif de Dokploy (onglet *Backups* d'une ressource **Database**) ne s'applique **pas**
+ici : Postgres tourne comme un service classique du compose, pas comme une ressource "Database"
+gérée par Dokploy. Le mécanisme natif ne sauvegarde que la base interne de Dokploy lui-même
+(`/etc/dokploy` + sa propre DB), jamais les services d'un compose applicatif — confirmé par le
+mainteneur du projet ([discussion #1772](https://github.com/Dokploy/dokploy/discussions/1772)).
+Le "Volume Backups" (aussi natif à Dokploy) fonctionnerait techniquement sur le volume
+`postgres-data`, mais nécessite de couper le conteneur pendant le backup pour garantir la
+cohérence (sinon risque d'incohérence sur un fichier en cours d'écriture) — pas adapté à un
+service qui doit rester up.
+
+À la place, `docker-compose.prod.yml` déclare un service `postgres-backup`
+([`eeshugerman/postgres-backup-s3`](https://github.com/eeshugerman/postgres-backup-s3), tag `16`
+pour matcher la version de `postgres:16-alpine`) qui fait un `pg_dump` planifié (cron) et
+l'envoie directement vers un stockage S3-compatible, sans jamais toucher au conteneur `postgres`
+ni exiger de coupure.
+
+### Configuration
+
+Variables à renseigner dans Dokploy (voir `.env.prod.example`, section *Sauvegarde Postgres*) :
+
+| Variable | Rôle |
+|---|---|
+| `BACKUP_S3_REGION` | Région du bucket (requis même chez un provider non-AWS, ex. `us-east-1` par convention chez certains) |
+| `BACKUP_S3_ENDPOINT` | Vide pour AWS S3 ; sinon l'URL de l'API S3 du provider (Backblaze B2, Scaleway Object Storage, OVH, MinIO auto-hébergé...) |
+| `BACKUP_S3_BUCKET` | Bucket dédié aux backups (à créer chez le provider avant le premier déploiement) |
+| `BACKUP_S3_PREFIX` | Sous-dossier dans le bucket (`tournoi-center` par défaut) |
+| `BACKUP_S3_ACCESS_KEY_ID` / `BACKUP_S3_SECRET_ACCESS_KEY` | Identifiants S3, à générer chez le provider avec un accès limité à ce bucket |
+| `BACKUP_SCHEDULE` | Syntaxe go-cron, ex. `@daily` (par défaut, ~minuit UTC) ou `0 3 * * *` pour 3h du matin |
+| `BACKUP_KEEP_DAYS` | Rétention en jours (14 par défaut) — les backups plus anciens sont supprimés automatiquement par le conteneur |
+
+Choix du provider S3 : n'importe lequel fait l'affaire (Backblaze B2 et Scaleway sont bon marché
+pour ce volume de données). Prends un bucket séparé de tout autre usage S3 du projet, avec des
+clés d'accès dédiées et limitées à ce seul bucket.
+
+### Vérifier qu'un backup a bien lieu
+
+```bash
+docker logs <conteneur_postgres-backup>   # doit montrer un "Backup complete" après chaque run planifié
+```
+Vérifie aussi côté provider que des fichiers `.sql.gz` apparaissent bien sous
+`<bucket>/<BACKUP_S3_PREFIX>/`.
+
+### Restauration
+
+⚠️ Écrase la base actuelle — à ne faire que sur un incident confirmé ou un test en environnement
+séparé, jamais en aveugle sur la prod :
+```bash
+# Dernier backup disponible :
+docker exec -it <conteneur_postgres-backup> sh restore.sh
+
+# Un backup précis (timestamp visible dans le nom de fichier sur le bucket) :
+docker exec -it <conteneur_postgres-backup> sh restore.sh <timestamp>
+```
+Recommandé : tester une restauration au moins une fois avant d'en avoir besoin en urgence (ex.
+sur un service Dokploy de staging séparé, pointé vers un bucket/backup de test).
+
 ## Mises à jour
 
 - Un push sur `dev` publie une pre-release (`:dev`) — utile pour tester en staging avant de promouvoir.
