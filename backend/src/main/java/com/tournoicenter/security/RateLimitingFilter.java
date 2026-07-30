@@ -1,5 +1,7 @@
 package com.tournoicenter.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -28,8 +29,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private static final int GLOBAL_LIMIT = 500;
 
     private final ObjectMapper objectMapper;
-    private final ConcurrentHashMap<String, Window> authWindows = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Window> globalWindows = new ConcurrentHashMap<>();
+    /** Bounded + self-expiring (unlike a plain ConcurrentHashMap) so an IP seen once doesn't sit
+     *  in memory forever — mirrors the Caffeine pattern already used by LoginAttemptService. */
+    private final Cache<String, Window> authWindows = Caffeine.newBuilder()
+            .expireAfterWrite(WINDOW)
+            .maximumSize(50_000)
+            .build();
+    private final Cache<String, Window> globalWindows = Caffeine.newBuilder()
+            .expireAfterWrite(WINDOW)
+            .maximumSize(50_000)
+            .build();
 
     public RateLimitingFilter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -60,8 +69,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean exceeds(ConcurrentHashMap<String, Window> windows, String key, int limit) {
-        Window window = windows.computeIfAbsent(key, k -> new Window(Instant.now()));
+    private boolean exceeds(Cache<String, Window> windows, String key, int limit) {
+        Window window = windows.get(key, k -> new Window(Instant.now()));
         if (Duration.between(window.start, Instant.now()).compareTo(WINDOW) > 0) {
             windows.put(key, new Window(Instant.now()));
             return false;
