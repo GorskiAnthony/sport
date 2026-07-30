@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { EMPTY, of, throwError } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
 import { LiveUpdateService } from '../../core/services/live-update.service';
 import { LiveScorePage } from './live-score.page';
@@ -9,6 +9,7 @@ import { Match } from '../../core/models/match.model';
 describe('LiveScorePage', () => {
   let matchServiceSpy: jasmine.SpyObj<MatchService>;
   let liveUpdateServiceSpy: jasmine.SpyObj<LiveUpdateService>;
+  let routerSpy: jasmine.SpyObj<Router>;
   let unsubscribeSpy: jasmine.Spy;
 
   const matches: Match[] = [
@@ -34,12 +35,16 @@ describe('LiveScorePage', () => {
     unsubscribeSpy = jasmine.createSpy('unsubscribe');
     liveUpdateServiceSpy = jasmine.createSpyObj('LiveUpdateService', ['subscribeToTournament']);
     liveUpdateServiceSpy.subscribeToTournament.and.returnValue(unsubscribeSpy);
+    // NavController (derrière ion-back-button) s'abonne à router.events dès sa création — un
+    // spy Router sans cette propriété fait planter le rendu du template avec une TypeError.
+    routerSpy = jasmine.createSpyObj('Router', ['navigate'], { events: EMPTY });
 
     await TestBed.configureTestingModule({
       imports: [LiveScorePage],
       providers: [
         { provide: MatchService, useValue: matchServiceSpy },
         { provide: LiveUpdateService, useValue: liveUpdateServiceSpy },
+        { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: '7' }) } },
@@ -113,6 +118,15 @@ describe('LiveScorePage', () => {
     page.ionViewWillEnter();
 
     expect(liveUpdateServiceSpy.subscribeToTournament).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates to the shared match detail screen when a match is opened', () => {
+    matchServiceSpy.getByTournament.and.returnValue(of(matches));
+    const page = createPage();
+
+    page.openMatch(42);
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/matches', 42]);
   });
 
   it('maps status to the design-system label and color', () => {

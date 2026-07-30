@@ -138,7 +138,7 @@ export class RefereeMatchesPage implements ViewWillEnter {
   }
 
   openMatch(matchId: number): void {
-    this.router.navigate(['/referee/matches', matchId]);
+    this.router.navigate(['/matches', matchId]);
   }
 
   logout(): void {

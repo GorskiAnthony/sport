@@ -22,8 +22,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/referee/referee-matches.page').then((m) => m.RefereeMatchesPage),
   },
+  // Route partagée : l'organisateur (depuis /tournaments/:id/live) a les mêmes droits que
+  // l'arbitre assigné sur le démarrage/score d'un match (voir MatchService.requireCanManage
+  // côté backend) — pas de préfixe /referee ici, ce n'est plus un écran arbitre-only.
   {
-    path: 'referee/matches/:id',
+    path: 'matches/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./features/referee/match-detail.page').then((m) => m.MatchDetailPage),
   },

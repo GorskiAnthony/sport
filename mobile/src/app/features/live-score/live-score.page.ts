@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ViewWillEnter, ViewWillLeave } from '@ionic/angular/common';
 import {
   IonHeader,
@@ -57,6 +57,7 @@ const STATUS_COLORS: Record<MatchStatus, string> = {
 })
 export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly matchService = inject(MatchService);
   private readonly liveUpdateService = inject(LiveUpdateService);
 
@@ -107,5 +108,12 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
         this.error.set(true);
       },
     });
+  }
+
+  // L'organisateur a les mêmes droits que l'arbitre assigné sur un match de son propre tournoi
+  // (MatchService.requireCanManage côté backend) — ce n'était pas exploité ici, l'écran était
+  // resté purement lecture seule.
+  openMatch(matchId: number): void {
+    this.router.navigate(['/matches', matchId]);
   }
 }

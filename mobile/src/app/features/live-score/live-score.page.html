@@ -24,7 +24,7 @@
   } @else {
     <ion-list>
       @for (match of matches(); track match.id) {
-        <ion-item>
+        <ion-item button detail="true" (click)="openMatch(match.id)">
           <ion-label>
             <h2 class="match-line">
               <span class="team">{{ match.homeTeam.name }}</span>

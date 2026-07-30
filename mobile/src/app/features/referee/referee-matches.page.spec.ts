@@ -105,7 +105,7 @@ describe('RefereeMatchesPage', () => {
 
     page.openMatch(5);
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/referee/matches', 5]);
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/matches', 5]);
   });
 
   it('logs out and navigates to /login', () => {
