@@ -7,7 +7,7 @@ Plateforme de gestion de tournois sportifs.
 ```
 backend/    API REST — Spring Boot 4 / Java 21 / Maven
 frontend/   SPA — Angular 22 / Tailwind CSS 4
-mobile/     réservé pour une future app mobile (vide pour l'instant)
+mobile/     App iOS/Android organisateur — Ionic / Angular / Capacitor (voir mobile/README.md)
 ```
 
 Chaque paquet (`backend/`, `frontend/`) est versionné et publié indépendamment.
