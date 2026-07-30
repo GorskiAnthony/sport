@@ -32,6 +32,13 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* Tournoi Center n'a pas de mode clair côté web (voir .claude/skills/design-system) —
+   l'app mobile reste cohérente en imposant le thème sombre, sans dépendre du système. */
+@import "@ionic/angular/css/palettes/dark.always.css";
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
+/* Scores et statistiques : même choix typographique que le web (voir design-system). */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
