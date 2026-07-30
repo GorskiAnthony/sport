@@ -1,0 +1,46 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Connexion organisateur</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <p class="subtitle">Suivez vos tournois et le score en direct, où que vous soyez.</p>
+
+  <form (submit)="$event.preventDefault(); submit()">
+    <ion-item fill="outline" [class.ion-invalid]="!!errors().email">
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        [value]="email()"
+        (ionInput)="onEmailInput($any($event.detail).value)"
+      ></ion-input>
+    </ion-item>
+    @if (errors().email) {
+      <ion-text color="danger" class="field-error">{{ errors().email }}</ion-text>
+    }
+
+    <ion-item fill="outline" [class.ion-invalid]="!!errors().password">
+      <ion-label position="stacked">Mot de passe</ion-label>
+      <ion-input
+        type="password"
+        autocomplete="current-password"
+        [value]="password()"
+        (ionInput)="onPasswordInput($any($event.detail).value)"
+      ></ion-input>
+    </ion-item>
+    @if (errors().password) {
+      <ion-text color="danger" class="field-error">{{ errors().password }}</ion-text>
+    }
+
+    <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
+      @if (loading()) {
+        <ion-spinner name="dots"></ion-spinner>
+      } @else {
+        Se connecter
+      }
+    </ion-button>
+  </form>
+</ion-content>
