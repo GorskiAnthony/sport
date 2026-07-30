@@ -1,0 +1,56 @@
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+  margin: 0 0 20px;
+
+  span.active {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+}
+
+.section-label {
+  display: block;
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+.field-error {
+  display: block;
+  font-size: 0.8rem;
+  margin: 4px 4px 16px;
+}
+
+.submit-button {
+  margin-top: 24px;
+}
+
+.hint {
+  color: var(--ion-color-medium);
+  margin-bottom: 16px;
+}
+
+.team-row {
+  margin-bottom: 8px;
+}
+
+.step-two-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}

@@ -1,0 +1,19 @@
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.field-error {
+  display: block;
+  font-size: 0.8rem;
+  margin: 4px 4px 16px;
+}
+
+.submit-button {
+  margin-top: 24px;
+}

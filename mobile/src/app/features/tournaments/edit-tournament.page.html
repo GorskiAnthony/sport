@@ -1,0 +1,98 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tournaments/' + tournamentId"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Modifier le tournoi</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (notFound()) {
+    <div class="state-container">
+      <ion-text color="danger">Tournoi introuvable.</ion-text>
+    </div>
+  } @else {
+    <form (submit)="$event.preventDefault(); submit()">
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().name">
+        <ion-label position="stacked">Nom du tournoi</ion-label>
+        <ion-input type="text" [value]="name()" (ionInput)="onNameInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+      @if (errors().name) {
+        <ion-text color="danger" class="field-error">{{ errors().name }}</ion-text>
+      }
+
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().sport">
+        <ion-label position="stacked">Sport</ion-label>
+        <ion-select interface="action-sheet" [value]="sport()" (ionChange)="onSportChange($any($event.detail).value)">
+          @for (s of sports; track s.id) {
+            <ion-select-option [value]="s.id">{{ s.icon }} {{ s.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      @if (errors().sport) {
+        <ion-text color="danger" class="field-error">{{ errors().sport }}</ion-text>
+      }
+
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().category">
+        <ion-label position="stacked">Catégorie</ion-label>
+        <ion-select interface="action-sheet" [value]="category()" (ionChange)="onCategoryChange($any($event.detail).value)">
+          @for (c of categories; track c.value) {
+            <ion-select-option [value]="c.value">{{ c.label }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      @if (errors().category) {
+        <ion-text color="danger" class="field-error">{{ errors().category }}</ion-text>
+      }
+
+      <ion-item fill="outline">
+        <ion-label position="stacked">Lieu</ion-label>
+        <ion-input type="text" [value]="location()" (ionInput)="onLocationInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().startDate">
+        <ion-label position="stacked">Début</ion-label>
+        <ion-input type="date" [value]="startDate()" (ionInput)="onStartDateInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+      @if (errors().startDate) {
+        <ion-text color="danger" class="field-error">{{ errors().startDate }}</ion-text>
+      }
+
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().endDate">
+        <ion-label position="stacked">Fin</ion-label>
+        <ion-input type="date" [value]="endDate()" (ionInput)="onEndDateInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+      @if (errors().endDate) {
+        <ion-text color="danger" class="field-error">{{ errors().endDate }}</ion-text>
+      }
+
+      <ion-item fill="outline">
+        <ion-label position="stacked">Nb max d'équipes</ion-label>
+        <ion-input type="number" [value]="maxTeams()" (ionInput)="onMaxTeamsInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+
+      <ion-item fill="outline">
+        <ion-label position="stacked">Description</ion-label>
+        <ion-textarea [value]="description()" (ionInput)="onDescriptionInput($any($event.detail).value)"></ion-textarea>
+      </ion-item>
+
+      <ion-item fill="outline">
+        <ion-label position="stacked">Terrains (un par ligne)</ion-label>
+        <ion-textarea [value]="terrains()" (ionInput)="onTerrainsInput($any($event.detail).value)"></ion-textarea>
+      </ion-item>
+
+      <ion-button expand="block" type="submit" class="submit-button" [disabled]="saving()">
+        @if (saving()) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          Enregistrer
+        }
+      </ion-button>
+    </form>
+  }
+</ion-content>

@@ -1,0 +1,203 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tournaments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Tournoi</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (notFound() || !tournament()) {
+    <div class="state-container">
+      <ion-text color="danger">Tournoi introuvable.</ion-text>
+    </div>
+  } @else if (tournament(); as t) {
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ t.name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ t.sport }} · {{ t.category }}</p>
+        <p>{{ t.startDate }} – {{ t.endDate }}</p>
+        @if (t.location) {
+          <p>{{ t.location }}</p>
+        }
+        <ion-badge [color]="statusColor(t.status)">{{ statusLabel(t.status) }}</ion-badge>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="action-row">
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'edit']">Modifier</ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'live']">Voir en direct</ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'referee-code']">Code arbitre</ion-button>
+      <ion-button fill="outline" size="small" color="danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">Supprimer</ion-button>
+    </div>
+
+    <h2 class="section-title">Équipes ({{ t.teams.length }})</h2>
+    <ion-list>
+      @for (team of t.teams; track team.id) {
+        @if (editingTeamId() === team.id) {
+          <ion-item class="team-edit-row">
+            <ion-input placeholder="Nom" [value]="teamName()" (ionInput)="onTeamNameInput($any($event.detail).value)"></ion-input>
+            <ion-select slot="end" interface="action-sheet" [value]="teamCategory()" (ionChange)="onTeamCategoryChange($any($event.detail).value)">
+              @for (c of teamCategories; track c) {
+                <ion-select-option [value]="c">{{ c }}</ion-select-option>
+              }
+            </ion-select>
+            <ion-button slot="end" fill="clear" [disabled]="savingTeam()" (click)="saveTeam()" aria-label="Valider">
+              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" (click)="cancelTeamEdit()" aria-label="Annuler">
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          @if (teamError()) {
+            <ion-text color="danger" class="field-error">{{ teamError() }}</ion-text>
+          }
+        } @else {
+          <ion-item>
+            <ion-label>
+              <h3>{{ team.name }}</h3>
+              <p>{{ team.category }}</p>
+            </ion-label>
+            <ion-button slot="end" fill="clear" (click)="startEditTeam(team)" aria-label="Modifier l'équipe">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" color="danger" (click)="confirmDeleteTeam(team)" aria-label="Supprimer l'équipe">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        }
+      }
+
+      @if (addingTeam()) {
+        <ion-item class="team-edit-row">
+          <ion-input placeholder="Nom" [value]="teamName()" (ionInput)="onTeamNameInput($any($event.detail).value)"></ion-input>
+          <ion-select slot="end" interface="action-sheet" [value]="teamCategory()" (ionChange)="onTeamCategoryChange($any($event.detail).value)">
+            @for (c of teamCategories; track c) {
+              <ion-select-option [value]="c">{{ c }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button slot="end" fill="clear" [disabled]="savingTeam()" (click)="saveTeam()" aria-label="Valider">
+            <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+          </ion-button>
+          <ion-button slot="end" fill="clear" (click)="cancelTeamEdit()" aria-label="Annuler">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+        @if (teamError()) {
+          <ion-text color="danger" class="field-error">{{ teamError() }}</ion-text>
+        }
+      } @else {
+        <ion-item button detail="false" (click)="startAddTeam()">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          <ion-label color="primary">Ajouter une équipe</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+
+    @if (!t.format) {
+      <h2 class="section-title">Tableau</h2>
+      @if (t.teams.length < 2) {
+        <p class="hint">Ajoutez au moins 2 équipes pour générer le tableau.</p>
+      } @else {
+        <app-format-picker [(value)]="chosenFormat" />
+        @if (chosenFormat() === 'GROUP_KNOCKOUT') {
+          <ion-item fill="outline">
+            <ion-label position="stacked">Nombre de poules</ion-label>
+            <ion-input type="number" [value]="groupCount()" (ionInput)="onGroupCountInput($any($event.detail).value)"></ion-input>
+          </ion-item>
+        }
+        <ion-button expand="block" [disabled]="!chosenFormat() || generating()" (click)="generateBracket()">
+          @if (generating()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else {
+            Générer le tableau
+          }
+        </ion-button>
+      }
+    } @else if (t.format === 'GROUP_KNOCKOUT' && knockoutMatches().length === 0) {
+      <h2 class="section-title">Phase de groupes</h2>
+      @for (group of groupPhases(); track group.label) {
+        <ion-card>
+          <ion-card-header><ion-card-title>{{ group.label }}</ion-card-title></ion-card-header>
+          <ion-card-content>
+            @for (round of roundsFor(group.matches, group.teams); track round.label) {
+              <h3 class="round-label">{{ round.label }}</h3>
+              @for (match of round.matches; track match.id) {
+                <p class="match-row">
+                  <span>{{ match.homeTeam.name }}</span>
+                  <span class="font-mono score">
+                    @if (match.status === 'FORFEIT') { Forfait }
+                    @else if (match.homeScore !== null && match.awayScore !== null) { {{ match.homeScore }} – {{ match.awayScore }} }
+                    @else { vs }
+                  </span>
+                  <span>{{ match.awayTeam.name }}</span>
+                </p>
+              }
+            }
+            <h4 class="standings-title">Classement</h4>
+            @for (row of standingsFor(group); track row.name) {
+              <ion-item lines="full">
+                <ion-label>
+                  <h3>{{ row.name }}</h3>
+                  <p>J{{ row.j }} · V{{ row.v }} · N{{ row.n }} · D{{ row.d }} · {{ row.bp }}/{{ row.bc }}</p>
+                </ion-label>
+                <ion-text slot="end" color="primary" class="font-mono">{{ row.pts }} pts</ion-text>
+              </ion-item>
+            }
+          </ion-card-content>
+        </ion-card>
+      }
+      <ion-button expand="block" [disabled]="advancing()" (click)="advanceRound()">
+        @if (advancing()) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          Générer les phases finales
+        }
+      </ion-button>
+    } @else {
+      <h2 class="section-title">{{ t.format === 'ROUND_ROBIN' ? 'Poule unique' : 'Phases finales' }}</h2>
+      @for (round of roundsFor(t.format === 'ROUND_ROBIN' ? t.matches : knockoutMatches(), t.teams); track round.label) {
+        <h3 class="round-label">{{ round.label }}</h3>
+        @for (match of round.matches; track match.id) {
+          <p class="match-row">
+            <span>{{ match.homeTeam.name }}</span>
+            <span class="font-mono score">
+              @if (match.status === 'FORFEIT') { Forfait }
+              @else if (match.homeScore !== null && match.awayScore !== null) { {{ match.homeScore }} – {{ match.awayScore }} }
+              @else { vs }
+            </span>
+            <span>{{ match.awayTeam.name }}</span>
+          </p>
+        }
+      }
+
+      @if (t.format === 'ROUND_ROBIN') {
+        <h4 class="standings-title">Classement</h4>
+        @for (row of standings(); track row.name) {
+          <ion-item lines="full">
+            <ion-label>
+              <h3>{{ row.name }}</h3>
+              <p>J{{ row.j }} · V{{ row.v }} · N{{ row.n }} · D{{ row.d }} · {{ row.bp }}/{{ row.bc }}</p>
+            </ion-label>
+            <ion-text slot="end" color="primary" class="font-mono">{{ row.pts }} pts</ion-text>
+          </ion-item>
+        }
+      } @else if (t.status !== 'FINISHED') {
+        <ion-button expand="block" [disabled]="advancing()" (click)="advanceRound()">
+          @if (advancing()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else {
+            Tour suivant →
+          }
+        </ion-button>
+      }
+    }
+  }
+</ion-content>

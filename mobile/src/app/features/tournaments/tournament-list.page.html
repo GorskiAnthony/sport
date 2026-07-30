@@ -2,7 +2,10 @@
   <ion-toolbar>
     <ion-title>Mes tournois</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="logout()">
+      <ion-button routerLink="/tournaments/new" aria-label="Nouveau tournoi">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="logout()" aria-label="Déconnexion">
         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -30,7 +33,7 @@
   } @else {
     <ion-list>
       @for (tournament of tournaments(); track tournament.id) {
-        <ion-item button detail="true" (click)="openLive(tournament.id)">
+        <ion-item button detail="true" (click)="openTournament(tournament.id)">
           <ion-label>
             <h2>{{ tournament.name }}</h2>
             <p>{{ tournament.sport }} · {{ tournament.category }}</p>

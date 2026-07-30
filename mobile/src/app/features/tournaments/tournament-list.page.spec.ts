@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { provideRouter, Router, RouterLink } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -9,7 +10,7 @@ import { TournamentSummary } from '../../core/models/tournament.model';
 describe('TournamentListPage', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let tournamentServiceSpy: jasmine.SpyObj<TournamentService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const tournaments: TournamentSummary[] = [
     {
@@ -23,22 +24,27 @@ describe('TournamentListPage', () => {
       status: 'ONGOING',
       maxTeams: 16,
       teamsCount: 12,
+      format: null,
     },
   ];
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
     tournamentServiceSpy = jasmine.createSpyObj('TournamentService', ['getMine']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [TournamentListPage],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: TournamentService, useValue: tournamentServiceSpy },
-        { provide: Router, useValue: routerSpy },
+        // routerLink (bouton "+" et lignes de tournoi) a besoin d'un vrai Router pour calculer
+        // ses href — voir login.page.spec.ts pour la même raison.
+        provideRouter([]),
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
   });
 
   function createPage(): TournamentListPage {
@@ -48,6 +54,24 @@ describe('TournamentListPage', () => {
     page.ionViewWillEnter();
     return page;
   }
+
+  it('links the header "+" button to the creation wizard', () => {
+    tournamentServiceSpy.getMine.and.returnValue(of([]));
+    spyOn(router, 'navigateByUrl');
+    const fixture = TestBed.createComponent(TournamentListPage);
+    fixture.detectChanges();
+    fixture.componentInstance.ionViewWillEnter();
+    fixture.detectChanges();
+
+    const link = fixture.debugElement.query(By.css('[aria-label="Nouveau tournoi"]')).injector.get(RouterLink);
+    // Simule le clic qu'intercepte routerLink (voir onClick dans @angular/router) sans dépendre
+    // de la propagation d'un vrai événement DOM à travers l'élément personnalisé ion-button.
+    link.onClick(0, false, false, false, false);
+
+    expect(router.navigateByUrl).toHaveBeenCalled();
+    const urlTree = (router.navigateByUrl as jasmine.Spy).calls.mostRecent().args[0];
+    expect(router.serializeUrl(urlTree)).toBe('/tournaments/new');
+  });
 
   it('loads the organizer tournaments when the view is entered', () => {
     tournamentServiceSpy.getMine.and.returnValue(of(tournaments));
@@ -110,7 +134,7 @@ describe('TournamentListPage', () => {
     page.openRefereeCode(event, 42);
 
     expect(event.stopPropagation).toHaveBeenCalled();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'referee-code']);
+    expect(router.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'referee-code']);
   });
 
   it('logs out and navigates to /login', () => {
@@ -120,16 +144,16 @@ describe('TournamentListPage', () => {
     page.logout();
 
     expect(authServiceSpy.logout).toHaveBeenCalled();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
-  it('navigates to the live score screen when a tournament is opened', () => {
+  it('navigates to the tournament management hub when a row is opened', () => {
     tournamentServiceSpy.getMine.and.returnValue(of([]));
     const page = createPage();
 
-    page.openLive(42);
+    page.openTournament(42);
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'live']);
+    expect(router.navigate).toHaveBeenCalledWith(['/tournaments', 42]);
   });
 
   it('maps status to the design-system label and color', () => {

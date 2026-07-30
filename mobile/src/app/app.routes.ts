@@ -25,6 +25,24 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/tournaments/tournament-list.page').then((m) => m.TournamentListPage),
   },
+  // Doit précéder 'tournaments/:id' (même longueur de chemin) — sinon Angular essaierait de
+  // parser "new" comme un id.
+  {
+    path: 'tournaments/new',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/tournaments/new-tournament.page').then((m) => m.NewTournamentPage),
+  },
+  {
+    path: 'tournaments/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/tournaments/tournament-detail.page').then((m) => m.TournamentDetailPage),
+  },
+  {
+    path: 'tournaments/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/tournaments/edit-tournament.page').then((m) => m.EditTournamentPage),
+  },
   {
     path: 'tournaments/:id/live',
     canActivate: [authGuard],

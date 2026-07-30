@@ -1,0 +1,145 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="confirmCancel()">Annuler</ion-button>
+    </ion-buttons>
+    <ion-title>Nouveau tournoi</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (planBlocked()) {
+    <div class="state-container">
+      <ion-text color="warning">
+        <h2>Limite de tournois atteinte</h2>
+      </ion-text>
+      <p>Votre offre actuelle ne permet pas de créer de nouveau tournoi. Passez à un plan supérieur depuis le site web pour en créer davantage.</p>
+    </div>
+  } @else {
+    <p class="step-indicator">
+      <span [class.active]="step() === 1">1. Tournoi</span>
+      <span aria-hidden="true">→</span>
+      <span [class.active]="step() === 2">2. Équipes</span>
+    </p>
+
+    @if (step() === 1) {
+      <form (submit)="$event.preventDefault(); submitStepOne()">
+        <ion-item fill="outline" [class.ion-invalid]="!!errors().name">
+          <ion-label position="stacked">Nom du tournoi</ion-label>
+          <ion-input type="text" placeholder="Challenge U15 Lyon 2026" [value]="name()" (ionInput)="onNameInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+        @if (errors().name) {
+          <ion-text color="danger" class="field-error">{{ errors().name }}</ion-text>
+        }
+
+        <ion-item fill="outline" [class.ion-invalid]="!!errors().sport">
+          <ion-label position="stacked">Sport</ion-label>
+          <ion-select interface="action-sheet" placeholder="Choisir un sport" [value]="sport()" (ionChange)="onSportChange($any($event.detail).value)">
+            @for (s of sports; track s.id) {
+              <ion-select-option [value]="s.id">{{ s.icon }} {{ s.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (errors().sport) {
+          <ion-text color="danger" class="field-error">{{ errors().sport }}</ion-text>
+        }
+
+        <ion-item fill="outline" [class.ion-invalid]="!!errors().category">
+          <ion-label position="stacked">Catégorie</ion-label>
+          <ion-select interface="action-sheet" placeholder="Choisir une catégorie" [value]="category()" (ionChange)="onCategoryChange($any($event.detail).value)">
+            @for (c of categories; track c.value) {
+              <ion-select-option [value]="c.value">{{ c.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (errors().category) {
+          <ion-text color="danger" class="field-error">{{ errors().category }}</ion-text>
+        }
+
+        <ion-label class="section-label">Format</ion-label>
+        <app-format-picker [(value)]="format" />
+        @if (errors().format) {
+          <ion-text color="danger" class="field-error">{{ errors().format }}</ion-text>
+        }
+
+        <ion-item fill="outline">
+          <ion-label position="stacked">Lieu</ion-label>
+          <ion-input type="text" placeholder="Lyon, France" [value]="location()" (ionInput)="onLocationInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+
+        <ion-item fill="outline" [class.ion-invalid]="!!errors().startDate">
+          <ion-label position="stacked">Début</ion-label>
+          <ion-input type="date" [value]="startDate()" (ionInput)="onStartDateInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+        @if (errors().startDate) {
+          <ion-text color="danger" class="field-error">{{ errors().startDate }}</ion-text>
+        }
+
+        <ion-item fill="outline" [class.ion-invalid]="!!errors().endDate">
+          <ion-label position="stacked">Fin</ion-label>
+          <ion-input type="date" [value]="endDate()" (ionInput)="onEndDateInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+        @if (errors().endDate) {
+          <ion-text color="danger" class="field-error">{{ errors().endDate }}</ion-text>
+        }
+
+        <ion-item fill="outline">
+          <ion-label position="stacked">Nb max d'équipes</ion-label>
+          <ion-input type="number" placeholder="14" [value]="maxTeams()" (ionInput)="onMaxTeamsInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+
+        <ion-item fill="outline">
+          <ion-label position="stacked">Description (optionnel)</ion-label>
+          <ion-input type="text" [value]="description()" (ionInput)="onDescriptionInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+
+        <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
+          @if (loading()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else {
+            Suivant →
+          }
+        </ion-button>
+      </form>
+    } @else {
+      <p class="hint">Ajoutez vos équipes (facultatif — vous pourrez en ajouter plus tard depuis la fiche du tournoi).</p>
+
+      @for (team of teams(); track $index; let i = $index) {
+        <ion-item fill="outline" class="team-row">
+          <ion-input type="text" placeholder="Nom de l'équipe" [value]="team.name" (ionInput)="updateTeamRowName(i, $any($event.detail).value)"></ion-input>
+          <ion-select slot="end" interface="action-sheet" [value]="team.category" (ionChange)="updateTeamRowCategory(i, $any($event.detail).value)">
+            @for (c of teamCategories; track c) {
+              <ion-select-option [value]="c">{{ c }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button slot="end" fill="clear" color="danger" (click)="removeTeamRow(i)" aria-label="Retirer cette équipe">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+
+      <ion-button fill="clear" (click)="addTeamRow()">
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        Ajouter une équipe
+      </ion-button>
+
+      @if (format() === 'GROUP_KNOCKOUT') {
+        <ion-item fill="outline">
+          <ion-label position="stacked">Nombre de poules</ion-label>
+          <ion-input type="number" [value]="groupCount()" (ionInput)="onGroupCountInput($any($event.detail).value)"></ion-input>
+        </ion-item>
+      }
+
+      <div class="step-two-actions">
+        <ion-button fill="clear" (click)="step.set(1)">← Retour</ion-button>
+        <ion-button [disabled]="finishing()" (click)="finish()">
+          @if (finishing()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else {
+            Terminer
+          }
+        </ion-button>
+      </div>
+    }
+  }
+</ion-content>

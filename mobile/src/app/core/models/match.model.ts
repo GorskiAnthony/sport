@@ -13,6 +13,8 @@ export interface Match {
   awayTeam: Team;
   homeScore: number | null;
   awayScore: number | null;
+  homeFairPlay: number | null;
+  awayFairPlay: number | null;
   forfeitedTeamId: number | null;
   phase: string | null;
   date: string | null;

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
 import {
   IonHeader,
@@ -20,30 +20,18 @@ import {
   RefresherCustomEvent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { logOutOutline, qrCodeOutline } from 'ionicons/icons';
+import { logOutOutline, qrCodeOutline, addOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/auth/auth.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentStatus, TournamentSummary } from '../../core/models/tournament.model';
-
-const STATUS_LABELS: Record<TournamentStatus, string> = {
-  UPCOMING: 'À venir',
-  ONGOING: 'En cours',
-  FINISHED: 'Terminé',
-};
-
-// Couleurs Ionic thémées avec la palette du design-system : primary = vert (ongoing/live),
-// warning = ambre (à venir), medium = gris/slate (terminé). Voir .claude/skills/design-system.
-const STATUS_COLORS: Record<TournamentStatus, string> = {
-  UPCOMING: 'warning',
-  ONGOING: 'primary',
-  FINISHED: 'medium',
-};
+import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/tournament-status';
 
 @Component({
   selector: 'app-tournament-list',
   templateUrl: './tournament-list.page.html',
   styleUrls: ['./tournament-list.page.scss'],
   imports: [
+    RouterLink,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -71,7 +59,7 @@ export class TournamentListPage implements ViewWillEnter {
   readonly error = signal(false);
 
   constructor() {
-    addIcons({ logOutOutline, qrCodeOutline });
+    addIcons({ logOutOutline, qrCodeOutline, addOutline });
   }
 
   // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
@@ -82,11 +70,11 @@ export class TournamentListPage implements ViewWillEnter {
   }
 
   statusLabel(status: TournamentStatus): string {
-    return STATUS_LABELS[status];
+    return TOURNAMENT_STATUS_LABELS[status];
   }
 
   statusColor(status: TournamentStatus): string {
-    return STATUS_COLORS[status];
+    return TOURNAMENT_STATUS_COLORS[status];
   }
 
   load(): void {
@@ -123,8 +111,8 @@ export class TournamentListPage implements ViewWillEnter {
     this.router.navigate(['/login']);
   }
 
-  openLive(tournamentId: number): void {
-    this.router.navigate(['/tournaments', tournamentId, 'live']);
+  openTournament(tournamentId: number): void {
+    this.router.navigate(['/tournaments', tournamentId]);
   }
 
   openRefereeCode(event: Event, tournamentId: number): void {
