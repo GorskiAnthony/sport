@@ -154,6 +154,8 @@ export class DashboardNewTournamentPage implements OnInit {
   }
 
   submitStepOne(): void {
+    if (this.loading()) return;
+
     const errors = this.validate();
     if (Object.keys(errors).length) {
       this.errors.set(errors);
