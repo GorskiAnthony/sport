@@ -22,6 +22,11 @@ import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
+/** Order-independent key so a match can be looked up by either (home, away) or (away, home). */
+function teamPairKey(a: number, b: number): string {
+  return a < b ? `${a}-${b}` : `${b}-${a}`;
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-tournament-detail-page',
@@ -170,11 +175,20 @@ export class DashboardTournamentDetailPage implements OnInit {
     });
   }
 
+  /** Built once per tournament() change instead of scanned per grid cell — the round-robin
+   *  results grid calls matchBetween() for every (row, col) pair, which was an O(n²) linear
+   *  scan of all matches for an n×n team grid. */
+  private readonly matchByTeamPair = computed<Map<string, Match>>(() => {
+    const map = new Map<string, Match>();
+    for (const m of this.tournament()?.matches ?? []) {
+      map.set(teamPairKey(m.homeTeam.id, m.awayTeam.id), m);
+    }
+    return map;
+  });
+
   /** The match connecting two teams, regardless of which one is stored as home/away. */
   matchBetween(a: Team, b: Team): Match | undefined {
-    return this.tournament()?.matches.find(
-      (m) => (m.homeTeam.id === a.id && m.awayTeam.id === b.id) || (m.homeTeam.id === b.id && m.awayTeam.id === a.id),
-    );
+    return this.matchByTeamPair().get(teamPairKey(a.id, b.id));
   }
 
   scoreFor(match: Match, team: Team): number | null {
