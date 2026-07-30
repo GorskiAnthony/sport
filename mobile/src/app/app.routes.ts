@@ -13,6 +13,11 @@ export const routes: Routes = [
       import('./features/tournaments/tournament-list.page').then((m) => m.TournamentListPage),
   },
   {
+    path: 'tournaments/:id/live',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/live-score/live-score.page').then((m) => m.LiveScorePage),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

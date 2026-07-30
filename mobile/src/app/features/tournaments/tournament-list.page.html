@@ -30,7 +30,7 @@
   } @else {
     <ion-list>
       @for (tournament of tournaments(); track tournament.id) {
-        <ion-item button detail="true">
+        <ion-item button detail="true" (click)="openLive(tournament.id)">
           <ion-label>
             <h2>{{ tournament.name }}</h2>
             <p>{{ tournament.sport }} · {{ tournament.category }}</p>

@@ -118,4 +118,8 @@ export class TournamentListPage implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  openLive(tournamentId: number): void {
+    this.router.navigate(['/tournaments', tournamentId, 'live']);
+  }
 }

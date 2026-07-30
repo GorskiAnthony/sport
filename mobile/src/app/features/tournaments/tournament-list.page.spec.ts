@@ -100,6 +100,15 @@ describe('TournamentListPage', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
   });
 
+  it('navigates to the live score screen when a tournament is opened', () => {
+    tournamentServiceSpy.getMine.and.returnValue(of([]));
+    const page = createPage();
+
+    page.openLive(42);
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'live']);
+  });
+
   it('maps status to the design-system label and color', () => {
     tournamentServiceSpy.getMine.and.returnValue(of([]));
     const page = createPage();
