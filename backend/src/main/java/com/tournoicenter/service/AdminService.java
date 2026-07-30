@@ -26,7 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
@@ -94,7 +97,15 @@ public class AdminService {
                 ? userRepository.findAllByOrderByCreatedAtDesc(cap)
                 : userRepository.search(search.trim(), cap);
 
-        return found.stream().map(this::toUserSummary).toList();
+        Map<Long, Long> tournamentCounts = countGroupedBy(
+                found.stream().map(User::getId).toList(),
+                tournamentRepository::countGroupedByOrganizerIdIn,
+                TournamentRepository.OrganizerCount::getOrganizerId,
+                TournamentRepository.OrganizerCount::getCount);
+
+        return found.stream()
+                .map(user -> toUserSummary(user, tournamentCounts.getOrDefault(user.getId(), 0L)))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -102,10 +113,8 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
-        List<TournamentSummaryResponse> tournaments = tournamentRepository
-                .findByOrganizerIdOrderByCreatedAtDesc(userId).stream()
-                .map(this::toTournamentSummary)
-                .toList();
+        List<TournamentSummaryResponse> tournaments = toTournamentSummaries(
+                tournamentRepository.findByOrganizerIdOrderByCreatedAtDesc(userId));
 
         String subscriptionStatus = user.getSubscription() != null ? user.getSubscription().getStatus() : null;
 
@@ -117,7 +126,7 @@ public class AdminService {
     public List<TournamentSummaryResponse> searchTournaments(String search, TournamentStatus status) {
         String query = (search == null || search.isBlank()) ? null : search.trim();
         List<Tournament> found = tournamentRepository.search(query, status, PageRequest.of(0, LIST_CAP));
-        return found.stream().map(this::toTournamentSummary).toList();
+        return toTournamentSummaries(found);
     }
 
     @Transactional(readOnly = true)
@@ -127,18 +136,39 @@ public class AdminService {
                 .toList();
     }
 
-    private UserSummaryResponse toUserSummary(User user) {
-        long tournamentsCount = tournamentRepository.countByOrganizerId(user.getId());
+    private UserSummaryResponse toUserSummary(User user, long tournamentsCount) {
         return new UserSummaryResponse(user.getId(), user.getName(), user.getEmail(), user.getRole(),
                 user.getPlan(), user.getCreatedAt(), tournamentsCount);
     }
 
-    private TournamentSummaryResponse toTournamentSummary(Tournament tournament) {
-        long teamsCount = teamRepository.countByTournamentId(tournament.getId());
-        long matchesCount = matchRepository.countByTournamentId(tournament.getId());
+    private List<TournamentSummaryResponse> toTournamentSummaries(List<Tournament> tournaments) {
+        List<Long> tournamentIds = tournaments.stream().map(Tournament::getId).toList();
+        Map<Long, Long> teamCounts = countGroupedBy(tournamentIds, teamRepository::countGroupedByTournamentIdIn,
+                TeamRepository.TournamentCount::getTournamentId, TeamRepository.TournamentCount::getCount);
+        Map<Long, Long> matchCounts = countGroupedBy(tournamentIds, matchRepository::countGroupedByTournamentIdIn,
+                MatchRepository.TournamentCount::getTournamentId, MatchRepository.TournamentCount::getCount);
+
+        return tournaments.stream()
+                .map(t -> toTournamentSummary(t, teamCounts.getOrDefault(t.getId(), 0L),
+                        matchCounts.getOrDefault(t.getId(), 0L)))
+                .toList();
+    }
+
+    private TournamentSummaryResponse toTournamentSummary(Tournament tournament, long teamsCount, long matchesCount) {
         User organizer = tournament.getOrganizer();
         return new TournamentSummaryResponse(tournament.getId(), tournament.getName(), tournament.getSport(),
                 tournament.getLocation(), tournament.getStatus(), tournament.getStartDate(), tournament.getEndDate(),
                 organizer.getName(), organizer.getEmail(), teamsCount, matchesCount, tournament.getCreatedAt());
+    }
+
+    /** JPA providers reject an empty "IN ()" list, so skip the query entirely when there's nothing to count. */
+    private <R> Map<Long, Long> countGroupedBy(List<Long> ids, java.util.function.Function<List<Long>, List<R>> query,
+                                                java.util.function.Function<R, Long> keyFn,
+                                                java.util.function.ToLongFunction<R> countFn) {
+        if (ids.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return query.apply(ids).stream()
+                .collect(Collectors.toMap(keyFn, countFn::applyAsLong));
     }
 }

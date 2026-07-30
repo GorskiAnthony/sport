@@ -22,6 +22,9 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
 
     long countByStatus(TournamentStatus status);
 
+    @Query("SELECT t.organizer.id AS organizerId, COUNT(t) AS count FROM Tournament t WHERE t.organizer.id IN :organizerIds GROUP BY t.organizer.id")
+    List<OrganizerCount> countGroupedByOrganizerIdIn(@Param("organizerIds") List<Long> organizerIds);
+
     @Query("""
             SELECT t FROM Tournament t
             WHERE (:query IS NULL
@@ -47,6 +50,12 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
 
     interface LocationCount {
         String getLocation();
+
+        long getCount();
+    }
+
+    interface OrganizerCount {
+        Long getOrganizerId();
 
         long getCount();
     }
