@@ -3,21 +3,19 @@ package com.tournoicenter.service;
 import com.tournoicenter.domain.Match;
 import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.NotificationType;
-import com.tournoicenter.domain.Role;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.TournamentFormat;
-import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
+import com.tournoicenter.dto.match.TeamSide;
 import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ForbiddenException;
 import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
-import com.tournoicenter.repository.UserRepository;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
@@ -32,18 +30,16 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
-    private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final TournamentLiveService tournamentLiveService;
     private final CacheManager cacheManager;
 
     public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
-                         UserRepository userRepository, NotificationService notificationService,
-                         TournamentLiveService tournamentLiveService, CacheManager cacheManager) {
+                         NotificationService notificationService, TournamentLiveService tournamentLiveService,
+                         CacheManager cacheManager) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
-        this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.tournamentLiveService = tournamentLiveService;
         this.cacheManager = cacheManager;
@@ -73,30 +69,6 @@ public class MatchService {
         return MatchResponse.from(getOrThrow(id));
     }
 
-    @Transactional(readOnly = true)
-    public List<MatchResponse> findAssignedToReferee(Long refereeId) {
-        return matchRepository.findByRefereeIdOrderByDateAsc(refereeId).stream().map(MatchResponse::from).toList();
-    }
-
-    @Transactional
-    public MatchResponse assignReferee(Long id, Long requesterId, Long refereeId) {
-        Match match = getOrThrow(id);
-        requireOwner(match, requesterId);
-
-        if (refereeId == null) {
-            match.setReferee(null);
-            return MatchResponse.from(match);
-        }
-
-        User referee = userRepository.findById(refereeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Arbitre introuvable."));
-        if (referee.getRole() != Role.REFEREE) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Cet utilisateur n'a pas le rôle arbitre.");
-        }
-        match.setReferee(referee);
-        return MatchResponse.from(match);
-    }
-
     @Transactional
     public MatchResponse create(Long requesterId, MatchRequest request) {
         Tournament tournament = tournamentRepository.findById(request.tournamentId())
@@ -119,9 +91,9 @@ public class MatchService {
     }
 
     @Transactional
-    public MatchResponse updateScore(Long id, Long requesterId, MatchScoreRequest request) {
+    public MatchResponse updateScore(Long id, MatchActor actor, MatchScoreRequest request) {
         Match match = getOrThrow(id);
-        requireCanManage(match, requesterId);
+        requireCanManage(match, actor);
 
         boolean wasFinished = match.getStatus() == MatchStatus.FINISHED;
         match.setHomeScore(request.homeScore());
@@ -149,6 +121,35 @@ public class MatchService {
         evictTournamentDetailCache(tournament.getId());
 
         return MatchResponse.from(match);
+    }
+
+    /** One tap = one goal, sent immediately (unlike updateScore, which only ever runs once, at
+     *  the end, to close the match out) — see MatchRepository.incrementHomeScore/AwayScore for
+     *  why this is an atomic UPDATE rather than a load-modify-save. */
+    @Transactional
+    public MatchResponse recordGoal(Long id, MatchActor actor, TeamSide team, int delta) {
+        Match match = getOrThrow(id);
+        requireCanManage(match, actor);
+
+        if (match.getStatus() != MatchStatus.ONGOING) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Le match n'est pas en cours.");
+        }
+
+        int updated = team == TeamSide.HOME
+                ? matchRepository.incrementHomeScore(id, delta)
+                : matchRepository.incrementAwayScore(id, delta);
+        if (updated == 0) {
+            // A race with another request finishing/forfeiting the match between the check
+            // above and this UPDATE — same user-facing error as the check above.
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Le match n'est pas en cours.");
+        }
+
+        Match refreshed = getOrThrow(id);
+        Tournament tournament = refreshed.getTournament();
+        tournamentLiveService.notifyTournamentChanged(tournament.getId());
+        evictTournamentDetailCache(tournament.getId());
+
+        return MatchResponse.from(refreshed);
     }
 
     /** No fabricated score — see Match.forfeitedTeam. The other team is credited a win with no
@@ -187,9 +188,9 @@ public class MatchService {
     }
 
     @Transactional
-    public MatchResponse start(Long id, Long requesterId) {
+    public MatchResponse start(Long id, MatchActor actor) {
         Match match = getOrThrow(id);
-        requireCanManage(match, requesterId);
+        requireCanManage(match, actor);
 
         if (match.getStatus() != MatchStatus.SCHEDULED) {
             return MatchResponse.from(match);
@@ -246,14 +247,27 @@ public class MatchService {
         }
     }
 
-    /** Démarrage et saisie du score : ouverts à l'organisateur ET à l'arbitre assigné au match
-     *  (Match.referee, voir assignReferee). Les actions plus administratives (forfait,
-     *  suppression, assignation d'arbitre) restent réservées à l'organisateur (requireOwner). */
-    private void requireCanManage(Match match, Long requesterId) {
-        boolean isOrganizer = match.getTournament().getOrganizer().getId().equals(requesterId);
-        boolean isAssignedReferee = match.getReferee() != null && match.getReferee().getId().equals(requesterId);
-        if (!isOrganizer && !isAssignedReferee) {
-            throw new ForbiddenException();
+    /** Démarrage et saisie du score : ouverts à l'organisateur ET à quiconque a rejoint le
+     *  tournoi via son QR code (voir TournamentService.joinAsReferee) — pour cette deuxième
+     *  catégorie, on vérifie aussi que le token utilisé pour rejoindre est toujours le token
+     *  courant du tournoi, pour que "régénérer le QR" invalide bien les sessions déjà émises,
+     *  pas seulement les nouvelles tentatives de scan. Les actions plus administratives
+     *  (forfait, suppression) restent réservées à l'organisateur (requireOwner). */
+    private void requireCanManage(Match match, MatchActor actor) {
+        switch (actor) {
+            case MatchActor.UserActor u -> {
+                if (!match.getTournament().getOrganizer().getId().equals(u.userId())) {
+                    throw new ForbiddenException();
+                }
+            }
+            case MatchActor.TournamentSessionActor t -> {
+                Tournament tournament = match.getTournament();
+                boolean sameTournament = tournament.getId().equals(t.tournamentId());
+                boolean tokenStillCurrent = t.joinToken() != null && t.joinToken().equals(tournament.getRefereeJoinToken());
+                if (!sameTournament || !tokenStillCurrent) {
+                    throw new ForbiddenException();
+                }
+            }
         }
     }
 }

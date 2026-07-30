@@ -12,6 +12,6 @@ public record RegisterRequest(
         Role role
 ) {
     public Role roleOrDefault() {
-        return (role == Role.ORGANIZER || role == Role.SPECTATOR || role == Role.REFEREE) ? role : Role.ORGANIZER;
+        return (role == Role.ORGANIZER || role == Role.SPECTATOR) ? role : Role.ORGANIZER;
     }
 }

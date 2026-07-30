@@ -72,23 +72,32 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tournaments/*/sponsor-click").permitAll()
+                        // Le token du QR code arbitre est lui-même le justificatif — voir
+                        // TournamentService.joinAsReferee.
+                        .requestMatchers(HttpMethod.POST, "/api/tournaments/join").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/recent").authenticated()
                         // Financial data — must stay ahead of the /api/tournaments/** permitAll below,
                         // which would otherwise expose every organizer's buvette sales/revenue publicly.
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/*/buvette/**").authenticated()
+                        // Le token renvoyé est un secret (voir Tournament.refereeJoinToken) —
+                        // même raison, doit précéder le permitAll ci-dessous.
+                        .requestMatchers(HttpMethod.GET, "/api/tournaments/*/referee-token").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed/enriched").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
-                        // Matchs assignés à l'arbitre connecté — doit précéder le permitAll
-                        // ci-dessous, sinon un appel anonyme atteindrait le contrôleur avec un
-                        // principal null.
-                        .requestMatchers(HttpMethod.GET, "/api/matches/mine").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
+                        // Seules ces trois actions sont ouvertes à une session de tournoi (QR
+                        // code arbitre, voir MatchActor.TournamentSessionActor) — tout le reste
+                        // de l'API leur est fermé par le catch-all ci-dessous, qui liste
+                        // explicitement les rôles utilisateur réels et exclut donc
+                        // ROLE_TOURNAMENT_REFEREE_SESSION par construction.
+                        .requestMatchers(HttpMethod.PATCH, "/api/matches/*/start", "/api/matches/*/score", "/api/matches/*/goal")
+                        .hasAnyRole("ORGANIZER", "ADMIN", "TOURNAMENT_REFEREE_SESSION")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                        .anyRequest().hasAnyRole("ORGANIZER", "SPECTATOR", "ADMIN"))
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 

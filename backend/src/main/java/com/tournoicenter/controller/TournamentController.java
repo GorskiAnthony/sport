@@ -2,7 +2,10 @@ package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.ApiResponse;
 import com.tournoicenter.dto.tournament.RecentTournamentResponse;
+import com.tournoicenter.dto.tournament.RefereeJoinInfoResponse;
 import com.tournoicenter.dto.tournament.TournamentDetailResponse;
+import com.tournoicenter.dto.tournament.TournamentJoinRequest;
+import com.tournoicenter.dto.tournament.TournamentJoinResponse;
 import com.tournoicenter.dto.tournament.TournamentRequest;
 import com.tournoicenter.dto.tournament.TournamentSummaryResponse;
 import com.tournoicenter.security.JwtPrincipal;
@@ -78,5 +81,25 @@ public class TournamentController {
     public ApiResponse<Map<String, Boolean>> recordSponsorClick(@PathVariable Long id) {
         tournamentService.recordSponsorClick(id);
         return ApiResponse.of(Map.of("recorded", true));
+    }
+
+    /** Organisateur uniquement — le token renvoyé est un secret (voir SecurityConfig, carve-out
+     *  au-dessus du GET /api/tournaments/** public). */
+    @GetMapping("/{id}/referee-token")
+    public ApiResponse<RefereeJoinInfoResponse> getRefereeJoinInfo(@AuthenticationPrincipal JwtPrincipal principal,
+                                                                     @PathVariable Long id) {
+        return ApiResponse.of(tournamentService.getRefereeJoinInfo(id, principal.userId()));
+    }
+
+    @PostMapping("/{id}/referee-token/regenerate")
+    public ApiResponse<RefereeJoinInfoResponse> regenerateRefereeJoinToken(@AuthenticationPrincipal JwtPrincipal principal,
+                                                                             @PathVariable Long id) {
+        return ApiResponse.of(tournamentService.regenerateRefereeJoinToken(id, principal.userId()));
+    }
+
+    /** Public — le token du QR code est lui-même le justificatif d'accès, voir SecurityConfig. */
+    @PostMapping("/join")
+    public ApiResponse<TournamentJoinResponse> joinAsReferee(@Valid @RequestBody TournamentJoinRequest request) {
+        return ApiResponse.of(tournamentService.joinAsReferee(request.token(), request.refereeName()));
     }
 }

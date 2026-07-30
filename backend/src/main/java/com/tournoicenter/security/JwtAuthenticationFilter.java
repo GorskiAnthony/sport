@@ -30,11 +30,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             Optional<JwtPrincipal> principal = jwtService.parseToken(token);
-            principal.ifPresent(p -> {
+            if (principal.isPresent()) {
+                JwtPrincipal p = principal.get();
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + p.role().name()));
                 var authentication = new UsernamePasswordAuthenticationToken(p, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            });
+            } else {
+                // Ne colle jamais avec un vrai rôle utilisateur (ORGANIZER/SPECTATOR/ADMIN) —
+                // voir SecurityConfig, le catch-all final exclut délibérément cette autorité.
+                jwtService.parseRefereeSessionToken(token).ifPresent(session -> {
+                    var authorities = List.<GrantedAuthority>of(new SimpleGrantedAuthority("ROLE_TOURNAMENT_REFEREE_SESSION"));
+                    var authentication = new UsernamePasswordAuthenticationToken(session, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                });
+            }
         }
         filterChain.doFilter(request, response);
     }

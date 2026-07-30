@@ -10,11 +10,14 @@ import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> findAllByOrderByStartDateDesc();
 
     List<Tournament> findByOrganizerIdOrderByCreatedAtDesc(Long organizerId);
+
+    Optional<Tournament> findByRefereeJoinToken(String refereeJoinToken);
 
     long countByOrganizerId(Long organizerId);
 

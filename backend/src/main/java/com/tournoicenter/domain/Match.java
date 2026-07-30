@@ -51,12 +51,6 @@ public class Match {
     @JoinColumn(name = "forfeited_team_id")
     private Team forfeitedTeam;
 
-    /** Assigné par l'organisateur (MatchService.assignReferee) — un arbitre assigné peut démarrer
-     *  le match et saisir le score, au même titre que l'organisateur (voir requireCanManage). */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "referee_id")
-    private User referee;
-
     @Column(nullable = false)
     private String phase;
 
@@ -159,14 +153,6 @@ public class Match {
 
     public void setForfeitedTeam(Team forfeitedTeam) {
         this.forfeitedTeam = forfeitedTeam;
-    }
-
-    public User getReferee() {
-        return referee;
-    }
-
-    public void setReferee(User referee) {
-        this.referee = referee;
     }
 
     public String getPhase() {

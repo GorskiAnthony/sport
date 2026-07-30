@@ -1,9 +1,12 @@
 package com.tournoicenter.service;
 
+import com.tournoicenter.config.MobileProperties;
 import com.tournoicenter.domain.EventPassPurchase;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.User;
+import com.tournoicenter.dto.tournament.RefereeJoinInfoResponse;
 import com.tournoicenter.dto.tournament.TournamentDetailResponse;
+import com.tournoicenter.dto.tournament.TournamentJoinResponse;
 import com.tournoicenter.dto.tournament.TournamentRequest;
 import com.tournoicenter.dto.tournament.TournamentSummaryResponse;
 import com.tournoicenter.exception.ApiException;
@@ -12,6 +15,7 @@ import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import com.tournoicenter.repository.UserRepository;
+import com.tournoicenter.security.JwtService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -19,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -29,15 +35,21 @@ public class TournamentService {
     private final PlanLimitService planLimitService;
     private final MatchRepository matchRepository;
     private final EventPassService eventPassService;
+    private final JwtService jwtService;
+    private final MobileProperties mobileProperties;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public TournamentService(TournamentRepository tournamentRepository, UserRepository userRepository,
                               PlanLimitService planLimitService, MatchRepository matchRepository,
-                              EventPassService eventPassService) {
+                              EventPassService eventPassService, JwtService jwtService,
+                              MobileProperties mobileProperties) {
         this.tournamentRepository = tournamentRepository;
         this.userRepository = userRepository;
         this.planLimitService = planLimitService;
         this.matchRepository = matchRepository;
         this.eventPassService = eventPassService;
+        this.jwtService = jwtService;
+        this.mobileProperties = mobileProperties;
     }
 
     /** Cached briefly (see application.yml) — the public tournament list is hit by every
@@ -89,6 +101,7 @@ public class TournamentService {
                 request.maxTeams() != null ? request.maxTeams() : 14,
                 organizer
         );
+        tournament.setRefereeJoinToken(generateRefereeJoinToken());
         applyOptionalFields(tournament, request);
 
         Tournament saved = tournamentRepository.save(tournament);
@@ -139,6 +152,44 @@ public class TournamentService {
     public void recordSponsorClick(Long id) {
         Tournament tournament = getOrThrow(id);
         tournament.setSponsorClicks(tournament.getSponsorClicks() + 1);
+    }
+
+    @Transactional(readOnly = true)
+    public RefereeJoinInfoResponse getRefereeJoinInfo(Long id, Long requesterId) {
+        Tournament tournament = getOrThrow(id);
+        requireOwner(tournament, requesterId);
+        return new RefereeJoinInfoResponse(tournament.getRefereeJoinToken(), buildJoinUrl(tournament.getRefereeJoinToken()));
+    }
+
+    /** The actual kill switch behind "regenerate" — see MatchService.requireCanManage, which
+     *  compares a session's snapshot token against this column on every write. Old sessions
+     *  don't need to be tracked/revoked individually; they simply stop matching. */
+    @Transactional
+    public RefereeJoinInfoResponse regenerateRefereeJoinToken(Long id, Long requesterId) {
+        Tournament tournament = getOrThrow(id);
+        requireOwner(tournament, requesterId);
+        tournament.setRefereeJoinToken(generateRefereeJoinToken());
+        return new RefereeJoinInfoResponse(tournament.getRefereeJoinToken(), buildJoinUrl(tournament.getRefereeJoinToken()));
+    }
+
+    /** Public — the token itself is the credential (see SecurityConfig). No account created;
+     *  refereeName (optional) only ever lives inside the minted session JWT. */
+    @Transactional(readOnly = true)
+    public TournamentJoinResponse joinAsReferee(String token, String refereeName) {
+        Tournament tournament = tournamentRepository.findByRefereeJoinToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Code invalide."));
+        String sessionToken = jwtService.generateRefereeSessionToken(tournament.getId(), refereeName, token);
+        return new TournamentJoinResponse(sessionToken, tournament.getId(), tournament.getName());
+    }
+
+    private String buildJoinUrl(String token) {
+        return mobileProperties.url() + "/join/" + token;
+    }
+
+    private String generateRefereeJoinToken() {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private void applyOptionalFields(Tournament tournament, TournamentRequest request) {

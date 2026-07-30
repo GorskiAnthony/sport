@@ -24,6 +24,7 @@ services:
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       JWT_SECRET: ${JWT_SECRET:-change-me-please-32-bytes-minimum}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:4200}
+      MOBILE_URL: ${MOBILE_URL:-http://localhost:8100}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_PRICE_CLASSIC: ${STRIPE_PRICE_CLASSIC:-}

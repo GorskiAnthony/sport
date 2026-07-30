@@ -1,19 +1,19 @@
 package com.tournoicenter.service;
 
 import com.tournoicenter.domain.Match;
+import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.Role;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
+import com.tournoicenter.dto.match.TeamSide;
 import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ForbiddenException;
-import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
-import com.tournoicenter.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +23,10 @@ import org.springframework.cache.CacheManager;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,8 +39,6 @@ class MatchServiceTest {
     @Mock
     private TeamRepository teamRepository;
     @Mock
-    private UserRepository userRepository;
-    @Mock
     private NotificationService notificationService;
     @Mock
     private TournamentLiveService tournamentLiveService;
@@ -53,7 +49,7 @@ class MatchServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new MatchService(matchRepository, tournamentRepository, teamRepository, userRepository,
+        service = new MatchService(matchRepository, tournamentRepository, teamRepository,
                 notificationService, tournamentLiveService, cacheManager);
     }
 
@@ -67,6 +63,7 @@ class MatchServiceTest {
         Tournament tournament = new Tournament("Cup", "football", "u15", "Lyon",
                 LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 5), 14, organizer);
         setId(tournament, 100L);
+        tournament.setRefereeJoinToken("current-join-token");
         return tournament;
     }
 
@@ -88,130 +85,151 @@ class MatchServiceTest {
         }
     }
 
-    @Test
-    void findAssignedToRefereeMapsRepositoryResults() {
-        User organizer = user(1L, Role.ORGANIZER);
-        Match match = match(tournament(organizer));
-        when(matchRepository.findByRefereeIdOrderByDateAsc(9L)).thenReturn(List.of(match));
-
-        List<MatchResponse> result = service.findAssignedToReferee(9L);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).id()).isEqualTo(match.getId());
-    }
+    // --- UserActor (organizer) ---
 
     @Test
-    void organizerCanAssignARefereeToTheirMatch() {
-        User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
-        Match match = match(tournament(organizer));
-        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
-        when(userRepository.findById(9L)).thenReturn(Optional.of(referee));
-
-        MatchResponse response = service.assignReferee(1L, 1L, 9L);
-
-        assertThat(response.refereeId()).isEqualTo(9L);
-    }
-
-    @Test
-    void assigningRefereeRejectsAUserWithoutTheRefereeRole() {
-        User organizer = user(1L, Role.ORGANIZER);
-        User spectator = user(9L, Role.SPECTATOR);
-        Match match = match(tournament(organizer));
-        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
-        when(userRepository.findById(9L)).thenReturn(Optional.of(spectator));
-
-        assertThatThrownBy(() -> service.assignReferee(1L, 1L, 9L)).isInstanceOf(ApiException.class);
-    }
-
-    @Test
-    void assigningRefereeIsForbiddenToNonOrganizers() {
+    void organizerCanUpdateTheScore() {
         User organizer = user(1L, Role.ORGANIZER);
         Match match = match(tournament(organizer));
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
 
-        assertThatThrownBy(() -> service.assignReferee(1L, 2L, 9L)).isInstanceOf(ForbiddenException.class);
-    }
-
-    @Test
-    void assigningNullRefereeIdUnassignsTheReferee() {
-        User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
-        Match match = match(tournament(organizer));
-        match.setReferee(referee);
-        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
-
-        MatchResponse response = service.assignReferee(1L, 1L, null);
-
-        assertThat(response.refereeId()).isNull();
-    }
-
-    @Test
-    void assignedRefereeCanUpdateTheScore() {
-        User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
-        Match match = match(tournament(organizer));
-        match.setReferee(referee);
-        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
-
-        MatchResponse response = service.updateScore(1L, 9L, new MatchScoreRequest(3, 1, null, null));
+        MatchResponse response = service.updateScore(1L, new MatchActor.UserActor(1L), new MatchScoreRequest(3, 1, null, null));
 
         assertThat(response.homeScore()).isEqualTo(3);
         assertThat(response.awayScore()).isEqualTo(1);
     }
 
     @Test
-    void updateScoreIsForbiddenToAReferereNotAssignedToTheMatch() {
+    void nonOrganizerUserIsForbiddenToUpdateTheScore() {
         User organizer = user(1L, Role.ORGANIZER);
-        User otherReferee = user(42L, Role.REFEREE);
         Match match = match(tournament(organizer));
-        match.setReferee(otherReferee);
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
 
-        assertThatThrownBy(() -> service.updateScore(1L, 9L, new MatchScoreRequest(3, 1, null, null)))
+        assertThatThrownBy(() -> service.updateScore(1L, new MatchActor.UserActor(2L), new MatchScoreRequest(3, 1, null, null)))
                 .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
-    void assignedRefereeCanStartTheMatch() {
+    void organizerCanStartTheMatch() {
         User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
         Match match = match(tournament(organizer));
-        match.setReferee(referee);
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
 
-        MatchResponse response = service.start(1L, 9L);
+        MatchResponse response = service.start(1L, new MatchActor.UserActor(1L));
 
-        assertThat(response.status().name()).isEqualTo("ONGOING");
+        assertThat(response.status()).isEqualTo(MatchStatus.ONGOING);
+    }
+
+    // --- TournamentSessionActor (QR-joined referee) ---
+
+    @Test
+    void tournamentSessionCanManageAMatchInItsOwnTournament() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+
+        MatchResponse response = service.start(1L, new MatchActor.TournamentSessionActor(100L, "current-join-token"));
+
+        assertThat(response.status()).isEqualTo(MatchStatus.ONGOING);
     }
 
     @Test
-    void assignedRefereeCannotRecordAForfeit() {
+    void tournamentSessionForADifferentTournamentIsForbidden() {
         User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
         Match match = match(tournament(organizer));
-        match.setReferee(referee);
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
 
-        assertThatThrownBy(() -> service.recordForfeit(1L, 9L, match.getHomeTeam().getId()))
+        assertThatThrownBy(() -> service.start(1L, new MatchActor.TournamentSessionActor(999L, "current-join-token")))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    /** The organizer regenerated the QR code (TournamentService.regenerateRefereeJoinToken) —
+     *  a session minted from the old token must stop working immediately, not just block new
+     *  joins. See MatchService.requireCanManage. */
+    @Test
+    void tournamentSessionWithAStaleJoinTokenIsForbidden() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+
+        assertThatThrownBy(() -> service.start(1L, new MatchActor.TournamentSessionActor(100L, "old-regenerated-away-token")))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    // --- recordGoal ---
+
+    @Test
+    void recordGoalIncrementsTheHomeScoreWhileOngoing() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        match.setStatus(MatchStatus.ONGOING);
+        match.setHomeScore(1);
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+        when(matchRepository.incrementHomeScore(1L, 1)).thenAnswer(invocation -> {
+            match.setHomeScore(match.getHomeScore() + 1);
+            return 1;
+        });
+
+        MatchResponse response = service.recordGoal(1L, new MatchActor.UserActor(1L), TeamSide.HOME, 1);
+
+        assertThat(response.homeScore()).isEqualTo(2);
+        assertThat(response.status()).isEqualTo(MatchStatus.ONGOING);
+    }
+
+    @Test
+    void recordGoalRejectsAMatchThatHasNotStarted() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        match.setStatus(MatchStatus.SCHEDULED);
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+
+        assertThatThrownBy(() -> service.recordGoal(1L, new MatchActor.UserActor(1L), TeamSide.HOME, 1))
+                .isInstanceOf(ApiException.class);
+    }
+
+    /** The match finished (or was forfeited) between the status check and the atomic UPDATE —
+     *  incrementHomeScore's WHERE status = 'ONGOING' guard means 0 rows change. */
+    @Test
+    void recordGoalRejectsWhenTheMatchFinishesConcurrently() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        match.setStatus(MatchStatus.ONGOING);
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+        when(matchRepository.incrementAwayScore(1L, 1)).thenReturn(0);
+
+        assertThatThrownBy(() -> service.recordGoal(1L, new MatchActor.UserActor(1L), TeamSide.AWAY, 1))
+                .isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void recordGoalIsForbiddenForATournamentSessionFromAnotherTournament() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        match.setStatus(MatchStatus.ONGOING);
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+
+        assertThatThrownBy(() -> service.recordGoal(1L, new MatchActor.TournamentSessionActor(999L, "current-join-token"), TeamSide.HOME, 1))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    // --- organizer-only actions, unchanged ---
+
+    @Test
+    void nonOrganizerCannotRecordAForfeit() {
+        User organizer = user(1L, Role.ORGANIZER);
+        Match match = match(tournament(organizer));
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+
+        assertThatThrownBy(() -> service.recordForfeit(1L, 2L, match.getHomeTeam().getId()))
                 .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
-    void assignedRefereeCannotDeleteTheMatch() {
+    void nonOrganizerCannotDeleteTheMatch() {
         User organizer = user(1L, Role.ORGANIZER);
-        User referee = user(9L, Role.REFEREE);
         Match match = match(tournament(organizer));
-        match.setReferee(referee);
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
 
-        assertThatThrownBy(() -> service.delete(1L, 9L)).isInstanceOf(ForbiddenException.class);
-    }
-
-    @Test
-    void assigningRefereeToAMissingMatchThrowsNotFound() {
-        when(matchRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.assignReferee(1L, 1L, 9L)).isInstanceOf(ResourceNotFoundException.class);
+        assertThatThrownBy(() -> service.delete(1L, 2L)).isInstanceOf(ForbiddenException.class);
     }
 }

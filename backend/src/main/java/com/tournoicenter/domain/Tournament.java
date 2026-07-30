@@ -78,6 +78,14 @@ public class Tournament {
     @Column(name = "event_pass_expires_at")
     private Instant eventPassExpiresAt;
 
+    /** Gate for the "scan to referee" flow (TournamentService.joinAsReferee) — whoever holds
+     *  this value can mint themselves a tournament-scoped write session with no account, so it
+     *  must never be exposed by a public-read endpoint (see TournamentController's
+     *  organizer-only GET /referee-token). Regenerating it invalidates every session minted
+     *  from the old value (MatchService.requireCanManage compares against the live column). */
+    @Column(name = "referee_join_token", nullable = false, unique = true)
+    private String refereeJoinToken;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
@@ -269,6 +277,14 @@ public class Tournament {
 
     public User getOrganizer() {
         return organizer;
+    }
+
+    public String getRefereeJoinToken() {
+        return refereeJoinToken;
+    }
+
+    public void setRefereeJoinToken(String refereeJoinToken) {
+        this.refereeJoinToken = refereeJoinToken;
     }
 
     public Instant getCreatedAt() {
