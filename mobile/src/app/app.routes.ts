@@ -1,11 +1,16 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 
-// La route 'tournaments' (écran d'accueil de l'organisateur connecté, protégée par
-// authGuard) est ajoutée avec l'écran liste de tournois.
 export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'tournaments',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/tournaments/tournament-list.page').then((m) => m.TournamentListPage),
   },
   {
     path: '',

@@ -1,0 +1,46 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mes tournois</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="state-container">
+      <ion-text color="danger">Impossible de charger vos tournois.</ion-text>
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </div>
+  } @else if (tournaments().length === 0) {
+    <div class="state-container">
+      <ion-text color="medium">Vous n'organisez aucun tournoi pour le moment.</ion-text>
+    </div>
+  } @else {
+    <ion-list>
+      @for (tournament of tournaments(); track tournament.id) {
+        <ion-item button detail="true">
+          <ion-label>
+            <h2>{{ tournament.name }}</h2>
+            <p>{{ tournament.sport }} · {{ tournament.category }}</p>
+            <p class="font-mono">{{ tournament.teamsCount }}/{{ tournament.maxTeams }} équipes</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="statusColor(tournament.status)">
+            {{ statusLabel(tournament.status) }}
+          </ion-badge>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>
