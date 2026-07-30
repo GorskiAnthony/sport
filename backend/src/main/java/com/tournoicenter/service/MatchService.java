@@ -5,6 +5,7 @@ import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.NotificationType;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
+import com.tournoicenter.domain.TournamentFormat;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -107,7 +108,7 @@ public class MatchService {
         if (request.homeFairPlay() != null) match.setHomeFairPlay(request.homeFairPlay());
         if (request.awayFairPlay() != null) match.setAwayFairPlay(request.awayFairPlay());
 
-        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
+        syncRoundRobinStatus(tournament);
 
         if (!wasFinished) {
             String message = String.format("Le match %s vs %s est terminé (%d - %d).",
@@ -144,7 +145,7 @@ public class MatchService {
         match.setAwayScore(null);
 
         Tournament tournament = match.getTournament();
-        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
+        syncRoundRobinStatus(tournament);
 
         String message = String.format("Le match %s vs %s est terminé (forfait de %s).",
                 match.getHomeTeam().getName(), match.getAwayTeam().getName(), forfeitingTeam.getName());
@@ -195,6 +196,15 @@ public class MatchService {
             throw new ResourceNotFoundException("Équipe (" + side + ") introuvable.");
         }
         return team;
+    }
+
+    /** Avoids reloading every match of the tournament (RoundRobinStatusSync's own no-op guard
+     *  runs too late to save that query) for the common case of non-Round-Robin tournaments. */
+    private void syncRoundRobinStatus(Tournament tournament) {
+        if (!TournamentFormat.ROUND_ROBIN.name().equals(tournament.getFormat())) {
+            return;
+        }
+        RoundRobinStatusSync.sync(tournament, matchRepository.findByTournamentIdOrderByDateAsc(tournament.getId()));
     }
 
     private Match getOrThrow(Long id) {
