@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -11,6 +11,7 @@ import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { setPageMeta } from '../../shared/utils/seo';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tournaments-page',
   standalone: true,
   imports: [RouterLink, PageHeader, StatusBadge, SportIcon],

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminOverview } from '../../../core/models/admin.model';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
@@ -13,6 +13,7 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-overview-page',
   standalone: true,
   imports: [PageHeader, GrowthChart, RankedBars],

@@ -1,10 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminLocationStats } from '../../../core/models/admin.model';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { RankedBars, RankedBarItem } from '../../../shared/ui/ranked-bars/ranked-bars';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-locations-page',
   standalone: true,
   imports: [PageHeader, RankedBars],

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
@@ -23,6 +23,7 @@ import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
   imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, RoundPlanning, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],

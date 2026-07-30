@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { DOCUMENT, NgOptimizedImage } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -19,6 +19,7 @@ interface Stat {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-page',
   standalone: true,
   imports: [Button, RouterLink, SportIcon, NgOptimizedImage, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin],

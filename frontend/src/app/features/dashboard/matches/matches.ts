@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatchService } from '../../../core/services/match.service';
 import { TeamService } from '../../../core/services/team.service';
@@ -21,6 +21,7 @@ interface MatchForm {
 const EMPTY_FORM: MatchForm = { homeTeamId: '', awayTeamId: '', phase: '', date: '', venue: '' };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-matches-page',
   standalone: true,
   imports: [RouterLink, DatePipe, ConfirmModal],

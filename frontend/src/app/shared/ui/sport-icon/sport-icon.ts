@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { SPORT_ICONS } from '../../utils/labels';
 
 export type SportIconSize = 'sm' | 'md' | 'lg';
@@ -10,6 +10,7 @@ const SIZE_CLASSES: Record<SportIconSize, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sport-icon',
   standalone: true,
   templateUrl: './sport-icon.html',

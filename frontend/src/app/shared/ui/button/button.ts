@@ -1,9 +1,10 @@
-import { Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 export type ButtonVariant = 'primary' | 'outline' | 'ghost';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-button',
   standalone: true,
   imports: [RouterLink],

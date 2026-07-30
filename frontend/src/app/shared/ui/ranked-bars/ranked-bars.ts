@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export interface RankedBarItem {
   label: string;
@@ -9,6 +9,7 @@ export interface RankedBarItem {
 const DEFAULT_COLOR = '#3987e5';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-ranked-bars',
   standalone: true,
   templateUrl: './ranked-bars.html',

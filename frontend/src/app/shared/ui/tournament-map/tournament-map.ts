@@ -1,4 +1,4 @@
-import { Component, ElementRef, Injector, OnChanges, OnDestroy, PLATFORM_ID, ViewChild, afterNextRender, inject, input, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, Injector, input, OnChanges, OnDestroy, PLATFORM_ID, signal, ViewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 // Import type-only : leaflet touche `window` dès le chargement du module (pas seulement à
 // l'exécution), donc même protégé par afterNextRender/isPlatformBrowser, un `import * as L`
@@ -10,6 +10,7 @@ import { GeocodingService } from '../../../core/services/geocoding.service';
 type MapState = 'loading' | 'ready' | 'unavailable';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tournament-map',
   standalone: true,
   templateUrl: './tournament-map.html',

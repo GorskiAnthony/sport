@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { LucideTarget, LucideZap, LucideShieldCheck } from '@lucide/angular';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
@@ -7,6 +7,7 @@ import { setPageMeta } from '../../shared/utils/seo';
 type ValueIcon = 'target' | 'zap' | 'shield';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-about-page',
   standalone: true,
   imports: [PageHeader, LucideTarget, LucideZap, LucideShieldCheck],

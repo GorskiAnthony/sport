@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 
 export interface FormSelectOption {
   value: string;
@@ -6,6 +6,7 @@ export interface FormSelectOption {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-form-select',
   standalone: true,
   templateUrl: './form-select.html',

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -23,6 +23,7 @@ const NAV: SpectatorNavItem[] = [
 const NAV_BOTTOM: SpectatorNavItem[] = [{ path: '/home/settings', label: 'Paramètres', icon: 'settings', end: false }];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-spectator-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainer],

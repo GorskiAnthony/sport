@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DashboardStatsService } from '../../../core/services/dashboard-stats.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -9,6 +9,7 @@ import { Notification } from '../../../core/models/notification.model';
 import { FollowedTeam } from '../../../core/models/team.model';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-right-panel',
   standalone: true,
   imports: [RouterLink, DatePipe],

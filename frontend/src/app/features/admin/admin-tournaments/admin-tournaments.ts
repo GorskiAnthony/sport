@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminTournamentSummary } from '../../../core/models/admin.model';
 import { TournamentStatus } from '../../../core/models/tournament.model';
@@ -14,6 +14,7 @@ const STATUS_OPTIONS: FormSelectOption[] = [
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-tournaments-page',
   standalone: true,
   imports: [PageHeader, StatusBadge, FormSelect],

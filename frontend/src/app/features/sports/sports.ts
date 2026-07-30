@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
@@ -17,6 +17,7 @@ const SHOWCASE_COUNTS: Record<string, number> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sports-page',
   standalone: true,
   imports: [PageHeader, SportIcon],

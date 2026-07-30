@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { TeamService } from '../../../core/services/team.service';
@@ -7,6 +7,7 @@ import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { LucideStar } from '@lucide/angular';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-spectator-favorites-page',
   standalone: true,
   imports: [RouterLink, DatePipe, LucideStar],

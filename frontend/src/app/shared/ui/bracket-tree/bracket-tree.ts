@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Match } from '../../../core/models/match.model';
 import { Team } from '../../../core/models/team.model';
@@ -19,6 +19,7 @@ interface ConnectorSegment {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-bracket-tree',
   standalone: true,
   imports: [RouterLink],

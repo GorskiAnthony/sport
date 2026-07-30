@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,6 +28,7 @@ interface PhaseGroup {
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-public-tournament-page',
   standalone: true,
   imports: [RouterLink, GroupStandings, RoundPlanning, SportIcon, TournamentMap, LucideStar],

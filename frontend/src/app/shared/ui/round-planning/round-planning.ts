@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { StandingsGroup } from '../group-standings/group-standings';
 import { Match } from '../../../core/models/match.model';
@@ -11,6 +11,7 @@ interface PlanningGroup {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-round-planning',
   standalone: true,
   imports: [DatePipe],

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatchService } from '../../../core/services/match.service';
 import { Match } from '../../../core/models/match.model';
@@ -11,6 +11,7 @@ import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { Team } from '../../../core/models/team.model';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-match-detail-page',
   standalone: true,
   imports: [RouterLink, DatePipe, StatusBadge, ConfirmModal],

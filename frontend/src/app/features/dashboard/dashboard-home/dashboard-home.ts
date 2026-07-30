@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { DashboardStatsService } from '../../../core/services/dashboard-stats.service';
@@ -8,6 +8,7 @@ import { UNLIMITED_PLAN_LIMIT, planUsagePercent } from '../../../shared/utils/pl
 import { MATCH_STATUS_LABELS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-home-page',
   standalone: true,
   imports: [PageHeader, RouterLink],

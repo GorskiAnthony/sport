@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -23,6 +23,7 @@ const ROLES: { id: Extract<Role, 'ORGANIZER' | 'SPECTATOR'>; label: string }[] =
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-register-page',
   standalone: true,
   imports: [RouterLink, AuthCard, FormInput, PasswordInput, Button],

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Button } from '../../../shared/ui/button/button';
@@ -12,6 +12,7 @@ const MAX_SYNC_ATTEMPTS = 4;
 const SYNC_RETRY_DELAY_MS = 1500;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-checkout-success-page',
   standalone: true,
   imports: [Button],

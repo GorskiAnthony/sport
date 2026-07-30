@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import { Button } from '../../../shared/ui/button/button';
 const TOURNAMENT_COLORS = ['bg-green-600', 'bg-blue-600', 'bg-purple-600'];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-standings-page',
   standalone: true,
   imports: [RouterLink, StatusBadge, Button],

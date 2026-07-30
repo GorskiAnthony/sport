@@ -1,8 +1,9 @@
-import { Component, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, model } from '@angular/core';
 
 export type BillingPeriod = 'monthly' | 'annual';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-billing-toggle',
   standalone: true,
   templateUrl: './billing-toggle.html',

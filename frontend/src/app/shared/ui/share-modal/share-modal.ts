@@ -1,10 +1,11 @@
-import { Component, OnChanges, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, OnChanges, output, signal } from '@angular/core';
 import { toDataURL } from 'qrcode';
 import { LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2 } from '@lucide/angular';
 import { tournamentShareSlug } from '../../utils/slug';
 import { formatDateFr } from '../../utils/date';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-share-modal',
   standalone: true,
   imports: [LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2],

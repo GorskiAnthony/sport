@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminUserDetail } from '../../../core/models/admin.model';
@@ -8,6 +8,7 @@ import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-client-detail-page',
   standalone: true,
   imports: [RouterLink, PageHeader, StatusBadge, DatePipe],
