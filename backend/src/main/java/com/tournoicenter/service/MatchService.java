@@ -3,9 +3,11 @@ package com.tournoicenter.service;
 import com.tournoicenter.domain.Match;
 import com.tournoicenter.domain.MatchStatus;
 import com.tournoicenter.domain.NotificationType;
+import com.tournoicenter.domain.Role;
 import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.TournamentFormat;
+import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -15,6 +17,7 @@ import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.MatchRepository;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
+import com.tournoicenter.repository.UserRepository;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
@@ -29,16 +32,18 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final TournamentLiveService tournamentLiveService;
     private final CacheManager cacheManager;
 
     public MatchService(MatchRepository matchRepository, TournamentRepository tournamentRepository, TeamRepository teamRepository,
-                         NotificationService notificationService, TournamentLiveService tournamentLiveService,
-                         CacheManager cacheManager) {
+                         UserRepository userRepository, NotificationService notificationService,
+                         TournamentLiveService tournamentLiveService, CacheManager cacheManager) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamRepository = teamRepository;
+        this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.tournamentLiveService = tournamentLiveService;
         this.cacheManager = cacheManager;
@@ -68,6 +73,30 @@ public class MatchService {
         return MatchResponse.from(getOrThrow(id));
     }
 
+    @Transactional(readOnly = true)
+    public List<MatchResponse> findAssignedToReferee(Long refereeId) {
+        return matchRepository.findByRefereeIdOrderByDateAsc(refereeId).stream().map(MatchResponse::from).toList();
+    }
+
+    @Transactional
+    public MatchResponse assignReferee(Long id, Long requesterId, Long refereeId) {
+        Match match = getOrThrow(id);
+        requireOwner(match, requesterId);
+
+        if (refereeId == null) {
+            match.setReferee(null);
+            return MatchResponse.from(match);
+        }
+
+        User referee = userRepository.findById(refereeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Arbitre introuvable."));
+        if (referee.getRole() != Role.REFEREE) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Cet utilisateur n'a pas le rôle arbitre.");
+        }
+        match.setReferee(referee);
+        return MatchResponse.from(match);
+    }
+
     @Transactional
     public MatchResponse create(Long requesterId, MatchRequest request) {
         Tournament tournament = tournamentRepository.findById(request.tournamentId())
@@ -92,7 +121,7 @@ public class MatchService {
     @Transactional
     public MatchResponse updateScore(Long id, Long requesterId, MatchScoreRequest request) {
         Match match = getOrThrow(id);
-        requireOwner(match, requesterId);
+        requireCanManage(match, requesterId);
 
         boolean wasFinished = match.getStatus() == MatchStatus.FINISHED;
         match.setHomeScore(request.homeScore());
@@ -160,7 +189,7 @@ public class MatchService {
     @Transactional
     public MatchResponse start(Long id, Long requesterId) {
         Match match = getOrThrow(id);
-        requireOwner(match, requesterId);
+        requireCanManage(match, requesterId);
 
         if (match.getStatus() != MatchStatus.SCHEDULED) {
             return MatchResponse.from(match);
@@ -213,6 +242,17 @@ public class MatchService {
 
     private void requireOwner(Match match, Long requesterId) {
         if (!match.getTournament().getOrganizer().getId().equals(requesterId)) {
+            throw new ForbiddenException();
+        }
+    }
+
+    /** Démarrage et saisie du score : ouverts à l'organisateur ET à l'arbitre assigné au match
+     *  (Match.referee, voir assignReferee). Les actions plus administratives (forfait,
+     *  suppression, assignation d'arbitre) restent réservées à l'organisateur (requireOwner). */
+    private void requireCanManage(Match match, Long requesterId) {
+        boolean isOrganizer = match.getTournament().getOrganizer().getId().equals(requesterId);
+        boolean isAssignedReferee = match.getReferee() != null && match.getReferee().getId().equals(requesterId);
+        if (!isOrganizer && !isAssignedReferee) {
             throw new ForbiddenException();
         }
     }

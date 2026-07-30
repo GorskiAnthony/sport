@@ -13,6 +13,8 @@ import java.util.List;
 public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByTournamentIdOrderByDateAsc(Long tournamentId);
 
+    List<Match> findByRefereeIdOrderByDateAsc(Long refereeId);
+
     long countByTournamentId(Long tournamentId);
 
     @Query("SELECT m.tournament.id AS tournamentId, COUNT(m) AS count FROM Match m WHERE m.tournament.id IN :tournamentIds GROUP BY m.tournament.id")

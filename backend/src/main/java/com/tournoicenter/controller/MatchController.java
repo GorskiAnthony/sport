@@ -2,6 +2,7 @@ package com.tournoicenter.controller;
 
 import com.tournoicenter.dto.ApiResponse;
 import com.tournoicenter.dto.match.MatchForfeitRequest;
+import com.tournoicenter.dto.match.MatchRefereeRequest;
 import com.tournoicenter.dto.match.MatchRequest;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.match.MatchScoreRequest;
@@ -27,6 +28,12 @@ public class MatchController {
     @GetMapping("/tournament/{tournamentId}")
     public ApiResponse<List<MatchResponse>> findByTournament(@PathVariable Long tournamentId) {
         return ApiResponse.of(matchService.findByTournament(tournamentId));
+    }
+
+    /** Matchs assignés à l'arbitre connecté, toutes compétitions confondues. */
+    @GetMapping("/mine")
+    public ApiResponse<List<MatchResponse>> findAssignedToMe(@AuthenticationPrincipal JwtPrincipal principal) {
+        return ApiResponse.of(matchService.findAssignedToReferee(principal.userId()));
     }
 
     @GetMapping("/{id}")
@@ -57,6 +64,14 @@ public class MatchController {
     @PatchMapping("/{id}/start")
     public ApiResponse<MatchResponse> start(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
         return ApiResponse.of(matchService.start(id, principal.userId()));
+    }
+
+    /** Organisateur uniquement — voir MatchService.assignReferee. */
+    @PatchMapping("/{id}/referee")
+    public ApiResponse<MatchResponse> assignReferee(@AuthenticationPrincipal JwtPrincipal principal,
+                                                      @PathVariable Long id,
+                                                      @RequestBody MatchRefereeRequest request) {
+        return ApiResponse.of(matchService.assignReferee(id, principal.userId(), request.refereeId()));
     }
 
     @DeleteMapping("/{id}")

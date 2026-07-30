@@ -82,6 +82,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed/enriched").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
+                        // Matchs assignés à l'arbitre connecté — doit précéder le permitAll
+                        // ci-dessous, sinon un appel anonyme atteindrait le contrôleur avec un
+                        // principal null.
+                        .requestMatchers(HttpMethod.GET, "/api/matches/mine").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

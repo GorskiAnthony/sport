@@ -9,6 +9,7 @@ import java.time.Instant;
 public record MatchResponse(
         Long id,
         Long tournamentId,
+        String tournamentName,
         TeamResponse homeTeam,
         TeamResponse awayTeam,
         Integer homeScore,
@@ -16,6 +17,7 @@ public record MatchResponse(
         Integer homeFairPlay,
         Integer awayFairPlay,
         Long forfeitedTeamId,
+        Long refereeId,
         String phase,
         Instant date,
         String venue,
@@ -27,10 +29,11 @@ public record MatchResponse(
 ) {
     public static MatchResponse from(Match match) {
         return new MatchResponse(
-                match.getId(), match.getTournament().getId(),
+                match.getId(), match.getTournament().getId(), match.getTournament().getName(),
                 TeamResponse.from(match.getHomeTeam()), TeamResponse.from(match.getAwayTeam()),
                 match.getHomeScore(), match.getAwayScore(), match.getHomeFairPlay(), match.getAwayFairPlay(),
                 match.getForfeitedTeam() != null ? match.getForfeitedTeam().getId() : null,
+                match.getReferee() != null ? match.getReferee().getId() : null,
                 match.getPhase(), match.getDate(),
                 match.getVenue(), match.getStatus(), match.getEvents(), match.getStats(),
                 match.getCreatedAt(), match.getUpdatedAt()
