@@ -42,3 +42,13 @@
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
+
+/* Pendant un scan QR (voir QrScannerService.startScan), le plugin dessine la caméra native
+   *derrière* la WebView — sans ce fond transparent sur toute l'app, l'UI habituelle (fond
+   #0D1117 opaque) la masquerait entièrement. ion-app doit suivre body, sinon son propre fond
+   reste opaque même une fois body rendu transparent. */
+body.barcode-scanning-active,
+body.barcode-scanning-active ion-app {
+  --background: transparent;
+  background: transparent;
+}

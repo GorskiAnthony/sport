@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -10,10 +10,13 @@ import {
   IonLabel,
   IonInput,
   IonButton,
+  IonIcon,
   IonText,
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { qrCodeOutline } from 'ionicons/icons';
 import { AuthService } from '../../../core/auth/auth.service';
 import { defaultRouteForRole } from '../../../shared/utils/default-route-for-role';
 
@@ -35,8 +38,10 @@ interface FormErrors {
     IonLabel,
     IonInput,
     IonButton,
+    IonIcon,
     IonText,
     IonSpinner,
+    RouterLink,
   ],
 })
 export class LoginPage {
@@ -48,6 +53,10 @@ export class LoginPage {
   readonly password = signal('');
   readonly errors = signal<FormErrors>({});
   readonly loading = signal(false);
+
+  constructor() {
+    addIcons({ qrCodeOutline });
+  }
 
   onEmailInput(value: string | null | undefined): void {
     this.email.set(value ?? '');

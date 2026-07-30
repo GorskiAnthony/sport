@@ -1,3 +1,7 @@
+// Le scanner in-app (voir QrScannerService) s'appuie sur la Barcode Detection API côté web —
+// pas encore supportée par tous les navigateurs, ce polyfill couvre le reste (utile pour tester
+// via `ionic serve`, avant même de builder pour iOS/Android où le plugin passe par ML Kit natif).
+import 'barcode-detector/polyfill';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideAppInitializer, inject } from '@angular/core';

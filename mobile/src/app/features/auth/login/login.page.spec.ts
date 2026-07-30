@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginPage } from './login.page';
@@ -8,7 +8,7 @@ import { AuthResponse } from '../../../core/models/user.model';
 
 describe('LoginPage', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const authResponse: AuthResponse = {
     token: 'jwt-token',
@@ -17,15 +17,20 @@ describe('LoginPage', () => {
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['login']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [LoginPage],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy },
+        // routerLink (bouton "Scanner le QR code d'un tournoi") a besoin d'un Router qui sait
+        // résoudre une route réelle pour calculer son href — un vrai Router avec une config
+        // vide plutôt qu'un spy, qu'on espionne ensuite pour les assertions sur navigate().
+        provideRouter([]),
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
   });
 
   function createPage(): LoginPage {
@@ -68,7 +73,7 @@ describe('LoginPage', () => {
     page.submit();
 
     expect(authServiceSpy.login).toHaveBeenCalledWith({ email: authResponse.user.email, password: 'secret' });
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments']);
+    expect(router.navigate).toHaveBeenCalledWith(['/tournaments']);
     expect(page.loading()).toBeFalse();
   });
 

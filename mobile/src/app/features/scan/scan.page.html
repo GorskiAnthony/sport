@@ -1,0 +1,79 @@
+<ion-header [translucent]="true" [class.transparent]="state() === 'scanning'">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Scanner un QR code</ion-title>
+    @if (state() === 'scanning' && torchAvailable()) {
+      <ion-buttons slot="end">
+        <ion-button (click)="toggleTorch()" aria-label="Activer/désactiver la lampe torche">
+          <ion-icon slot="icon-only" [name]="torchOn() ? 'flash-off-outline' : 'flash-outline'"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" [class.transparent]="state() === 'scanning'">
+  @switch (state()) {
+    @case ('checking') {
+      <div class="state-container"></div>
+    }
+
+    @case ('explain') {
+      <div class="state-container">
+        <ion-icon name="camera-outline" class="state-icon"></ion-icon>
+        <h2>Accès à l'appareil photo</h2>
+        <p>
+          Pour scanner le QR code d'un tournoi, l'application a besoin d'accéder à votre appareil
+          photo. Il ne sert qu'à lire le code — aucune photo n'est prise ni conservée.
+        </p>
+        <ion-button expand="block" (click)="requestAccess()">Autoriser l'accès</ion-button>
+      </div>
+    }
+
+    @case ('scanning') {
+      <div class="scan-overlay">
+        <div class="scan-frame" aria-hidden="true">
+          <span class="corner top-left"></span>
+          <span class="corner top-right"></span>
+          <span class="corner bottom-left"></span>
+          <span class="corner bottom-right"></span>
+        </div>
+        <p class="scan-hint">Placez le QR code du tournoi dans le cadre</p>
+      </div>
+    }
+
+    @case ('denied') {
+      <div class="state-container">
+        <ion-icon name="close-outline" class="state-icon danger"></ion-icon>
+        <h2>Accès refusé</h2>
+        <p>
+          Sans accès à l'appareil photo, impossible de scanner un QR code. Autorisez l'accès dans
+          les réglages de votre téléphone pour continuer.
+        </p>
+        <ion-button expand="block" (click)="openSettings()">
+          <ion-icon slot="start" name="settings-outline"></ion-icon>
+          Ouvrir les réglages
+        </ion-button>
+      </div>
+    }
+
+    @case ('not-found') {
+      <div class="state-container">
+        <ion-icon name="close-outline" class="state-icon danger"></ion-icon>
+        <h2>QR code non reconnu</h2>
+        <p>Ce code ne correspond pas à un tournoi. Vérifiez que c'est bien le code arbitre affiché par l'organisateur.</p>
+        <ion-button expand="block" (click)="retry()">Réessayer</ion-button>
+      </div>
+    }
+
+    @case ('unsupported') {
+      <div class="state-container">
+        <ion-icon name="camera-outline" class="state-icon"></ion-icon>
+        <h2>Scanner indisponible</h2>
+        <p>Cet appareil ne dispose pas d'un appareil photo utilisable pour scanner un QR code.</p>
+      </div>
+    }
+  }
+</ion-content>

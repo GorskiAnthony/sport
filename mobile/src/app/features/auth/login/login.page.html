@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p class="subtitle">Organisateur ou arbitre, connectez-vous pour accéder à vos tournois ou aux matchs qui vous sont confiés.</p>
+  <p class="subtitle">Organisateur, connectez-vous pour gérer vos tournois.</p>
 
   <form (submit)="$event.preventDefault(); submit()">
     <ion-item fill="outline" [class.ion-invalid]="!!errors().email">
@@ -43,4 +43,12 @@
       }
     </ion-button>
   </form>
+
+  <div class="referee-cta">
+    <p>Vous êtes arbitre ?</p>
+    <ion-button expand="block" fill="outline" routerLink="/scan">
+      <ion-icon slot="start" name="qr-code-outline"></ion-icon>
+      Scanner le QR code d'un tournoi
+    </ion-button>
+  </div>
 </ion-content>

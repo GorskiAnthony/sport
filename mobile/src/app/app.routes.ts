@@ -6,6 +6,13 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
   },
+  // Scanner intégré, pour rejoindre un tournoi supplémentaire une fois l'app déjà installée —
+  // le tout premier scan d'un arbitre passe toujours par l'appareil photo du système
+  // (voir join/:token) et n'a donc jamais besoin de cette page ni de la permission caméra.
+  {
+    path: 'scan',
+    loadComponent: () => import('./features/scan/scan.page').then((m) => m.ScanPage),
+  },
   // Atterrissage du QR code d'un tournoi — pas de authGuard, le token dans l'URL est le
   // justificatif (voir TournamentSessionService).
   {
