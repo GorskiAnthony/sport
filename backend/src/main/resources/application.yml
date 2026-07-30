@@ -63,6 +63,9 @@ management:
 app:
   cors:
     allowed-origin: ${CLIENT_URL:http://localhost:4200}
+    # CORS/WebSocket allowlist only (never used to build links) — covers the Ionic dev server
+    # and the Capacitor iOS/Android WebView origins so the mobile app can reach the API in dev.
+    additional-origins: ${CORS_ADDITIONAL_ORIGINS:http://localhost:8100,capacitor://localhost,http://localhost}
   jwt:
     # No fallback default on purpose — a missing JWT_SECRET must fail the app at startup, not
     # silently boot with a secret that's public in this repo's history.
