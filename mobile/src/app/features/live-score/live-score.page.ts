@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ViewWillEnter, ViewWillLeave } from '@ionic/angular/common';
 import {
   IonHeader,
   IonToolbar,
@@ -54,19 +55,26 @@ const STATUS_COLORS: Record<MatchStatus, string> = {
     IonText,
   ],
 })
-export class LiveScorePage implements OnInit, OnDestroy {
+export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   private readonly route = inject(ActivatedRoute);
   private readonly matchService = inject(MatchService);
   private readonly liveUpdateService = inject(LiveUpdateService);
 
-  private readonly tournamentId = Number(this.route.snapshot.paramMap.get('id'));
+  // Pas readonly / pas résolu au constructeur : Angular réutilise l'instance de ce composant en
+  // navigant d'un tournoi vers un autre (même route paramétrée /tournaments/:id/live), donc
+  // route.snapshot ne doit être relu qu'au moment de l'entrée réelle sur l'écran.
+  private tournamentId!: number;
   private unsubscribeLive: (() => void) | null = null;
 
   readonly matches = signal<Match[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
 
-  ngOnInit(): void {
+  // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
+  // détruire/recréer (ngOnInit/ngOnDestroy ne se redéclenchent pas de façon fiable) — on
+  // s'abonne/désabonne au WebSocket en symétrie avec l'entrée/sortie réelle de l'écran.
+  ionViewWillEnter(): void {
+    this.tournamentId = Number(this.route.snapshot.paramMap.get('id'));
     this.load();
     // Le backend pousse un événement "UPDATED" à chaque changement de score (voir
     // TournamentLiveService côté backend) — on recharge simplement la liste des matchs plutôt
@@ -74,8 +82,9 @@ export class LiveScorePage implements OnInit, OnDestroy {
     this.unsubscribeLive = this.liveUpdateService.subscribeToTournament(this.tournamentId, () => this.load());
   }
 
-  ngOnDestroy(): void {
+  ionViewWillLeave(): void {
     this.unsubscribeLive?.();
+    this.unsubscribeLive = null;
   }
 
   statusLabel(status: MatchStatus): string {

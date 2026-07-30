@@ -15,12 +15,16 @@ describe('LiveScorePage', () => {
     {
       id: 1,
       tournamentId: 7,
+      tournamentName: 'Coupe des vacances',
       homeTeam: { id: 1, name: 'Les Aigles' },
       awayTeam: { id: 2, name: 'Les Lions' },
       homeScore: 1,
       awayScore: 0,
       forfeitedTeamId: null,
+      refereeId: null,
       phase: 'Poule A',
+      date: '2026-08-01T10:00:00Z',
+      venue: 'Terrain 1',
       status: 'ONGOING',
     },
   ];
@@ -47,7 +51,9 @@ describe('LiveScorePage', () => {
   function createPage(): LiveScorePage {
     const fixture = TestBed.createComponent(LiveScorePage);
     fixture.detectChanges();
-    return fixture.componentInstance;
+    const page = fixture.componentInstance;
+    page.ionViewWillEnter();
+    return page;
   }
 
   it('loads the matches for the tournament id from the route', () => {
@@ -90,14 +96,23 @@ describe('LiveScorePage', () => {
     expect(matchServiceSpy.getByTournament).toHaveBeenCalledTimes(1);
   });
 
-  it('unsubscribes from live updates on destroy', () => {
+  it('unsubscribes from live updates when the view is left', () => {
     matchServiceSpy.getByTournament.and.returnValue(of(matches));
-    const fixture = TestBed.createComponent(LiveScorePage);
-    fixture.detectChanges();
+    const page = createPage();
 
-    fixture.destroy();
+    page.ionViewWillLeave();
 
     expect(unsubscribeSpy).toHaveBeenCalled();
+  });
+
+  it('resubscribes on every ionViewWillEnter, not just the first — Ionic caches the page instance on back navigation instead of recreating it', () => {
+    matchServiceSpy.getByTournament.and.returnValue(of(matches));
+    const page = createPage();
+
+    liveUpdateServiceSpy.subscribeToTournament.calls.reset();
+    page.ionViewWillEnter();
+
+    expect(liveUpdateServiceSpy.subscribeToTournament).toHaveBeenCalledTimes(1);
   });
 
   it('maps status to the design-system label and color', () => {

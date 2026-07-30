@@ -18,6 +18,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/live-score/live-score.page').then((m) => m.LiveScorePage),
   },
   {
+    path: 'referee/matches',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/referee/referee-matches.page').then((m) => m.RefereeMatchesPage),
+  },
+  {
+    path: 'referee/matches/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/referee/match-detail.page').then((m) => m.MatchDetailPage),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

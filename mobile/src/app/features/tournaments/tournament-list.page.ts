@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { ViewWillEnter } from '@ionic/angular/common';
 import {
   IonHeader,
   IonToolbar,
@@ -60,7 +61,7 @@ const STATUS_COLORS: Record<TournamentStatus, string> = {
     IonRefresherContent,
   ],
 })
-export class TournamentListPage implements OnInit {
+export class TournamentListPage implements ViewWillEnter {
   private readonly authService = inject(AuthService);
   private readonly tournamentService = inject(TournamentService);
   private readonly router = inject(Router);
@@ -73,7 +74,10 @@ export class TournamentListPage implements OnInit {
     addIcons({ logOutOutline });
   }
 
-  ngOnInit(): void {
+  // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
+  // détruire/recréer : ngOnInit ne se redéclenche pas en revenant sur cet écran (ex. depuis le
+  // score en direct), d'où le hook de cycle de vie Ionic ici.
+  ionViewWillEnter(): void {
     this.load();
   }
 

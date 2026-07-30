@@ -1,5 +1,7 @@
-// Miroir de frontend/src/app/core/models/user.model.ts — garder synchronisé avec l'API.
-export type Role = 'ORGANIZER' | 'SPECTATOR' | 'ADMIN';
+// Basé sur frontend/src/app/core/models/user.model.ts, avec REFEREE en plus (backend
+// domain/Role.java) — le web n'a pas encore d'écran arbitre, garder les deux en tête si le rôle
+// évolue côté API.
+export type Role = 'ORGANIZER' | 'SPECTATOR' | 'REFEREE' | 'ADMIN';
 export type Plan = 'FREE' | 'CLASSIC' | 'PRO';
 
 export interface User {

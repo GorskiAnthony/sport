@@ -44,10 +44,12 @@ describe('TournamentListPage', () => {
   function createPage(): TournamentListPage {
     const fixture = TestBed.createComponent(TournamentListPage);
     fixture.detectChanges();
-    return fixture.componentInstance;
+    const page = fixture.componentInstance;
+    page.ionViewWillEnter();
+    return page;
   }
 
-  it('loads the organizer tournaments on init', () => {
+  it('loads the organizer tournaments when the view is entered', () => {
     tournamentServiceSpy.getMine.and.returnValue(of(tournaments));
 
     const page = createPage();
@@ -73,6 +75,16 @@ describe('TournamentListPage', () => {
 
     tournamentServiceSpy.getMine.calls.reset();
     page.load();
+
+    expect(tournamentServiceSpy.getMine).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads on every ionViewWillEnter, not just the first — Ionic caches the page instance on back navigation instead of recreating it', () => {
+    tournamentServiceSpy.getMine.and.returnValue(of(tournaments));
+    const page = createPage();
+
+    tournamentServiceSpy.getMine.calls.reset();
+    page.ionViewWillEnter();
 
     expect(tournamentServiceSpy.getMine).toHaveBeenCalledTimes(1);
   });

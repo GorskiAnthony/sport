@@ -59,7 +59,7 @@ describe('LoginPage', () => {
     expect(page.errors().email).toContain('invalide');
   });
 
-  it('logs in and navigates to /tournaments on success', () => {
+  it('logs in an organizer and navigates to /tournaments', () => {
     authServiceSpy.login.and.returnValue(of(authResponse));
     const page = createPage();
     page.onEmailInput(authResponse.user.email);
@@ -70,6 +70,21 @@ describe('LoginPage', () => {
     expect(authServiceSpy.login).toHaveBeenCalledWith({ email: authResponse.user.email, password: 'secret' });
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments']);
     expect(page.loading()).toBeFalse();
+  });
+
+  it('logs in a referee and navigates to /referee/matches', () => {
+    const refereeResponse: AuthResponse = {
+      token: 'jwt-token',
+      user: { id: 2, name: 'Bob', email: 'bob@example.com', role: 'REFEREE', plan: 'FREE' },
+    };
+    authServiceSpy.login.and.returnValue(of(refereeResponse));
+    const page = createPage();
+    page.onEmailInput(refereeResponse.user.email);
+    page.onPasswordInput('secret');
+
+    page.submit();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/referee/matches']);
   });
 
   it('surfaces a field error when the account is unknown', () => {

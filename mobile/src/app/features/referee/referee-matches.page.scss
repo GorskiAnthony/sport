@@ -1,0 +1,20 @@
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+// Un match en cours attend une saisie de score — l'arbitre ne doit pas avoir à lire chaque
+// badge pour le repérer dans la liste.
+.match-live {
+  --border-color: var(--ion-color-primary);
+  --border-width: 0 0 0 4px;
+}
+
+.done {
+  color: var(--ion-color-medium);
+}

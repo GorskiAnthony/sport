@@ -1,0 +1,117 @@
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.match-header {
+  text-align: center;
+  margin-bottom: 32px;
+
+  .meta {
+    color: var(--ion-color-medium);
+    margin: 2px 0;
+  }
+
+  ion-badge {
+    margin-top: 8px;
+  }
+}
+
+.teams-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 40px;
+
+  .vs {
+    color: var(--ion-color-medium);
+    font-weight: 400;
+    font-size: 1rem;
+  }
+}
+
+.primary-action {
+  margin-top: 24px;
+}
+
+.score-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.team-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  .team-name {
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+// Boutons volontairement plus grands que la taille par défaut d'Ionic : utilisés bord de
+// terrain, potentiellement d'une seule main, pas le temps de viser précisément.
+.stepper-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--ion-color-medium);
+  background: transparent;
+  color: var(--ion-text-color);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    background: var(--ion-color-step-100, rgba(255, 255, 255, 0.08));
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.score-value {
+  min-width: 48px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.final-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+
+  .team-name {
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .score-value {
+    font-size: 1.75rem;
+  }
+}

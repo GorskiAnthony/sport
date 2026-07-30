@@ -15,6 +15,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { AuthService } from '../../../core/auth/auth.service';
+import { defaultRouteForRole } from '../../../shared/utils/default-route-for-role';
 
 interface FormErrors {
   email?: string;
@@ -66,9 +67,9 @@ export class LoginPage {
     this.errors.set({});
     this.loading.set(true);
     this.authService.login({ email: this.email(), password: this.password() }).subscribe({
-      next: () => {
+      next: (response) => {
         this.loading.set(false);
-        this.router.navigate(['/tournaments']);
+        this.router.navigate([defaultRouteForRole(response.user.role)]);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

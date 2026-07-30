@@ -1,11 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Connexion organisateur</ion-title>
+    <ion-title>Connexion</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p class="subtitle">Suivez vos tournois et le score en direct, où que vous soyez.</p>
+  <p class="subtitle">Organisateur ou arbitre, connectez-vous pour accéder à vos tournois ou aux matchs qui vous sont confiés.</p>
 
   <form (submit)="$event.preventDefault(); submit()">
     <ion-item fill="outline" [class.ion-invalid]="!!errors().email">
