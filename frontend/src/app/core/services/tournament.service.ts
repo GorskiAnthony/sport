@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { RecentTournament, TournamentDetail, TournamentRequest, TournamentSummary } from '../models/tournament.model';
+import { RecentTournament, RefereeJoinInfo, TournamentDetail, TournamentRequest, TournamentSummary } from '../models/tournament.model';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentService {
@@ -62,6 +62,18 @@ export class TournamentService {
   getRecentlyViewed(): Observable<RecentTournament[]> {
     return this.http
       .get<ApiResponse<RecentTournament[]>>(`${this.baseUrl}/recent`)
+      .pipe(map((res) => res.data));
+  }
+
+  getRefereeJoinInfo(id: number): Observable<RefereeJoinInfo> {
+    return this.http
+      .get<ApiResponse<RefereeJoinInfo>>(`${this.baseUrl}/${id}/referee-token`)
+      .pipe(map((res) => res.data));
+  }
+
+  regenerateRefereeJoinToken(id: number): Observable<RefereeJoinInfo> {
+    return this.http
+      .post<ApiResponse<RefereeJoinInfo>>(`${this.baseUrl}/${id}/referee-token/regenerate`, {})
       .pipe(map((res) => res.data));
   }
 }

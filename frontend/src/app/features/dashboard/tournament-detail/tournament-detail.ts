@@ -19,6 +19,7 @@ import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LucideTrophy } from '@lucide/angular';
 import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
 import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
+import { RefereeCodeModal } from '../../../shared/ui/referee-code-modal/referee-code-modal';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
@@ -31,7 +32,7 @@ function teamPairKey(a: number, b: number): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, RoundPlanning, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, RoundPlanning, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal, RefereeCodeModal],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
@@ -52,6 +53,7 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly advancing = signal(false);
 
   readonly shareOpen = signal(false);
+  readonly refereeCodeOpen = signal(false);
 
   readonly standings = computed<Standing[]>(() => {
     const t = this.tournament();

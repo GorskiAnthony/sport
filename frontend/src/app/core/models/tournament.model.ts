@@ -42,6 +42,11 @@ export interface RecentTournament {
   lastViewedAt: string;
 }
 
+export interface RefereeJoinInfo {
+  token: string;
+  joinUrl: string;
+}
+
 export interface TournamentRequest {
   name: string;
   sport: string;

@@ -11,6 +11,7 @@
       <a routerLink="/dashboard/tournaments" class="text-slate-400 hover:text-white text-sm transition-colors">← Tournois</a>
       <div class="flex items-center gap-4">
         <button type="button" (click)="shareOpen.set(true)" class="text-slate-400 hover:text-green-400 text-sm transition-colors">Partager (QR code)</button>
+        <button type="button" (click)="refereeCodeOpen.set(true)" class="text-slate-400 hover:text-green-400 text-sm transition-colors">Code arbitre</button>
         <a [routerLink]="['/dashboard/tournaments', tournament()!.id, 'edit']" class="text-slate-400 hover:text-white text-sm transition-colors">Modifier le tournoi</a>
       </div>
     </div>
@@ -26,6 +27,12 @@
       [endDate]="tournament()!.endDate"
       [teamsCount]="tournament()!.teams.length"
       (closed)="shareOpen.set(false)"
+    />
+
+    <app-referee-code-modal
+      [open]="refereeCodeOpen()"
+      [tournamentId]="tournament()!.id"
+      (closed)="refereeCodeOpen.set(false)"
     />
 
     <div class="bg-[#161B22] border border-white/10 rounded-xl px-5 py-4 flex items-center gap-4 flex-wrap">
