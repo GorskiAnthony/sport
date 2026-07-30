@@ -14,3 +14,10 @@ export interface TournamentSummary {
   maxTeams: number;
   teamsCount: number;
 }
+
+/** token n'est renvoyé qu'à l'organisateur du tournoi — voir TournamentController côté
+ *  backend, GET/POST .../referee-token(/regenerate). */
+export interface RefereeJoinInfo {
+  token: string;
+  joinUrl: string;
+}

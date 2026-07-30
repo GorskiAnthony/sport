@@ -36,6 +36,9 @@
             <p>{{ tournament.sport }} · {{ tournament.category }}</p>
             <p class="font-mono">{{ tournament.teamsCount }}/{{ tournament.maxTeams }} équipes</p>
           </ion-label>
+          <ion-button fill="clear" slot="end" (click)="openRefereeCode($event, tournament.id)" aria-label="Code arbitre">
+            <ion-icon slot="icon-only" name="qr-code-outline"></ion-icon>
+          </ion-button>
           <ion-badge slot="end" [color]="statusColor(tournament.status)">
             {{ statusLabel(tournament.status) }}
           </ion-badge>

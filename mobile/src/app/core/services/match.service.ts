@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { Match, MatchScoreRequest } from '../models/match.model';
+import { Match, MatchScoreRequest, TeamSide } from '../models/match.model';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
@@ -21,13 +21,16 @@ export class MatchService {
     return this.http.get<ApiResponse<Match>>(`${this.baseUrl}/${id}`).pipe(map((res) => res.data));
   }
 
-  /** Matchs assignés à l'arbitre connecté (voir MatchController.findAssignedToMe côté backend). */
-  getMine(): Observable<Match[]> {
-    return this.http.get<ApiResponse<Match[]>>(`${this.baseUrl}/mine`).pipe(map((res) => res.data));
-  }
-
   start(id: number): Observable<Match> {
     return this.http.patch<ApiResponse<Match>>(`${this.baseUrl}/${id}/start`, {}).pipe(map((res) => res.data));
+  }
+
+  /** Un but à la fois, envoyé immédiatement (score en direct) — voir MatchService.recordGoal
+   *  côté backend. delta est normalement ±1 (un tap = un but, ou la correction d'un faux clic). */
+  recordGoal(id: number, team: TeamSide, delta: number): Observable<Match> {
+    return this.http
+      .patch<ApiResponse<Match>>(`${this.baseUrl}/${id}/goal`, { team, delta })
+      .pipe(map((res) => res.data));
   }
 
   /** Termine le match : le backend fixe toujours le statut à FINISHED en retour, il n'y a pas

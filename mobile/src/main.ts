@@ -8,6 +8,7 @@ import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { AuthService } from './app/core/auth/auth.service';
+import { TournamentSessionService } from './app/core/auth/tournament-session.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -18,5 +19,9 @@ bootstrapApplication(AppComponent, {
     // Recharge le token/user stockés (Capacitor Preferences, async) avant tout rendu, pour que
     // les guards et l'intercepteur voient un état cohérent dès le premier écran.
     provideAppInitializer(() => inject(AuthService).restoreSession()),
+    // Même raison, pour une session de tournoi obtenue via QR code (voir
+    // TournamentSessionService) — sans ça, un arbitre qui relance l'app est renvoyé sur
+    // /login et doit rescanner le QR code physique.
+    provideAppInitializer(() => inject(TournamentSessionService).restoreSession()),
   ],
 });

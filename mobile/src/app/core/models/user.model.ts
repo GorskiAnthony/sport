@@ -1,7 +1,7 @@
-// Basé sur frontend/src/app/core/models/user.model.ts, avec REFEREE en plus (backend
-// domain/Role.java) — le web n'a pas encore d'écran arbitre, garder les deux en tête si le rôle
-// évolue côté API.
-export type Role = 'ORGANIZER' | 'SPECTATOR' | 'REFEREE' | 'ADMIN';
+// Miroir de frontend/src/app/core/models/user.model.ts — garder synchronisé avec l'API. Les
+// arbitres n'ont plus de compte (voir core/auth/tournament-session.service.ts, accès par QR
+// code de tournoi plutôt que par rôle utilisateur).
+export type Role = 'ORGANIZER' | 'SPECTATOR' | 'ADMIN';
 export type Plan = 'FREE' | 'CLASSIC' | 'PRO';
 
 export interface User {

@@ -6,6 +6,12 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
   },
+  // Atterrissage du QR code d'un tournoi — pas de authGuard, le token dans l'URL est le
+  // justificatif (voir TournamentSessionService).
+  {
+    path: 'join/:token',
+    loadComponent: () => import('./features/join/join.page').then((m) => m.JoinPage),
+  },
   {
     path: 'tournaments',
     canActivate: [authGuard],
@@ -18,13 +24,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/live-score/live-score.page').then((m) => m.LiveScorePage),
   },
   {
-    path: 'referee/matches',
+    path: 'tournaments/:id/referee-code',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/referee/referee-matches.page').then((m) => m.RefereeMatchesPage),
+    loadComponent: () => import('./features/tournaments/referee-code.page').then((m) => m.RefereeCodePage),
   },
-  // Route partagée : l'organisateur (depuis /tournaments/:id/live) a les mêmes droits que
-  // l'arbitre assigné sur le démarrage/score d'un match (voir MatchService.requireCanManage
-  // côté backend) — pas de préfixe /referee ici, ce n'est plus un écran arbitre-only.
+  // Route partagée entre l'organisateur (depuis /tournaments/:id/live) et une session de
+  // tournoi obtenue par QR code (depuis /join/:token) — les deux ont les mêmes droits sur un
+  // match de ce tournoi côté backend (voir MatchService.requireCanManage), donc pas de
+  // préfixe dans le chemin.
   {
     path: 'matches/:id',
     canActivate: [authGuard],

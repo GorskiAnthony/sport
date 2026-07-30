@@ -102,6 +102,17 @@ describe('TournamentListPage', () => {
     expect(page.tournaments()).toEqual(tournaments);
   });
 
+  it('opens the referee code screen and stops the row click from also firing', () => {
+    tournamentServiceSpy.getMine.and.returnValue(of([]));
+    const page = createPage();
+    const event = jasmine.createSpyObj('Event', ['stopPropagation']);
+
+    page.openRefereeCode(event, 42);
+
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'referee-code']);
+  });
+
   it('logs out and navigates to /login', () => {
     tournamentServiceSpy.getMine.and.returnValue(of([]));
     const page = createPage();

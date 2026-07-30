@@ -1,0 +1,42 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tournaments"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Code arbitre</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="state-container">
+      <ion-text color="danger">Impossible de charger le code.</ion-text>
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </div>
+  } @else {
+    <p class="subtitle">
+      Un arbitre qui scanne ce QR code accède directement aux matchs de ce tournoi, sans compte
+      ni mot de passe.
+    </p>
+
+    <div class="qr-container">
+      @if (qrDataUrl(); as dataUrl) {
+        <img [src]="dataUrl" alt="QR code d'accès arbitre" width="240" height="240" />
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
+      }
+    </div>
+
+    <ion-button expand="block" fill="outline" [disabled]="regenerating()" (click)="confirmRegenerate()">
+      @if (regenerating()) {
+        <ion-spinner name="dots"></ion-spinner>
+      } @else {
+        Régénérer le code
+      }
+    </ion-button>
+  }
+</ion-content>

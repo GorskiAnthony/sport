@@ -72,21 +72,6 @@ describe('LoginPage', () => {
     expect(page.loading()).toBeFalse();
   });
 
-  it('logs in a referee and navigates to /referee/matches', () => {
-    const refereeResponse: AuthResponse = {
-      token: 'jwt-token',
-      user: { id: 2, name: 'Bob', email: 'bob@example.com', role: 'REFEREE', plan: 'FREE' },
-    };
-    authServiceSpy.login.and.returnValue(of(refereeResponse));
-    const page = createPage();
-    page.onEmailInput(refereeResponse.user.email);
-    page.onPasswordInput('secret');
-
-    page.submit();
-
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/referee/matches']);
-  });
-
   it('surfaces a field error when the account is unknown', () => {
     authServiceSpy.login.and.returnValue(
       throwError(() => new HttpErrorResponse({ error: { code: 'EMAIL_NOT_FOUND' }, status: 404 })),

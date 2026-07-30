@@ -18,7 +18,6 @@ describe('MatchDetailPage', () => {
       homeScore: null,
       awayScore: null,
       forfeitedTeamId: null,
-      refereeId: 9,
       phase: 'Poule A',
       date: '2026-08-01T10:00:00Z',
       venue: 'Terrain 1',
@@ -28,7 +27,7 @@ describe('MatchDetailPage', () => {
   }
 
   beforeEach(async () => {
-    matchServiceSpy = jasmine.createSpyObj('MatchService', ['getById', 'start', 'updateScore']);
+    matchServiceSpy = jasmine.createSpyObj('MatchService', ['getById', 'start', 'recordGoal', 'updateScore']);
 
     await TestBed.configureTestingModule({
       imports: [MatchDetailPage],
@@ -91,29 +90,42 @@ describe('MatchDetailPage', () => {
     expect(page.starting()).toBeFalse();
   });
 
-  it('increments and decrements the score counters, never going below 0', () => {
-    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING' })));
+  it('sends a goal immediately on tap and reconciles with the server response', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 0, awayScore: 0 })));
+    matchServiceSpy.recordGoal.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 1, awayScore: 0 })));
     const page = createPage();
 
     page.incrementHome();
-    page.incrementHome();
-    page.decrementHome();
-    expect(page.homeScore()).toBe(1);
 
-    page.decrementAway();
+    expect(matchServiceSpy.recordGoal).toHaveBeenCalledWith(1, 'HOME', 1);
+    expect(page.homeScore()).toBe(1);
+  });
+
+  it('rolls back the optimistic update when the goal request fails', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 0, awayScore: 0 })));
+    matchServiceSpy.recordGoal.and.returnValue(throwError(() => new Error('down')));
+    const page = createPage();
+
+    page.incrementAway();
+
     expect(page.awayScore()).toBe(0);
   });
 
-  it('submits the final score and reflects the FINISHED status returned by the server', () => {
-    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING' })));
+  it('never decrements a counter below 0, and does not call the server for a no-op decrement', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 0, awayScore: 0 })));
     const page = createPage();
-    page.incrementHome();
-    page.incrementHome();
-    page.incrementAway();
 
-    matchServiceSpy.updateScore.and.returnValue(
-      of(buildMatch({ status: 'FINISHED', homeScore: 2, awayScore: 1 })),
-    );
+    page.decrementHome();
+
+    expect(page.homeScore()).toBe(0);
+    expect(matchServiceSpy.recordGoal).not.toHaveBeenCalled();
+  });
+
+  it('submits the current server-confirmed totals to finish the match', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 2, awayScore: 1 })));
+    const page = createPage();
+
+    matchServiceSpy.updateScore.and.returnValue(of(buildMatch({ status: 'FINISHED', homeScore: 2, awayScore: 1 })));
     page.finish();
 
     expect(matchServiceSpy.updateScore).toHaveBeenCalledWith(1, { homeScore: 2, awayScore: 1 });

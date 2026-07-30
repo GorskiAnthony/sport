@@ -44,4 +44,26 @@ describe('TournamentService', () => {
 
     expect(result).toEqual(tournaments);
   });
+
+  it('fetches the referee join info for a tournament', () => {
+    let result: { token: string; joinUrl: string } | undefined;
+    service.getRefereeJoinInfo(1).subscribe((res) => (result = res));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/tournaments/1/referee-token`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { token: 'abc123', joinUrl: 'http://localhost:8100/join/abc123' } });
+
+    expect(result).toEqual({ token: 'abc123', joinUrl: 'http://localhost:8100/join/abc123' });
+  });
+
+  it('regenerates the referee join token', () => {
+    let result: { token: string; joinUrl: string } | undefined;
+    service.regenerateRefereeJoinToken(1).subscribe((res) => (result = res));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/tournaments/1/referee-token/regenerate`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ data: { token: 'new-token', joinUrl: 'http://localhost:8100/join/new-token' } });
+
+    expect(result?.token).toBe('new-token');
+  });
 });

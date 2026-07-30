@@ -18,7 +18,6 @@ describe('MatchService', () => {
     homeScore: 2,
     awayScore: 1,
     forfeitedTeamId: null,
-    refereeId: 9,
     phase: 'Poule A',
     date: '2026-08-01T10:00:00Z',
     venue: 'Terrain 1',
@@ -57,17 +56,6 @@ describe('MatchService', () => {
     expect(result).toEqual(match);
   });
 
-  it('fetches the matches assigned to the current referee', () => {
-    let result: Match[] | undefined;
-    service.getMine().subscribe((res) => (result = res));
-
-    const req = httpMock.expectOne(`${environment.apiUrl}/matches/mine`);
-    expect(req.request.method).toBe('GET');
-    req.flush({ data: [match] });
-
-    expect(result).toEqual([match]);
-  });
-
   it('starts a match', () => {
     let result: Match | undefined;
     service.start(1).subscribe((res) => (result = res));
@@ -77,6 +65,18 @@ describe('MatchService', () => {
     req.flush({ data: { ...match, status: 'ONGOING' } });
 
     expect(result?.status).toBe('ONGOING');
+  });
+
+  it('sends a single goal immediately', () => {
+    let result: Match | undefined;
+    service.recordGoal(1, 'HOME', 1).subscribe((res) => (result = res));
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/matches/1/goal`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ team: 'HOME', delta: 1 });
+    req.flush({ data: { ...match, homeScore: 3 } });
+
+    expect(result?.homeScore).toBe(3);
   });
 
   it('submits the final score', () => {

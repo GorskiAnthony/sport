@@ -22,7 +22,6 @@ describe('LiveScorePage', () => {
       homeScore: 1,
       awayScore: 0,
       forfeitedTeamId: null,
-      refereeId: null,
       phase: 'Poule A',
       date: '2026-08-01T10:00:00Z',
       venue: 'Terrain 1',

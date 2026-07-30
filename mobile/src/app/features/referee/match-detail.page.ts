@@ -17,7 +17,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { MatchService } from '../../core/services/match.service';
-import { Match, MatchStatus } from '../../core/models/match.model';
+import { Match, MatchStatus, TeamSide } from '../../core/models/match.model';
 
 const STATUS_LABELS: Record<MatchStatus, string> = {
   SCHEDULED: 'À venir',
@@ -58,7 +58,7 @@ export class MatchDetailPage implements ViewWillEnter {
   private readonly toastController = inject(ToastController);
 
   // Pas readonly / pas résolu au constructeur : Angular réutilise l'instance de ce composant
-  // en navigant d'un match vers un autre (même route paramétrée /referee/matches/:id), donc
+  // en navigant d'un match vers un autre (même route paramétrée /matches/:id), donc
   // route.snapshot ne doit être relu qu'au moment de l'entrée réelle sur l'écran.
   private matchId!: number;
 
@@ -68,9 +68,10 @@ export class MatchDetailPage implements ViewWillEnter {
   readonly starting = signal(false);
   readonly submitting = signal(false);
 
-  // Compteurs locaux, saisis pendant que le match est en cours — voir MatchService.updateScore :
-  // le backend n'a pas de mise à jour "en cours", seulement une soumission finale qui clôture le
-  // match. Rien n'est envoyé au serveur avant la confirmation.
+  // Reflète le score confirmé par le serveur — chaque tap +/- part immédiatement en réseau
+  // (voir adjustScore) : mise à jour optimiste locale, réconciliée avec la réponse serveur en
+  // cas de succès, annulée en cas d'échec. "Terminer le match" envoie simplement ces totaux
+  // déjà confirmés au serveur pour clôturer le match (MatchService.updateScore).
   readonly homeScore = signal(0);
   readonly awayScore = signal(0);
 
@@ -105,19 +106,41 @@ export class MatchDetailPage implements ViewWillEnter {
   }
 
   incrementHome(): void {
-    this.homeScore.update((v) => v + 1);
+    this.adjustScore('HOME', 1);
   }
 
   decrementHome(): void {
-    this.homeScore.update((v) => Math.max(0, v - 1));
+    if (this.homeScore() === 0) return;
+    this.adjustScore('HOME', -1);
   }
 
   incrementAway(): void {
-    this.awayScore.update((v) => v + 1);
+    this.adjustScore('AWAY', 1);
   }
 
   decrementAway(): void {
-    this.awayScore.update((v) => Math.max(0, v - 1));
+    if (this.awayScore() === 0) return;
+    this.adjustScore('AWAY', -1);
+  }
+
+  /** Optimiste : le compteur bouge tout de suite, avant même la réponse serveur — sur un
+   *  terrain, l'arbitre doit sentir que le tap a marché immédiatement. Réconcilié avec la
+   *  réponse serveur en cas de succès (source de vérité), annulé en cas d'échec. */
+  private adjustScore(team: TeamSide, delta: number): void {
+    const scoreSignal = team === 'HOME' ? this.homeScore : this.awayScore;
+    scoreSignal.update((v) => Math.max(0, v + delta));
+
+    this.matchService.recordGoal(this.matchId, team, delta).subscribe({
+      next: (match) => {
+        this.match.set(match);
+        this.homeScore.set(match.homeScore ?? 0);
+        this.awayScore.set(match.awayScore ?? 0);
+      },
+      error: () => {
+        scoreSignal.update((v) => Math.max(0, v - delta));
+        void this.showErrorToast();
+      },
+    });
   }
 
   start(): void {

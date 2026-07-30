@@ -20,7 +20,7 @@ import {
   RefresherCustomEvent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { logOutOutline } from 'ionicons/icons';
+import { logOutOutline, qrCodeOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/auth/auth.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentStatus, TournamentSummary } from '../../core/models/tournament.model';
@@ -71,7 +71,7 @@ export class TournamentListPage implements ViewWillEnter {
   readonly error = signal(false);
 
   constructor() {
-    addIcons({ logOutOutline });
+    addIcons({ logOutOutline, qrCodeOutline });
   }
 
   // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
@@ -125,5 +125,10 @@ export class TournamentListPage implements ViewWillEnter {
 
   openLive(tournamentId: number): void {
     this.router.navigate(['/tournaments', tournamentId, 'live']);
+  }
+
+  openRefereeCode(event: Event, tournamentId: number): void {
+    event.stopPropagation();
+    this.router.navigate(['/tournaments', tournamentId, 'referee-code']);
   }
 }

@@ -1,9 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { TournamentSessionService } from '../auth/tournament-session.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = inject(AuthService).getToken();
+  const token = inject(AuthService).getToken() ?? inject(TournamentSessionService).getToken();
 
   if (!token) {
     return next(req);
