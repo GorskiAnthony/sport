@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
 import { MatchDetailPage } from './match-detail.page';
@@ -35,6 +35,10 @@ describe('MatchDetailPage', () => {
       imports: [MatchDetailPage],
       providers: [
         { provide: MatchService, useValue: matchServiceSpy },
+        // Le fil d'Ariane de l'en-tête (voir shared/ui/breadcrumb) utilise routerLink, qui a
+        // besoin d'un vrai Router pour calculer son href — voir login.page.spec.ts pour la
+        // même raison.
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: '1' }) } },

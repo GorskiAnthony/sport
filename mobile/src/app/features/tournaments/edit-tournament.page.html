@@ -3,7 +3,9 @@
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="'/tournaments/' + tournamentId"></ion-back-button>
     </ion-buttons>
-    <ion-title>Modifier le tournoi</ion-title>
+    <ion-title>
+      <app-breadcrumb [segments]="breadcrumbSegments()" />
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 

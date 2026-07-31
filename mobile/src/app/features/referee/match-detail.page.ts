@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
@@ -23,6 +23,7 @@ import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge'
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { MATCH_STATUS_COLORS, MATCH_STATUS_LABELS } from '../../shared/utils/match-status';
 import { hapticSuccess, hapticTap } from '../../shared/utils/haptics';
+import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 
 @Component({
   selector: 'app-match-detail',
@@ -41,6 +42,7 @@ import { hapticSuccess, hapticTap } from '../../shared/utils/haptics';
     IonText,
     StatusBadgeComponent,
     EmptyStateComponent,
+    BreadcrumbComponent,
   ],
 })
 export class MatchDetailPage implements ViewWillEnter {
@@ -75,6 +77,23 @@ export class MatchDetailPage implements ViewWillEnter {
   // match-detail.page.scss, .score-value.pulse) — purement visuel, pas de lien avec l'état serveur.
   readonly homePulse = signal(false);
   readonly awayPulse = signal(false);
+
+  // Toujours atteint depuis l'écran "Score en direct" du tournoi (voir live-score.page.ts,
+  // openMatch()) — /referee/matches n'existe pas comme route, c'était un lien mort avant ce
+  // fil d'Ariane.
+  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => {
+    const m = this.match();
+    if (!m) return [{ label: 'Match' }];
+    return [
+      { label: m.tournamentName, route: ['/tournaments', m.tournamentId, 'live'] },
+      { label: `${m.homeTeam.name} vs ${m.awayTeam.name}` },
+    ];
+  });
+
+  readonly backHref = computed(() => {
+    const m = this.match();
+    return m ? `/tournaments/${m.tournamentId}/live` : '/tournaments';
+  });
 
   ionViewWillEnter(): void {
     this.matchId = Number(this.route.snapshot.paramMap.get('id'));

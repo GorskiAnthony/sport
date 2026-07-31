@@ -1,0 +1,46 @@
+:host {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.crumb {
+  font-size: 0.95rem;
+}
+
+.crumb-link {
+  color: var(--ion-color-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.separator {
+  color: var(--ion-color-medium);
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.crumb-current {
+  color: var(--ion-text-color);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}

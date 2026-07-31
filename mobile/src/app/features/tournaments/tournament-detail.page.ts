@@ -43,6 +43,7 @@ import { TournamentDetail, TournamentFormat } from '../../core/models/tournament
 import { Match } from '../../core/models/match.model';
 import { Team } from '../../core/models/team.model';
 import { FormatPicker } from '../../shared/ui/format-picker/format-picker';
+import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
@@ -95,6 +96,7 @@ const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
     StatusBadgeComponent,
     EmptyStateComponent,
     MatchRowComponent,
+    BreadcrumbComponent,
   ],
 })
 export class TournamentDetailPage implements ViewWillEnter {
@@ -113,6 +115,12 @@ export class TournamentDetailPage implements ViewWillEnter {
   readonly tournament = signal<TournamentDetail | null>(null);
   readonly loading = signal(true);
   readonly notFound = signal(false);
+
+  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => {
+    const t = this.tournament();
+    if (!t) return [{ label: 'Tournoi' }];
+    return [{ label: 'Tournois', route: ['/tournaments'] }, { label: t.name }];
+  });
 
   readonly chosenFormat = signal<TournamentFormat | null>(null);
   readonly groupCount = signal('4');

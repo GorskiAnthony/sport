@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
 import { toDataURL } from 'qrcode';
@@ -17,6 +17,7 @@ import { addIcons } from 'ionicons';
 import { alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
+import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 
 /** L'organisateur montre ce QR code à ses arbitres — le scanner leur donne un accès direct au
  *  tournoi, sans compte (voir mobile/src/app/features/join/join.page.ts). */
@@ -24,19 +25,26 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
   selector: 'app-referee-code',
   templateUrl: './referee-code.page.html',
   styleUrls: ['./referee-code.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonSpinner, EmptyStateComponent],
+  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonSpinner, EmptyStateComponent, BreadcrumbComponent],
 })
 export class RefereeCodePage implements ViewWillEnter {
   private readonly route = inject(ActivatedRoute);
   private readonly tournamentService = inject(TournamentService);
   private readonly alertController = inject(AlertController);
 
-  private tournamentId!: number;
+  // Lu par le fil d'Ariane du template — pas private (voir edit-tournament.page.ts, même
+  // convention pour defaultHref).
+  tournamentId!: number;
 
   readonly qrDataUrl = signal<string | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly regenerating = signal(false);
+
+  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => [
+    { label: 'Tournoi', route: ['/tournaments', this.tournamentId] },
+    { label: 'Code arbitre' },
+  ]);
 
   constructor() {
     addIcons({ alertCircleOutline });

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
@@ -25,6 +25,7 @@ import { alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { SPORTS } from '../../shared/utils/sports';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
+import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 
 interface FormErrors {
   name?: string;
@@ -66,6 +67,7 @@ const CATEGORIES = [
     IonText,
     IonSpinner,
     EmptyStateComponent,
+    BreadcrumbComponent,
   ],
 })
 export class EditTournamentPage implements ViewWillEnter {
@@ -98,6 +100,11 @@ export class EditTournamentPage implements ViewWillEnter {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly saving = signal(false);
+
+  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => [
+    { label: this.name() || 'Tournoi', route: ['/tournaments', this.tournamentId] },
+    { label: 'Modifier' },
+  ]);
 
   ionViewWillEnter(): void {
     this.tournamentId = Number(this.route.snapshot.paramMap.get('id'));

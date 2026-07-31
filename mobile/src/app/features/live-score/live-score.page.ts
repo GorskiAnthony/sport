@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ViewWillEnter, ViewWillLeave } from '@ionic/angular/common';
 import {
@@ -18,6 +18,7 @@ import { Match } from '../../core/models/match.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
 import { MatchRowSkeletonComponent } from '../../shared/ui/match-row-skeleton/match-row-skeleton';
+import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 
 @Component({
   selector: 'app-live-score',
@@ -34,6 +35,7 @@ import { MatchRowSkeletonComponent } from '../../shared/ui/match-row-skeleton/ma
     EmptyStateComponent,
     MatchRowComponent,
     MatchRowSkeletonComponent,
+    BreadcrumbComponent,
   ],
 })
 export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
@@ -44,8 +46,9 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
 
   // Pas readonly / pas résolu au constructeur : Angular réutilise l'instance de ce composant en
   // navigant d'un tournoi vers un autre (même route paramétrée /tournaments/:id/live), donc
-  // route.snapshot ne doit être relu qu'au moment de l'entrée réelle sur l'écran.
-  private tournamentId!: number;
+  // route.snapshot ne doit être relu qu'au moment de l'entrée réelle sur l'écran. Pas private :
+  // lu par le template (defaultHref du back-button, fil d'Ariane).
+  tournamentId!: number;
   private unsubscribeLive: (() => void) | null = null;
 
   readonly matches = signal<Match[]>([]);
@@ -53,6 +56,11 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   readonly error = signal(false);
 
   readonly skeletonRows = [0, 1, 2, 3];
+
+  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => [
+    { label: this.matches()[0]?.tournamentName ?? 'Tournoi', route: ['/tournaments', this.tournamentId] },
+    { label: 'Score en direct' },
+  ]);
 
   constructor() {
     addIcons({ alertCircleOutline, calendarOutline });
