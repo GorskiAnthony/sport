@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug uniquement (src/debug, jamais mergé dans un build release) : autorise le trafic HTTP en
+  clair. Depuis l'API 28, Android bloque par défaut toute requête réseau non-HTTPS (native ou
+  émise par la WebView), quel que soit capacitor.config.ts server.androidScheme — c'est la cause
+  de ERR_CLEARTEXT_NOT_PERMITTED quand l'app pointe vers un backend de dev en http (ex.
+  http://192.168.0.19:3000, IP qui change selon le réseau local, donc pas de domaine fixe à
+  whitelister ici).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

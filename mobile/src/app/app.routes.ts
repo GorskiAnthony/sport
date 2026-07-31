@@ -29,6 +29,11 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./features/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
+      // Sans ce redirect, un atterrissage sur '' (path vide de la coquille ci-dessus, donc pas
+      // de segment enfant à matcher) laisse le <ion-router-outlet> de TabsPage sans route
+      // active : la tab bar s'affiche mais le contenu reste vide tant qu'on n'a pas tapé un
+      // onglet pour déclencher une première navigation explicite.
+      { path: '', pathMatch: 'full', redirectTo: 'tournaments' },
       {
         path: 'tournaments',
         canActivate: [authGuard],

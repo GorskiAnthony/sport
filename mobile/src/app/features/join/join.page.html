@@ -28,6 +28,11 @@
           Ce QR code n'est plus valide. Demandez-en un nouveau à l'organisateur.
         </ion-text>
       }
+      @if (networkError()) {
+        <ion-text color="danger" class="field-error">
+          Connexion au serveur impossible. Vérifiez votre réseau et réessayez.
+        </ion-text>
+      }
 
       <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
         @if (loading()) {
