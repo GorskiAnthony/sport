@@ -9,7 +9,6 @@ import {
   IonButtons,
   IonButton,
   IonIcon,
-  IonSpinner,
   IonRefresher,
   IonRefresherContent,
   RefresherCustomEvent,
@@ -19,6 +18,7 @@ import { addOutline, trophyOutline, alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
 import { TournamentCardComponent } from '../../shared/ui/tournament-card/tournament-card';
+import { TournamentCardSkeletonComponent } from '../../shared/ui/tournament-card-skeleton/tournament-card-skeleton';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 
 @Component({
@@ -34,10 +34,10 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
     IonButtons,
     IonButton,
     IonIcon,
-    IonSpinner,
     IonRefresher,
     IonRefresherContent,
     TournamentCardComponent,
+    TournamentCardSkeletonComponent,
     EmptyStateComponent,
   ],
 })
@@ -48,6 +48,10 @@ export class TournamentListPage implements ViewWillEnter {
   readonly tournaments = signal<TournamentSummary[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
+
+  // Nombre de cards placeholder affichées pendant le chargement — juste assez pour remplir
+  // l'écran sans donner l'impression d'une liste qui continue au-delà.
+  readonly skeletonRows = [0, 1, 2];
 
   constructor() {
     addIcons({ addOutline, trophyOutline, alertCircleOutline });

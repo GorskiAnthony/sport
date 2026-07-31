@@ -9,7 +9,6 @@ import {
   IonBackButton,
   IonButton,
   IonContent,
-  IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { alertCircleOutline, calendarOutline } from 'ionicons/icons';
@@ -18,6 +17,7 @@ import { LiveUpdateService } from '../../core/services/live-update.service';
 import { Match } from '../../core/models/match.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
+import { MatchRowSkeletonComponent } from '../../shared/ui/match-row-skeleton/match-row-skeleton';
 
 @Component({
   selector: 'app-live-score',
@@ -31,9 +31,9 @@ import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
     IonBackButton,
     IonButton,
     IonContent,
-    IonSpinner,
     EmptyStateComponent,
     MatchRowComponent,
+    MatchRowSkeletonComponent,
   ],
 })
 export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
@@ -51,6 +51,8 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   readonly matches = signal<Match[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
+
+  readonly skeletonRows = [0, 1, 2, 3];
 
   constructor() {
     addIcons({ alertCircleOutline, calendarOutline });

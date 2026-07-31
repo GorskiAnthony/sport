@@ -2,9 +2,9 @@
   class="tournament-card"
   role="button"
   tabindex="0"
-  (click)="open.emit()"
-  (keydown.enter)="open.emit()"
-  (keydown.space)="open.emit()"
+  (click)="onCardClick()"
+  (keydown.enter)="onCardClick()"
+  (keydown.space)="onCardClick()"
 >
   <span class="sport-icon" aria-hidden="true">{{ sportIcon() }}</span>
 

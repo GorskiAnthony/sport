@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { trophyOutline, personCircleOutline } from 'ionicons/icons';
+import { hapticSelection } from '../../shared/utils/haptics';
 
 /** Coquille de navigation par onglets pour le flux organisateur authentifié (voir
  *  .claude/skills/design-system et le plan de refonte mobile) : Tournois / Compte. Les écrans
@@ -17,5 +18,9 @@ import { trophyOutline, personCircleOutline } from 'ionicons/icons';
 export class TabsPage {
   constructor() {
     addIcons({ trophyOutline, personCircleOutline });
+  }
+
+  onTabChange(): void {
+    hapticSelection();
   }
 }

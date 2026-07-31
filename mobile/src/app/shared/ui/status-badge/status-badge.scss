@@ -16,6 +16,9 @@
 .status-badge--primary {
   background: rgba(var(--ion-color-primary-rgb), 0.2);
   color: var(--ion-color-primary);
+  // Léger halo sur le badge "en cours/en direct" — un des rares endroits où l'app affiche
+  // vraiment quelque chose de live, ça mérite d'accrocher l'œil.
+  box-shadow: 0 0 12px -2px rgba(var(--ion-color-primary-rgb), 0.5);
 }
 
 .status-badge--warning {

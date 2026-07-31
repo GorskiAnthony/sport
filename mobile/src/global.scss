@@ -56,6 +56,43 @@
   text-align: center;
 }
 
+/* Habillage "premium" (ombres, dégradé, micro-interactions) plutôt que le plat bordures-only du
+   web — voir .claude/skills/design-system, section mobile : divergence assumée, l'app native
+   peut se permettre plus de relief qu'un dashboard web. Ciblé ici une fois pour cascader sur
+   tous les écrans plutôt que dupliqué page par page. */
+ion-button {
+  --border-radius: 14px;
+  --box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s ease;
+}
+
+/* Boutons pleins (CTA principaux : connexion, générer le tableau, terminer le match...) — pas
+   les fill="outline"/"clear", qui restent volontairement discrets. */
+ion-button:not([fill="outline"]):not([fill="clear"]) {
+  --background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  --background-activated: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  --box-shadow: 0 10px 24px -8px rgba(34, 197, 94, 0.55);
+}
+
+ion-button[color="danger"]:not([fill="outline"]):not([fill="clear"]) {
+  --background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  --background-activated: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  --box-shadow: 0 10px 24px -8px rgba(239, 68, 68, 0.55);
+}
+
+ion-button:not([disabled]):active {
+  transform: scale(0.97);
+}
+
+/* Header flottant : une ombre douce plutôt qu'une simple ligne, pour détacher le contenu qui
+   défile en dessous. --box-shadow n'existe pas sur ion-toolbar (contrairement à ion-button) —
+   box-shadow s'applique ici directement sur l'élément hôte, hors Shadow DOM. */
+ion-header ion-toolbar {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
 /* Pendant un scan QR (voir QrScannerService.startScan), le plugin dessine la caméra native
    *derrière* la WebView — sans ce fond transparent sur toute l'app, l'UI habituelle (fond
    #0D1117 opaque) la masquerait entièrement. ion-app doit suivre body, sinon son propre fond

@@ -49,7 +49,7 @@
             <span class="team-name">{{ m.homeTeam.name }}</span>
             <div class="stepper">
               <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="decrementHome()" aria-label="Diminuer le score de {{ m.homeTeam.name }}">−</button>
-              <span class="score-value font-mono">{{ homeScore() }}</span>
+              <span class="score-value font-mono" [class.pulse]="homePulse()">{{ homeScore() }}</span>
               <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="incrementHome()" aria-label="Augmenter le score de {{ m.homeTeam.name }}">+</button>
             </div>
           </div>
@@ -57,7 +57,7 @@
             <span class="team-name">{{ m.awayTeam.name }}</span>
             <div class="stepper">
               <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="decrementAway()" aria-label="Diminuer le score de {{ m.awayTeam.name }}">−</button>
-              <span class="score-value font-mono">{{ awayScore() }}</span>
+              <span class="score-value font-mono" [class.pulse]="awayPulse()">{{ awayScore() }}</span>
               <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="incrementAway()" aria-label="Augmenter le score de {{ m.awayTeam.name }}">+</button>
             </div>
           </div>

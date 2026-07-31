@@ -9,9 +9,9 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   @if (loading()) {
-    <div class="state-container">
-      <ion-spinner name="dots"></ion-spinner>
-    </div>
+    @for (i of skeletonRows; track i) {
+      <app-match-row-skeleton />
+    }
   } @else if (error()) {
     <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger les matchs.">
       <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
@@ -19,7 +19,7 @@
   } @else if (matches().length === 0) {
     <app-empty-state icon="calendar-outline" message="Aucun match programmé pour ce tournoi." />
   } @else {
-    @for (match of matches(); track match.id) {
+    @for (match of matches(); track match.id; let i = $index) {
       <app-match-row
         [homeTeamName]="match.homeTeam.name"
         [awayTeamName]="match.awayTeam.name"
@@ -29,6 +29,7 @@
         [phase]="match.phase"
         [showStatusBadge]="true"
         [clickable]="true"
+        [style.animation-delay.ms]="i * 50"
         (rowClick)="openMatch(match.id)"
       />
     }

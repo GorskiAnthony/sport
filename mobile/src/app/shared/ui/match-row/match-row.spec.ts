@@ -4,6 +4,13 @@ import { MatchRowComponent } from './match-row';
 
 describe('MatchRowComponent', () => {
   beforeEach(async () => {
+    // Le composant anime le score affiché sur plusieurs frames (voir MatchRowComponent.animateTo)
+    // — on force chaque requestAnimationFrame à "sauter" directement à la fin de l'animation pour
+    // pouvoir vérifier la valeur finale de façon synchrone dans les tests.
+    spyOn(window, 'requestAnimationFrame').and.callFake((cb: FrameRequestCallback) => {
+      cb(performance.now() + 10_000);
+      return 0;
+    });
     await TestBed.configureTestingModule({ imports: [MatchRowComponent] }).compileComponents();
   });
 

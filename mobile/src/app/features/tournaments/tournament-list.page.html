@@ -15,9 +15,9 @@
   </ion-refresher>
 
   @if (loading()) {
-    <div class="state-container">
-      <ion-spinner name="dots"></ion-spinner>
-    </div>
+    @for (i of skeletonRows; track i) {
+      <app-tournament-card-skeleton />
+    }
   } @else if (error()) {
     <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger vos tournois.">
       <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
@@ -30,9 +30,10 @@
       </ion-button>
     </app-empty-state>
   } @else {
-    @for (tournament of tournaments(); track tournament.id) {
+    @for (tournament of tournaments(); track tournament.id; let i = $index) {
       <app-tournament-card
         [tournament]="tournament"
+        [style.animation-delay.ms]="i * 60"
         (open)="openTournament(tournament.id)"
         (openRefereeCode)="openRefereeCode(tournament.id)"
       />

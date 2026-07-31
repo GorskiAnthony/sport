@@ -1,3 +1,7 @@
+// Barre flottante plutôt qu'une simple ligne de séparation — ombre portée vers le haut pour
+// détacher la barre du contenu qui défile derrière elle (box-shadow directement sur l'hôte,
+// ion-tab-bar n'expose pas de --box-shadow contrairement à ion-button).
 ion-tab-bar {
-  border-top: 1px solid var(--ion-border-color, #334155);
+  --border: none;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
 }

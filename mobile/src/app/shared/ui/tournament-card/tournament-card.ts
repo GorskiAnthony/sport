@@ -5,6 +5,7 @@ import { qrCodeOutline, chevronForwardOutline } from 'ionicons/icons';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../utils/tournament-status';
 import { SPORTS } from '../../utils/sports';
+import { hapticTap } from '../../utils/haptics';
 import { StatusBadgeComponent } from '../status-badge/status-badge';
 
 /** Carte de tournoi pour la liste organisateur — remplace la ligne ion-item par défaut. Icône
@@ -33,8 +34,14 @@ export class TournamentCardComponent {
     addIcons({ qrCodeOutline, chevronForwardOutline });
   }
 
+  onCardClick(): void {
+    hapticTap();
+    this.open.emit();
+  }
+
   onRefereeCodeClick(event: Event): void {
     event.stopPropagation();
+    hapticTap();
     this.openRefereeCode.emit();
   }
 }

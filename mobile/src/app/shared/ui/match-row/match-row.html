@@ -5,7 +5,7 @@
       @if (status() === 'FORFEIT') {
         Forfait
       } @else if (homeScore() !== null && awayScore() !== null) {
-        {{ homeScore() }} – {{ awayScore() }}
+        {{ animatedHomeScore() }} – {{ animatedAwayScore() }}
       } @else {
         vs
       }
@@ -25,7 +25,7 @@
 </ng-template>
 
 @if (clickable()) {
-  <button type="button" class="match-row match-row--clickable" (click)="rowClick.emit()">
+  <button type="button" class="match-row match-row--clickable" (click)="onRowClick()">
     <ng-container *ngTemplateOutlet="inner"></ng-container>
   </button>
 } @else {

@@ -22,6 +22,7 @@ import { Match, MatchStatus, TeamSide } from '../../core/models/match.model';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { MATCH_STATUS_COLORS, MATCH_STATUS_LABELS } from '../../shared/utils/match-status';
+import { hapticSuccess, hapticTap } from '../../shared/utils/haptics';
 
 @Component({
   selector: 'app-match-detail',
@@ -69,6 +70,11 @@ export class MatchDetailPage implements ViewWillEnter {
   // déjà confirmés au serveur pour clôturer le match (MatchService.updateScore).
   readonly homeScore = signal(0);
   readonly awayScore = signal(0);
+
+  // Bascule brièvement à chaque +/- pour déclencher l'animation de "pop" sur le score (voir
+  // match-detail.page.scss, .score-value.pulse) — purement visuel, pas de lien avec l'état serveur.
+  readonly homePulse = signal(false);
+  readonly awayPulse = signal(false);
 
   ionViewWillEnter(): void {
     this.matchId = Number(this.route.snapshot.paramMap.get('id'));
@@ -122,8 +128,11 @@ export class MatchDetailPage implements ViewWillEnter {
    *  terrain, l'arbitre doit sentir que le tap a marché immédiatement. Réconcilié avec la
    *  réponse serveur en cas de succès (source de vérité), annulé en cas d'échec. */
   private adjustScore(team: TeamSide, delta: number): void {
+    hapticTap();
     const scoreSignal = team === 'HOME' ? this.homeScore : this.awayScore;
+    const pulseSignal = team === 'HOME' ? this.homePulse : this.awayPulse;
     scoreSignal.update((v) => Math.max(0, v + delta));
+    this.pulse(pulseSignal);
 
     this.matchService.recordGoal(this.matchId, team, delta).subscribe({
       next: (match) => {
@@ -172,12 +181,18 @@ export class MatchDetailPage implements ViewWillEnter {
         next: (match) => {
           this.match.set(match);
           this.submitting.set(false);
+          hapticSuccess();
         },
         error: () => {
           this.submitting.set(false);
           void this.showErrorToast();
         },
       });
+  }
+
+  private pulse(pulseSignal: typeof this.homePulse): void {
+    pulseSignal.set(true);
+    setTimeout(() => pulseSignal.set(false), 300);
   }
 
   private async showErrorToast(): Promise<void> {
