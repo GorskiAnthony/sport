@@ -35,10 +35,21 @@ export class TournamentSessionService {
   readonly tournamentName = computed(() => this.sessionSignal()?.tournamentName ?? null);
   readonly refereeName = computed(() => this.sessionSignal()?.refereeName ?? null);
 
-  /** À appeler une seule fois au démarrage, comme AuthService.restoreSession() — voir main.ts.
-   *  Sans ça, un arbitre qui a mis l'app en arrière-plan (courant sur une session de 30 jours)
-   *  serait renvoyé sur /login et devrait rescanner le QR code physique. */
-  async restoreSession(): Promise<void> {
+  private restoreSessionPromise: Promise<void> | null = null;
+
+  /** À appeler au démarrage, comme AuthService.restoreSession() — voir main.ts et le
+   *  commentaire détaillé dans AuthService sur pourquoi c'est mémoïsé et rappelé depuis
+   *  authGuard plutôt que de compter sur l'ordre du bootstrap. Sans ça, un arbitre qui a mis
+   *  l'app en arrière-plan (courant sur une session de 30 jours) serait renvoyé sur /login et
+   *  devrait rescanner le QR code physique. */
+  restoreSession(): Promise<void> {
+    if (!this.restoreSessionPromise) {
+      this.restoreSessionPromise = this.doRestoreSession();
+    }
+    return this.restoreSessionPromise;
+  }
+
+  private async doRestoreSession(): Promise<void> {
     const json = await this.storage.get();
     if (!json) return;
     try {

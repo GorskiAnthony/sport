@@ -10,9 +10,11 @@ describe('authGuard', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticated']);
-    tournamentSessionServiceSpy = jasmine.createSpyObj('TournamentSessionService', ['isActive']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'restoreSession']);
+    tournamentSessionServiceSpy = jasmine.createSpyObj('TournamentSessionService', ['isActive', 'restoreSession']);
     routerSpy = jasmine.createSpyObj('Router', ['createUrlTree']);
+    authServiceSpy.restoreSession.and.resolveTo();
+    tournamentSessionServiceSpy.restoreSession.and.resolveTo();
 
     TestBed.configureTestingModule({
       providers: [
@@ -27,29 +29,32 @@ describe('authGuard', () => {
     return TestBed.runInInjectionContext(() => authGuard({} as never, {} as never));
   }
 
-  it('allows navigation when authenticated as a real user', () => {
+  // authGuard attend explicitement restoreSession() (voir le commentaire dans auth.guard.ts) —
+  // le résultat est donc une Promise même quand isAuthenticated()/isActive() sont synchrones.
+
+  it('allows navigation when authenticated as a real user', async () => {
     authServiceSpy.isAuthenticated.and.returnValue(true);
     tournamentSessionServiceSpy.isActive.and.returnValue(false);
 
-    expect(runGuard()).toBeTrue();
+    expect(await runGuard()).toBeTrue();
     expect(routerSpy.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('allows navigation with an active tournament session (QR-joined referee)', () => {
+  it('allows navigation with an active tournament session (QR-joined referee)', async () => {
     authServiceSpy.isAuthenticated.and.returnValue(false);
     tournamentSessionServiceSpy.isActive.and.returnValue(true);
 
-    expect(runGuard()).toBeTrue();
+    expect(await runGuard()).toBeTrue();
     expect(routerSpy.createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects to /login when neither is active', () => {
+  it('redirects to /login when neither is active', async () => {
     authServiceSpy.isAuthenticated.and.returnValue(false);
     tournamentSessionServiceSpy.isActive.and.returnValue(false);
     const urlTree = {} as UrlTree;
     routerSpy.createUrlTree.and.returnValue(urlTree);
 
-    expect(runGuard()).toBe(urlTree);
+    expect(await runGuard()).toBe(urlTree);
     expect(routerSpy.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 });

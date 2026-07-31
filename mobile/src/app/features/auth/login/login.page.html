@@ -35,11 +35,21 @@
         <ion-item fill="outline" [class.ion-invalid]="!!errors().password">
           <ion-label position="stacked">Mot de passe</ion-label>
           <ion-input
-            type="password"
+            [type]="passwordVisible() ? 'text' : 'password'"
             autocomplete="current-password"
             [value]="password()"
             (ionInput)="onPasswordInput($any($event.detail).value)"
           ></ion-input>
+          <ion-button
+            slot="end"
+            fill="clear"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            [attr.aria-pressed]="passwordVisible()"
+          >
+            <ion-icon slot="icon-only" [name]="passwordVisible() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
         </ion-item>
         @if (errors().password) {
           <ion-text color="danger" class="field-error">{{ errors().password }}</ion-text>

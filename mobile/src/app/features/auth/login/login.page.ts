@@ -15,7 +15,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { qrCodeOutline } from 'ionicons/icons';
+import { qrCodeOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import { AuthService } from '../../../core/auth/auth.service';
 import { defaultRouteForRole } from '../../../shared/utils/default-route-for-role';
 
@@ -51,9 +51,14 @@ export class LoginPage {
   readonly password = signal('');
   readonly errors = signal<FormErrors>({});
   readonly loading = signal(false);
+  readonly passwordVisible = signal(false);
 
   constructor() {
-    addIcons({ qrCodeOutline });
+    addIcons({ qrCodeOutline, eyeOutline, eyeOffOutline });
+  }
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible.update((v) => !v);
   }
 
   onEmailInput(value: string | null | undefined): void {

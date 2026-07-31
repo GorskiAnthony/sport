@@ -1,23 +1,31 @@
 import { Injectable } from '@angular/core';
-import { Preferences } from '@capacitor/preferences';
+import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 
 const SESSION_KEY = 'tournamentSession';
 
-/** Même raison que TokenStorageService : isolé derrière une injection dédiée pour que les
- *  tests puissent mocker cette classe plutôt que d'essayer de spier le proxy
- *  registerPlugin() de @capacitor/preferences. */
+/** Même raison que TokenStorageService, et même bascule vers un stockage chiffré : le token de
+ *  session arbitre (obtenu via QR code) donne accès aux matchs d'un tournoi au même titre qu'un
+ *  JWT organisateur — voir le commentaire détaillé dans token-storage.service.ts. */
 @Injectable({ providedIn: 'root' })
 export class TournamentSessionStorageService {
   async get(): Promise<string | null> {
-    const { value } = await Preferences.get({ key: SESSION_KEY });
-    return value;
+    try {
+      const { value } = await SecureStoragePlugin.get({ key: SESSION_KEY });
+      return value;
+    } catch {
+      return null;
+    }
   }
 
   async set(json: string): Promise<void> {
-    await Preferences.set({ key: SESSION_KEY, value: json });
+    await SecureStoragePlugin.set({ key: SESSION_KEY, value: json });
   }
 
   async clear(): Promise<void> {
-    await Preferences.remove({ key: SESSION_KEY });
+    try {
+      await SecureStoragePlugin.remove({ key: SESSION_KEY });
+    } catch {
+      // Déjà absent — rien à faire.
+    }
   }
 }

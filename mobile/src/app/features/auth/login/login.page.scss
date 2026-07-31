@@ -86,6 +86,18 @@ ion-item {
   margin-bottom: 4px;
 }
 
+// Bouton "afficher le mot de passe" — discret (couleur medium plutôt que primary) pour ne pas
+// concurrencer le CTA de connexion, mais avec une vraie cible tactile (--padding par défaut
+// d'ion-button en fill="clear" suffit déjà à dépasser 44px). Le label "stacked" rend l'item plus
+// haut que le seul champ ; sans align-self, Ionic centre le bouton sur toute la hauteur de
+// l'item (label + input), ce qui le fait paraître décalé vers le haut par rapport au texte
+// saisi. flex-end le recale au niveau de la ligne de saisie.
+.password-toggle {
+  --color: var(--ion-color-medium);
+  align-self: flex-end;
+  margin: 0 0 2px;
+}
+
 .field-error {
   display: block;
   font-size: 0.8rem;

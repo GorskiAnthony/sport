@@ -35,6 +35,7 @@
     "@ionic/angular": "^8.0.0",
     "@stomp/stompjs": "7.3.0",
     "barcode-detector": "^3.2.1",
+    "capacitor-secure-storage-plugin": "^0.13.0",
     "ionicons": "^7.0.0",
     "qrcode": "1.5.4",
     "rxjs": "~7.8.0",

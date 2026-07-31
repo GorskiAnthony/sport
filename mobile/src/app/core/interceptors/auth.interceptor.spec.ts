@@ -3,6 +3,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../auth/auth.service';
 import { TournamentSessionService } from '../auth/tournament-session.service';
+import { environment } from '../../../environments/environment';
 import { authInterceptor } from './auth.interceptor';
 
 describe('authInterceptor', () => {
@@ -33,9 +34,9 @@ describe('authInterceptor', () => {
   it('adds the Authorization header from the user token when present', () => {
     authServiceSpy.getToken.and.returnValue('jwt-token');
 
-    http.get('/api/tournaments/me').subscribe();
+    http.get(`${environment.apiUrl}/tournaments/me`).subscribe();
 
-    const req = httpMock.expectOne('/api/tournaments/me');
+    const req = httpMock.expectOne(`${environment.apiUrl}/tournaments/me`);
     expect(req.request.headers.get('Authorization')).toBe('Bearer jwt-token');
     req.flush({});
   });
@@ -44,9 +45,9 @@ describe('authInterceptor', () => {
     authServiceSpy.getToken.and.returnValue(null);
     tournamentSessionServiceSpy.getToken.and.returnValue('session-jwt');
 
-    http.get('/api/matches/1').subscribe();
+    http.get(`${environment.apiUrl}/matches/1`).subscribe();
 
-    const req = httpMock.expectOne('/api/matches/1');
+    const req = httpMock.expectOne(`${environment.apiUrl}/matches/1`);
     expect(req.request.headers.get('Authorization')).toBe('Bearer session-jwt');
     req.flush({});
   });
@@ -55,9 +56,19 @@ describe('authInterceptor', () => {
     authServiceSpy.getToken.and.returnValue(null);
     tournamentSessionServiceSpy.getToken.and.returnValue(null);
 
-    http.get('/api/tournaments/me').subscribe();
+    http.get(`${environment.apiUrl}/tournaments/me`).subscribe();
 
-    const req = httpMock.expectOne('/api/tournaments/me');
+    const req = httpMock.expectOne(`${environment.apiUrl}/tournaments/me`);
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({});
+  });
+
+  it('leaves the request untouched when the target host is not our API', () => {
+    authServiceSpy.getToken.and.returnValue('jwt-token');
+
+    http.get('https://third-party.example.com/resource').subscribe();
+
+    const req = httpMock.expectOne('https://third-party.example.com/resource');
     expect(req.request.headers.has('Authorization')).toBeFalse();
     req.flush({});
   });

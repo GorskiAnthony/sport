@@ -33,8 +33,23 @@ export class AuthService {
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
-  /** À appeler une seule fois, avant que l'app ne rende quoi que ce soit authentifié. */
-  async restoreSession(): Promise<void> {
+  private restoreSessionPromise: Promise<void> | null = null;
+
+  /** À appeler avant que l'app ne rende quoi que ce soit authentifié — voir main.ts
+   *  (provideAppInitializer) ET auth.guard.ts, qui l'attendent tous les deux. Mémoïsée : malgré
+   *  withEnabledBlockingInitialNavigation, le guard de la toute première navigation peut
+   *  s'exécuter avant que cette promesse (lecture async du stockage sécurisé) ne soit résolue —
+   *  la garantie d'ordonnancement du bootstrap Angular ne suffit pas ici. Le guard rappelle donc
+   *  restoreSession() lui-même et attend la même promesse en vol plutôt que de lire les signaux
+   *  en supposant qu'ils sont déjà à jour. */
+  restoreSession(): Promise<void> {
+    if (!this.restoreSessionPromise) {
+      this.restoreSessionPromise = this.doRestoreSession();
+    }
+    return this.restoreSessionPromise;
+  }
+
+  private async doRestoreSession(): Promise<void> {
     const [token, userJson] = await Promise.all([this.tokenStorage.getToken(), this.tokenStorage.getUser()]);
 
     this.tokenSignal.set(token);
