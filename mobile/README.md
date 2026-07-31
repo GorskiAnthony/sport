@@ -43,16 +43,27 @@ de dev Ionic (`http://localhost:8100`) et les WebViews Capacitor (`capacitor://l
 
 ## Build natif (iOS / Android)
 
-```bash
-npm run build
-npx cap sync              # copie le build web dans ios/ et android/, met à jour les plugins natifs
+Pour tester sur un device/émulateur en local, utiliser `npm run build:dev` (configuration
+`development`, garde `environment.ts`) — **pas** `npm run build` tout court : ce dernier est en
+configuration `production` par défaut (voir `angular.json`, `defaultConfiguration`), qui bascule
+sur `environment.prod.ts` et son URL placeholder (`https://sport.example.com/api`, qui ne
+résout nulle part) — l'app compile sans erreur mais tous les appels réseau échouent
+silencieusement (`ERR_NAME_NOT_RESOLVED`), symptôme trompeur qui ressemble à un problème de
+réseau ou de token invalide alors que c'est juste la mauvaise configuration compilée.
 
-npx cap open ios          # ouvre Xcode (nécessite Xcode + un Mac)
-npx cap open android      # ouvre Android Studio
+```bash
+npm run build:dev
+npx cap sync               # copie le build web dans ios/ et android/, met à jour les plugins natifs
+npx cap run android        # build + installe + lance sur l'appareil branché
+
+# ou, pour ouvrir l'IDE natif à la place de cap run :
+npx cap open ios           # ouvre Xcode (nécessite Xcode + un Mac)
+npx cap open android       # ouvre Android Studio
 ```
 
-Avant un build destiné aux stores, remplacer l'URL placeholder de `src/environments/environment.prod.ts`
-(`https://sport.example.com/api`) par le vrai domaine de prod.
+`npm run build` (configuration `production`) est réservé au build destiné aux stores — et dans
+ce cas, remplacer d'abord l'URL placeholder de `src/environments/environment.prod.ts` par le
+vrai domaine de prod.
 
 ## Tests
 
