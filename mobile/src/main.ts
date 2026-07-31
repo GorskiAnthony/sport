@@ -3,7 +3,13 @@
 // via `ionic serve`, avant même de builder pour iOS/Android où le plugin passe par ML Kit natif).
 import 'barcode-detector/polyfill';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
+import {
+  RouteReuseStrategy,
+  provideRouter,
+  withPreloading,
+  PreloadAllModules,
+  withEnabledBlockingInitialNavigation,
+} from '@angular/router';
 import { provideAppInitializer, inject } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
@@ -19,7 +25,13 @@ bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
-    provideRouter(routes, withPreloading(PreloadAllModules)),
+    // withEnabledBlockingInitialNavigation : sur device natif, la toute première navigation
+    // (souvent directement dans un onglet si une session est déjà restaurée) peut résoudre
+    // avant que les web components Ionic (<ion-tabs>, <ion-router-outlet>) soient complètement
+    // initialisés — la page reste alors invisible (classe ion-page-invisible jamais retirée)
+    // tant qu'aucune interaction ne force Ionic à resynchroniser. Le mode "blocking" attend la
+    // fin de la navigation initiale avant le premier rendu, pour éviter cette course.
+    provideRouter(routes, withPreloading(PreloadAllModules), withEnabledBlockingInitialNavigation()),
     provideHttpClient(withInterceptors([authInterceptor])),
     // Recharge le token/user stockés (Capacitor Preferences, async) avant tout rendu, pour que
     // les guards et l'intercepteur voient un état cohérent dès le premier écran.
