@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
 import { toDataURL } from 'qrcode';
@@ -41,10 +41,15 @@ export class RefereeCodePage implements ViewWillEnter {
   readonly error = signal(false);
   readonly regenerating = signal(false);
 
-  readonly breadcrumbSegments = computed<BreadcrumbSegment[]>(() => [
-    { label: 'Tournoi', route: ['/tournaments', this.tournamentId] },
-    { label: 'Code arbitre' },
-  ]);
+  // Méthode plutôt que computed() : tournamentId est un champ simple (pas un signal) affecté
+  // dans ionViewWillEnter, donc rien ne déclencherait jamais le recalcul d'un computed() qui ne
+  // lirait que lui — un premier rendu avant ionViewWillEnter figerait "undefined" pour de bon.
+  breadcrumbSegments(): BreadcrumbSegment[] {
+    return [
+      { label: 'Tournoi', route: ['/tournaments', this.tournamentId] },
+      { label: 'Code arbitre' },
+    ];
+  }
 
   constructor() {
     addIcons({ alertCircleOutline });
