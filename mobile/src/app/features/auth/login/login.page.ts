@@ -4,7 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
   IonItem,
   IonLabel,
@@ -32,7 +31,6 @@ interface FormErrors {
   imports: [
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonItem,
     IonLabel,

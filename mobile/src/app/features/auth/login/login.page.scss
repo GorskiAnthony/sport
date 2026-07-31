@@ -1,17 +1,79 @@
+// Toolbar transparente : réserve la zone de sécurité (encoche/status bar) sans dessiner de
+// barre au-dessus du hero — même logique que scan.page.scss pour l'overlay caméra.
+.transparent-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+}
+
+.hero {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13, 17, 23, 0.35) 0%, rgba(13, 17, 23, 0.8) 65%, #0d1117 100%);
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 24px 20px;
+  text-align: center;
+
+  .logo {
+    display: block;
+    height: 28px;
+    width: auto;
+    margin: 0 0 10px;
+  }
+
+  .eyebrow {
+    color: var(--ion-color-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px;
+  }
+
+  .headline {
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0;
+
+    .accent {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.page-body {
+  padding: 0 20px 24px;
+  margin-top: -8px;
+}
+
 .auth-card {
   background: var(--ion-card-background, #161b22);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 28px 20px;
-  margin: 8px 0 0;
   box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
-}
-
-.logo {
-  display: block;
-  height: 32px;
-  width: auto;
-  margin: 0 auto 20px;
 }
 
 .subtitle {

@@ -1,8 +1,10 @@
 // Le scan lui-même rend le fond de la WebView transparent (voir QrScannerService.startScan et
 // .barcode-scanning-active dans global.scss) pour laisser voir le flux caméra natif en dessous —
 // header et contenu doivent suivre, sinon on masque la caméra avec le fond opaque habituel.
+// Le header garde quand même un léger dégradé sombre (pas transparent à 100%) : sans ça, le
+// titre et le bouton torche deviennent illisibles sur un flux caméra clair (plein jour).
 ion-header.transparent ion-toolbar {
-  --background: transparent;
+  --background: linear-gradient(180deg, rgba(13, 17, 23, 0.7) 0%, rgba(13, 17, 23, 0.3) 100%);
   --border-color: transparent;
 }
 
