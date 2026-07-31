@@ -40,6 +40,10 @@
         <ion-icon slot="start" name="eye-outline"></ion-icon>
         Voir en direct
       </ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'planning']">
+        <ion-icon slot="start" name="calendar-outline"></ion-icon>
+        Planning
+      </ion-button>
       <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'referee-code']">
         <ion-icon slot="start" name="qr-code-outline"></ion-icon>
         Code arbitre

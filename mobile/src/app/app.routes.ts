@@ -66,6 +66,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/live-score/live-score.page').then((m) => m.LiveScorePage),
   },
   {
+    path: 'tournaments/:id/planning',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/planning/planning.page').then((m) => m.PlanningPage),
+  },
+  {
     path: 'tournaments/:id/referee-code',
     canActivate: [authGuard],
     loadComponent: () => import('./features/tournaments/referee-code.page').then((m) => m.RefereeCodePage),

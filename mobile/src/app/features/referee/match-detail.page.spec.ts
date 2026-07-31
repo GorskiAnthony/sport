@@ -1,12 +1,18 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
+import { ConnectivityService } from '../../core/services/connectivity.service';
+import { ScoreQueueService } from '../../core/services/score-queue.service';
 import { MatchDetailPage } from './match-detail.page';
 import { Match } from '../../core/models/match.model';
 
 describe('MatchDetailPage', () => {
   let matchServiceSpy: jasmine.SpyObj<MatchService>;
+  let scoreQueueSpy: jasmine.SpyObj<ScoreQueueService>;
+  let onlineSignal: ReturnType<typeof signal<boolean>>;
 
   function buildMatch(overrides: Partial<Match>): Match {
     return {
@@ -30,11 +36,15 @@ describe('MatchDetailPage', () => {
 
   beforeEach(async () => {
     matchServiceSpy = jasmine.createSpyObj('MatchService', ['getById', 'start', 'recordGoal', 'updateScore']);
+    scoreQueueSpy = jasmine.createSpyObj('ScoreQueueService', ['enqueue', 'flush'], { pendingCount: signal(0) });
+    onlineSignal = signal(true);
 
     await TestBed.configureTestingModule({
       imports: [MatchDetailPage],
       providers: [
         { provide: MatchService, useValue: matchServiceSpy },
+        { provide: ConnectivityService, useValue: { online: onlineSignal } },
+        { provide: ScoreQueueService, useValue: scoreQueueSpy },
         // Le fil d'Ariane de l'en-tête (voir shared/ui/breadcrumb) utilise routerLink, qui a
         // besoin d'un vrai Router pour calculer son href — voir login.page.spec.ts pour la
         // même raison.
@@ -137,6 +147,39 @@ describe('MatchDetailPage', () => {
     expect(matchServiceSpy.updateScore).toHaveBeenCalledWith(1, { homeScore: 2, awayScore: 1 });
     expect(page.match()?.status).toBe('FINISHED');
     expect(page.submitting()).toBeFalse();
+  });
+
+  it('queues the goal instead of sending it when offline, keeping the optimistic bump', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 0, awayScore: 0 })));
+    onlineSignal.set(false);
+    const page = createPage();
+
+    page.incrementHome();
+
+    expect(matchServiceSpy.recordGoal).not.toHaveBeenCalled();
+    expect(scoreQueueSpy.enqueue).toHaveBeenCalledWith(1, 'HOME', 1);
+    expect(page.homeScore()).toBe(1);
+  });
+
+  it('queues the goal (without reverting) when the request fails at the network level', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 0, awayScore: 0 })));
+    matchServiceSpy.recordGoal.and.returnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    const page = createPage();
+
+    page.incrementAway();
+
+    expect(scoreQueueSpy.enqueue).toHaveBeenCalledWith(1, 'AWAY', 1);
+    expect(page.awayScore()).toBe(1);
+  });
+
+  it('blocks finishing the match while offline', () => {
+    matchServiceSpy.getById.and.returnValue(of(buildMatch({ status: 'ONGOING', homeScore: 2, awayScore: 1 })));
+    onlineSignal.set(false);
+    const page = createPage();
+
+    page.confirmFinish();
+
+    expect(matchServiceSpy.updateScore).not.toHaveBeenCalled();
   });
 
   it('maps status to the design-system label and color', () => {

@@ -35,6 +35,7 @@ import {
   eyeOutline,
   qrCodeOutline,
   alertCircleOutline,
+  calendarOutline,
 } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TeamService } from '../../core/services/team.service';
@@ -176,7 +177,7 @@ export class TournamentDetailPage implements ViewWillEnter {
   });
 
   constructor() {
-    addIcons({ createOutline, trashOutline, addOutline, checkmarkOutline, closeOutline, eyeOutline, qrCodeOutline, alertCircleOutline });
+    addIcons({ createOutline, trashOutline, addOutline, checkmarkOutline, closeOutline, eyeOutline, qrCodeOutline, alertCircleOutline, calendarOutline });
   }
 
   ionViewWillEnter(): void {

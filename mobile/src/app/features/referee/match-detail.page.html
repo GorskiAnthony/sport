@@ -64,9 +64,17 @@
             </div>
           </div>
         </div>
-        <ion-button expand="block" class="primary-action" [disabled]="submitting()" (click)="confirmFinish()">
+        @if (scoreQueue.pendingCount() > 0) {
+          <p class="offline-banner">
+            <ion-icon name="cloud-offline-outline"></ion-icon>
+            {{ scoreQueue.pendingCount() }} changement{{ scoreQueue.pendingCount() > 1 ? 's' : '' }} en attente de connexion
+          </p>
+        }
+        <ion-button expand="block" class="primary-action" [disabled]="submitting() || !connectivity.online()" (click)="confirmFinish()">
           @if (submitting()) {
             <ion-spinner name="dots"></ion-spinner>
+          } @else if (!connectivity.online()) {
+            Connexion requise
           } @else {
             Terminer le match
           }

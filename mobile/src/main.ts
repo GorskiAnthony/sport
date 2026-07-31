@@ -13,6 +13,7 @@ import { AppComponent } from './app/app.component';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { AuthService } from './app/core/auth/auth.service';
 import { TournamentSessionService } from './app/core/auth/tournament-session.service';
+import { ConnectivityService } from './app/core/services/connectivity.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -27,5 +28,8 @@ bootstrapApplication(AppComponent, {
     // TournamentSessionService) — sans ça, un arbitre qui relance l'app est renvoyé sur
     // /login et doit rescanner le QR code physique.
     provideAppInitializer(() => inject(TournamentSessionService).restoreSession()),
+    // Le mode hors-ligne de l'écran arbitre (voir ScoreQueueService) a besoin de connaître
+    // l'état réseau dès le premier rendu, pas seulement après un premier changement.
+    provideAppInitializer(() => inject(ConnectivityService).init()),
   ],
 });

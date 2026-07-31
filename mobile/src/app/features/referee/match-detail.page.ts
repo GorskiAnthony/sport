@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
 import {
@@ -9,6 +10,7 @@ import {
   IonButtons,
   IonBackButton,
   IonButton,
+  IonIcon,
   IonContent,
   IonSpinner,
   IonText,
@@ -16,8 +18,10 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline } from 'ionicons/icons';
+import { alertCircleOutline, cloudOfflineOutline } from 'ionicons/icons';
 import { MatchService } from '../../core/services/match.service';
+import { ConnectivityService } from '../../core/services/connectivity.service';
+import { ScoreQueueService } from '../../core/services/score-queue.service';
 import { Match, MatchStatus, TeamSide } from '../../core/models/match.model';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
@@ -37,6 +41,7 @@ import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcru
     IonButtons,
     IonBackButton,
     IonButton,
+    IonIcon,
     IonContent,
     IonSpinner,
     IonText,
@@ -51,8 +56,13 @@ export class MatchDetailPage implements ViewWillEnter {
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
 
+  // Lus par le template (bandeau hors-ligne, blocage de "Terminer le match") — pas private,
+  // même convention que tournamentId ailleurs dans l'app.
+  readonly connectivity = inject(ConnectivityService);
+  readonly scoreQueue = inject(ScoreQueueService);
+
   constructor() {
-    addIcons({ alertCircleOutline });
+    addIcons({ alertCircleOutline, cloudOfflineOutline });
   }
 
   // Pas readonly / pas résolu au constructeur : Angular réutilise l'instance de ce composant
@@ -98,6 +108,10 @@ export class MatchDetailPage implements ViewWillEnter {
   ionViewWillEnter(): void {
     this.matchId = Number(this.route.snapshot.paramMap.get('id'));
     this.load();
+    // Filet de sécurité si l'app a été tuée avec des actions encore en attente — ScoreQueueService
+    // retente déjà automatiquement à la reconnexion, mais ça ne fait pas de mal de vérifier aussi
+    // à l'entrée sur l'écran (flush() est un no-op si hors-ligne ou déjà en cours).
+    void this.scoreQueue.flush();
   }
 
   statusLabel(status: MatchStatus): string {
@@ -145,7 +159,10 @@ export class MatchDetailPage implements ViewWillEnter {
 
   /** Optimiste : le compteur bouge tout de suite, avant même la réponse serveur — sur un
    *  terrain, l'arbitre doit sentir que le tap a marché immédiatement. Réconcilié avec la
-   *  réponse serveur en cas de succès (source de vérité), annulé en cas d'échec. */
+   *  réponse serveur en cas de succès (source de vérité), annulé en cas d'échec réel (le
+   *  serveur a refusé la requête). En cas d'échec réseau (pas de connexion), le tap part dans
+   *  ScoreQueueService au lieu d'être perdu — voir son commentaire pour pourquoi c'est sûr de
+   *  rejouer des deltas dans le désordre/en différé. */
   private adjustScore(team: TeamSide, delta: number): void {
     hapticTap();
     const scoreSignal = team === 'HOME' ? this.homeScore : this.awayScore;
@@ -153,17 +170,32 @@ export class MatchDetailPage implements ViewWillEnter {
     scoreSignal.update((v) => Math.max(0, v + delta));
     this.pulse(pulseSignal);
 
+    if (!this.connectivity.online()) {
+      void this.scoreQueue.enqueue(this.matchId, team, delta);
+      return;
+    }
+
     this.matchService.recordGoal(this.matchId, team, delta).subscribe({
       next: (match) => {
         this.match.set(match);
         this.homeScore.set(match.homeScore ?? 0);
         this.awayScore.set(match.awayScore ?? 0);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        if (this.isNetworkError(err)) {
+          void this.scoreQueue.enqueue(this.matchId, team, delta);
+          return;
+        }
         scoreSignal.update((v) => Math.max(0, v - delta));
         void this.showErrorToast();
       },
     });
+  }
+
+  // status === 0 signale un échec au niveau réseau (pas de connexion, requête jamais arrivée au
+  // serveur) plutôt qu'un vrai rejet serveur (403, 404, 500...) — voir HttpErrorResponse.
+  private isNetworkError(err: HttpErrorResponse): boolean {
+    return err.status === 0;
   }
 
   start(): void {
@@ -181,6 +213,11 @@ export class MatchDetailPage implements ViewWillEnter {
   }
 
   async confirmFinish(): Promise<void> {
+    if (!this.connectivity.online()) {
+      void this.showOfflineToast();
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Terminer le match ?',
       message: `Score final : ${this.homeScore()} - ${this.awayScore()}. Cette action est définitive.`,
@@ -219,6 +256,16 @@ export class MatchDetailPage implements ViewWillEnter {
       message: 'Une erreur est survenue. Réessayez.',
       duration: 3000,
       color: 'danger',
+      position: 'top',
+    });
+    await toast.present();
+  }
+
+  private async showOfflineToast(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: 'Connexion requise pour terminer le match.',
+      duration: 3000,
+      color: 'warning',
       position: 'top',
     });
     await toast.present();

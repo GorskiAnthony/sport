@@ -1,0 +1,51 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tournaments/' + tournamentId"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <app-breadcrumb [segments]="breadcrumbSegments()" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (loading()) {
+    @for (i of skeletonRows; track i) {
+      <app-match-row-skeleton />
+    }
+  } @else if (error()) {
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger le planning.">
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </app-empty-state>
+  } @else if (matches().length === 0) {
+    <app-empty-state icon="calendar-outline" message="Aucun match programmé pour ce tournoi." />
+  } @else {
+    <div class="venue-filter">
+      @for (venue of venues(); track venue) {
+        <ion-chip [color]="selectedVenue() === venue ? 'primary' : undefined" [outline]="selectedVenue() !== venue" (click)="selectVenue(venue)">
+          <ion-label>{{ venue }}</ion-label>
+        </ion-chip>
+      }
+    </div>
+
+    @if (filteredMatches().length === 0) {
+      <app-empty-state icon="calendar-outline" message="Aucun match sur ce terrain." />
+    } @else {
+      @for (match of filteredMatches(); track match.id; let i = $index) {
+        <app-match-row
+          [homeTeamName]="match.homeTeam.name"
+          [awayTeamName]="match.awayTeam.name"
+          [homeScore]="match.homeScore"
+          [awayScore]="match.awayScore"
+          [status]="match.status"
+          [phase]="matchMeta(match)"
+          [showStatusBadge]="true"
+          [clickable]="true"
+          [style.animation-delay.ms]="i * 50"
+          (rowClick)="openMatch(match.id)"
+        />
+      }
+    }
+  }
+</ion-content>

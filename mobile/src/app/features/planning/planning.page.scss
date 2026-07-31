@@ -1,0 +1,11 @@
+.venue-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+
+  ion-chip {
+    flex-shrink: 0;
+  }
+}
