@@ -18,6 +18,7 @@
 }
 
 .match-row {
+  position: relative;
   display: block;
   width: 100%;
   background: var(--ion-card-background, #161b22);
@@ -28,6 +29,16 @@
   color: inherit;
   text-align: inherit;
   box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.55);
+
+  // Même reflet "verre" que tournament-card — cohérence de surface à travers l'app.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 45%);
+    pointer-events: none;
+  }
 }
 
 .match-row--clickable {

@@ -31,31 +31,31 @@
       </ion-card-content>
     </ion-card>
 
-    <div class="action-row">
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'edit']">
-        <ion-icon slot="start" name="create-outline"></ion-icon>
-        Modifier
-      </ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'live']">
-        <ion-icon slot="start" name="eye-outline"></ion-icon>
-        Voir en direct
-      </ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'planning']">
-        <ion-icon slot="start" name="calendar-outline"></ion-icon>
-        Planning
-      </ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'referee-code']">
-        <ion-icon slot="start" name="qr-code-outline"></ion-icon>
-        Code arbitre
-      </ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'buvette']">
-        <ion-icon slot="start" name="cart-outline"></ion-icon>
-        Buvette
-      </ion-button>
-      <ion-button fill="outline" size="small" color="danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Supprimer
-      </ion-button>
+    <div class="quick-actions">
+      <button type="button" class="quick-action" [routerLink]="['/tournaments', t.id, 'edit']">
+        <span class="quick-action-icon"><ion-icon name="create-outline"></ion-icon></span>
+        <span class="quick-action-label">Modifier</span>
+      </button>
+      <button type="button" class="quick-action" [routerLink]="['/tournaments', t.id, 'live']">
+        <span class="quick-action-icon"><ion-icon name="eye-outline"></ion-icon></span>
+        <span class="quick-action-label">Direct</span>
+      </button>
+      <button type="button" class="quick-action" [routerLink]="['/tournaments', t.id, 'planning']">
+        <span class="quick-action-icon"><ion-icon name="calendar-outline"></ion-icon></span>
+        <span class="quick-action-label">Planning</span>
+      </button>
+      <button type="button" class="quick-action" [routerLink]="['/tournaments', t.id, 'referee-code']">
+        <span class="quick-action-icon"><ion-icon name="qr-code-outline"></ion-icon></span>
+        <span class="quick-action-label">Arbitre</span>
+      </button>
+      <button type="button" class="quick-action" [routerLink]="['/tournaments', t.id, 'buvette']">
+        <span class="quick-action-icon"><ion-icon name="cart-outline"></ion-icon></span>
+        <span class="quick-action-label">Buvette</span>
+      </button>
+      <button type="button" class="quick-action quick-action--danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">
+        <span class="quick-action-icon"><ion-icon name="trash-outline"></ion-icon></span>
+        <span class="quick-action-label">Supprimer</span>
+      </button>
     </div>
 
     <h2 class="section-title">Équipes ({{ t.teams.length }})</h2>

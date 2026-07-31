@@ -1,9 +1,66 @@
 
-.action-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+// Grille d'actions rapides — remplace l'ancienne rangée de boutons "pilule" outline (6 boutons
+// qui s'enroulaient sur 3 lignes façon liste de chips, cheap). Même langage visuel que l'icône
+// de sport sur tournament-card : pastille teintée + libellé dessous, regroupées dans une seule
+// surface plutôt que 6 éléments flottants séparés.
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
   margin: 8px 0 24px;
+  padding: 14px 4px;
+  background: var(--ion-card-background, #161b22);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+}
+
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 4px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+
+  &:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+.quick-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.14);
+  color: var(--ion-color-primary);
+}
+
+.quick-action--danger .quick-action-icon {
+  background: rgba(var(--ion-color-danger-rgb), 0.14);
+  color: var(--ion-color-danger);
+}
+
+.quick-action-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  text-align: center;
+  line-height: 1.2;
 }
 
 .section-title {

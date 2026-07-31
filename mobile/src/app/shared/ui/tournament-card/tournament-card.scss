@@ -22,6 +22,7 @@
   // pattern) — un tap sur un div custom peut ne pas remonter de façon fiable en clic sur
   // certaines WebView Android, alors qu'un élément natif cliquable l'est toujours. Les règles
   // ci-dessous neutralisent le style par défaut du <button> pour garder l'apparence de carte.
+  position: relative;
   display: grid;
   width: 100%;
   grid-template-columns: auto 1fr auto auto;
@@ -38,6 +39,18 @@
   cursor: pointer;
   box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.55);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  isolation: isolate;
+
+  // Reflet "verre" en haut de carte — même trucage que les surfaces premium (dégradé blanc très
+  // léger qui s'éteint vite), pour casser le plat d'un simple fond uni + bordure.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 45%);
+    pointer-events: none;
+  }
 
   &:active {
     transform: scale(0.98);
@@ -92,20 +105,25 @@
   gap: 6px;
 }
 
+// 40px (proche du minimum tactile recommandé de 44px) et pastille toujours visible plutôt que
+// transparente-jusqu'au-tap — sinon la cible est à la fois petite et invisible tant qu'on ne
+// l'a pas déjà trouvée. Même langage que quick-action-icon (tournament-detail).
 .referee-code-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   border: none;
-  background: transparent;
-  color: var(--ion-color-medium);
-  font-size: 1.1rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.14);
+  color: var(--ion-color-primary);
+  font-size: 1.3rem;
+  transition: transform 0.15s ease, background-color 0.15s ease;
 
   &:active {
-    background: var(--ion-color-step-100, rgba(255, 255, 255, 0.08));
+    transform: scale(0.92);
+    background: rgba(var(--ion-color-primary-rgb), 0.24);
   }
 }
 

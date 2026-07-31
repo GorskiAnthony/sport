@@ -102,3 +102,77 @@ body.barcode-scanning-active ion-app {
   --background: transparent;
   background: transparent;
 }
+
+/* Habillage premium des composants Ionic génériques (titre, carte, liste) — posé une fois ici
+   pour cascader sur tous les écrans plutôt que redupliqué page par page. But : sortir du rendu
+   Material plat par défaut (titre fin, cartes/items sans relief) pour rejoindre le traitement
+   déjà appliqué à mano sur tournament-card/match-row (ombre, bordure, radius). */
+
+/* Léger halo vert en haut du contenu, cohérent avec le glow des badges "en cours" — évite le
+   noir plat (#0D1117) sur les écrans peu remplis (ex. Mes tournois avec 1-2 cartes). */
+ion-content {
+  --background: radial-gradient(120% 55% at 50% 0%, rgba(34, 197, 94, 0.05) 0%, rgba(13, 17, 23, 0) 60%),
+    var(--ion-background-color, #0d1117);
+}
+
+/* Le titre par défaut d'ion-title est fin et sans relief — un poids plus fort et un tracking
+   resserré donnent un vrai effet "headline" d'app native plutôt qu'un intitulé de fenêtre. */
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ion-card par défaut : rectangle plat, coins à peine arrondis. Aligné ici sur le radius/relief
+   du reste de l'app (tournament-card = 20px, box-shadow douce vers le bas). */
+ion-card {
+  --background: var(--ion-card-background, #161b22);
+  position: relative;
+  margin: 0 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+}
+
+ion-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* ion-item/ion-list par défaut : liste plate à séparateurs "hairline". Détaché ici en petites
+   cartes espacées, cohérent avec tournament-card/match-row qui n'utilisent jamais de simple
+   ligne de séparation. --inner-border-width à 0 retire le hairline interne d'Ionic, qui jurerait
+   sinon avec les coins arrondis + la marge entre items. */
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: var(--ion-item-background, #161b22);
+  --border-width: 0;
+  --inner-border-width: 0;
+  --border-radius: 14px;
+  --padding-start: 14px;
+  --inner-padding-end: 10px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.5);
+}
+
+ion-item:last-of-type {
+  margin-bottom: 0;
+}
+
+ion-label h3 {
+  font-weight: 700;
+}
+
+ion-label p {
+  color: var(--ion-color-medium);
+}
+
+/* Onglet actif : léger glow sur l'icône plutôt que la simple teinte de couleur par défaut —
+   cohérent avec le glow déjà présent sur le badge "en cours" (status-badge). */
+ion-tab-button.tab-selected ion-icon {
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.55));
+}
