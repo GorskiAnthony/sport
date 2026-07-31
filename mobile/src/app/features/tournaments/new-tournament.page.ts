@@ -193,7 +193,9 @@ export class NewTournamentPage implements ViewWillEnter {
         name: this.name(),
         sport: this.sport(),
         category: this.category(),
-        location: this.location() || undefined,
+        // La colonne "location" est NOT NULL en base — toujours envoyer la chaîne (même vide),
+        // jamais undefined (qui serait omis du JSON et ferait échouer l'insertion).
+        location: this.location(),
         startDate: this.startDate(),
         endDate: this.endDate(),
         maxTeams: Number(this.maxTeams()) || 14,
