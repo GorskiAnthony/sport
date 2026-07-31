@@ -19,11 +19,28 @@ export const routes: Routes = [
     path: 'join/:token',
     loadComponent: () => import('./features/join/join.page').then((m) => m.JoinPage),
   },
+  // Coquille de navigation par onglets (Tournois / Compte) pour le flux organisateur — voir
+  // features/tabs/tabs.page.ts. Path vide : ne consomme aucun segment d'URL, donc
+  // '/tournaments' et '/account' restent les mêmes URLs qu'avant l'ajout des tabs. Les écrans
+  // poussés par-dessus (détail, création, live, arbitrage...) restent des routes sœurs plus bas
+  // dans ce fichier, montées par le ion-router-outlet racine : y naviguer remplace entièrement
+  // cette coquille, et la tab bar disparaît (comportement volontaire, voir le plan de refonte).
   {
-    path: 'tournaments',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/tournaments/tournament-list.page').then((m) => m.TournamentListPage),
+    path: '',
+    loadComponent: () => import('./features/tabs/tabs.page').then((m) => m.TabsPage),
+    children: [
+      {
+        path: 'tournaments',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/tournaments/tournament-list.page').then((m) => m.TournamentListPage),
+      },
+      {
+        path: 'account',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/account/account.page').then((m) => m.AccountPage),
+      },
+    ],
   },
   // Doit précéder 'tournaments/:id' (même longueur de chemin) — sinon Angular essaierait de
   // parser "new" comme un id.

@@ -5,14 +5,11 @@
       <ion-button routerLink="/tournaments/new" aria-label="Nouveau tournoi">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
       </ion-button>
-      <ion-button (click)="logout()" aria-label="Déconnexion">
-        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
-      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="ion-padding">
   <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -22,31 +19,23 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
   } @else if (error()) {
-    <div class="state-container">
-      <ion-text color="danger">Impossible de charger vos tournois.</ion-text>
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger vos tournois.">
       <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
-    </div>
+    </app-empty-state>
   } @else if (tournaments().length === 0) {
-    <div class="state-container">
-      <ion-text color="medium">Vous n'organisez aucun tournoi pour le moment.</ion-text>
-    </div>
+    <app-empty-state icon="trophy-outline" title="Aucun tournoi" message="Vous n'organisez aucun tournoi pour le moment.">
+      <ion-button routerLink="/tournaments/new">
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        Créer un tournoi
+      </ion-button>
+    </app-empty-state>
   } @else {
-    <ion-list>
-      @for (tournament of tournaments(); track tournament.id) {
-        <ion-item button detail="true" (click)="openTournament(tournament.id)">
-          <ion-label>
-            <h2>{{ tournament.name }}</h2>
-            <p>{{ tournament.sport }} · {{ tournament.category }}</p>
-            <p class="font-mono">{{ tournament.teamsCount }}/{{ tournament.maxTeams }} équipes</p>
-          </ion-label>
-          <ion-button fill="clear" slot="end" (click)="openRefereeCode($event, tournament.id)" aria-label="Code arbitre">
-            <ion-icon slot="icon-only" name="qr-code-outline"></ion-icon>
-          </ion-button>
-          <ion-badge slot="end" [color]="statusColor(tournament.status)">
-            {{ statusLabel(tournament.status) }}
-          </ion-badge>
-        </ion-item>
-      }
-    </ion-list>
+    @for (tournament of tournaments(); track tournament.id) {
+      <app-tournament-card
+        [tournament]="tournament"
+        (open)="openTournament(tournament.id)"
+        (openRefereeCode)="openRefereeCode(tournament.id)"
+      />
+    }
   }
 </ion-content>

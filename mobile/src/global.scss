@@ -43,6 +43,19 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* Bloc de chargement/erreur/vide centré — utilisé par la quasi-totalité des écrans (liste de
+   tournois, détail, live score, code arbitre, scan...) ; posé ici une fois plutôt que dupliqué
+   dans chaque .scss de page. Voir aussi shared/ui/empty-state, qui l'habille avec icône/action. */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
 /* Pendant un scan QR (voir QrScannerService.startScan), le plugin dessine la caméra native
    *derrière* la WebView — sans ce fond transparent sur toute l'app, l'UI habituelle (fond
    #0D1117 opaque) la masquerait entièrement. ion-app doit suivre body, sinon son propre fond

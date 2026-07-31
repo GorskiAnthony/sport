@@ -10,28 +10,18 @@ import {
   IonBackButton,
   IonButton,
   IonContent,
-  IonBadge,
   IonSpinner,
   IonText,
   AlertController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { alertCircleOutline } from 'ionicons/icons';
 import { MatchService } from '../../core/services/match.service';
 import { Match, MatchStatus, TeamSide } from '../../core/models/match.model';
-
-const STATUS_LABELS: Record<MatchStatus, string> = {
-  SCHEDULED: 'À venir',
-  ONGOING: 'En cours',
-  FINISHED: 'Terminé',
-  FORFEIT: 'Forfait',
-};
-
-const STATUS_COLORS: Record<MatchStatus, string> = {
-  SCHEDULED: 'warning',
-  ONGOING: 'primary',
-  FINISHED: 'medium',
-  FORFEIT: 'danger',
-};
+import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
+import { MATCH_STATUS_COLORS, MATCH_STATUS_LABELS } from '../../shared/utils/match-status';
 
 @Component({
   selector: 'app-match-detail',
@@ -46,9 +36,10 @@ const STATUS_COLORS: Record<MatchStatus, string> = {
     IonBackButton,
     IonButton,
     IonContent,
-    IonBadge,
     IonSpinner,
     IonText,
+    StatusBadgeComponent,
+    EmptyStateComponent,
   ],
 })
 export class MatchDetailPage implements ViewWillEnter {
@@ -56,6 +47,10 @@ export class MatchDetailPage implements ViewWillEnter {
   private readonly matchService = inject(MatchService);
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
+
+  constructor() {
+    addIcons({ alertCircleOutline });
+  }
 
   // Pas readonly / pas résolu au constructeur : Angular réutilise l'instance de ce composant
   // en navigant d'un match vers un autre (même route paramétrée /matches/:id), donc
@@ -81,11 +76,11 @@ export class MatchDetailPage implements ViewWillEnter {
   }
 
   statusLabel(status: MatchStatus): string {
-    return STATUS_LABELS[status];
+    return MATCH_STATUS_LABELS[status];
   }
 
-  statusColor(status: MatchStatus): string {
-    return STATUS_COLORS[status];
+  statusColor(status: MatchStatus): 'primary' | 'warning' | 'danger' | 'medium' {
+    return MATCH_STATUS_COLORS[status];
   }
 
   load(): void {

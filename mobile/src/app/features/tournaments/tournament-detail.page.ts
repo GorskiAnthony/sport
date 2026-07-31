@@ -13,7 +13,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonBadge,
   IonList,
   IonItem,
   IonLabel,
@@ -27,7 +26,16 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { createOutline, trashOutline, addOutline, checkmarkOutline, closeOutline } from 'ionicons/icons';
+import {
+  createOutline,
+  trashOutline,
+  addOutline,
+  checkmarkOutline,
+  closeOutline,
+  eyeOutline,
+  qrCodeOutline,
+  alertCircleOutline,
+} from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TeamService } from '../../core/services/team.service';
 import { BracketService } from '../../core/services/bracket.service';
@@ -35,6 +43,9 @@ import { TournamentDetail, TournamentFormat } from '../../core/models/tournament
 import { Match } from '../../core/models/match.model';
 import { Team } from '../../core/models/team.model';
 import { FormatPicker } from '../../shared/ui/format-picker/format-picker';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
+import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { groupMatchesIntoRounds, Round } from '../../shared/utils/rounds';
 import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/tournament-status';
@@ -71,7 +82,6 @@ const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonBadge,
     IonList,
     IonItem,
     IonLabel,
@@ -82,6 +92,9 @@ const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
     IonText,
     IonSpinner,
     FormatPicker,
+    StatusBadgeComponent,
+    EmptyStateComponent,
+    MatchRowComponent,
   ],
 })
 export class TournamentDetailPage implements ViewWillEnter {
@@ -155,7 +168,7 @@ export class TournamentDetailPage implements ViewWillEnter {
   });
 
   constructor() {
-    addIcons({ createOutline, trashOutline, addOutline, checkmarkOutline, closeOutline });
+    addIcons({ createOutline, trashOutline, addOutline, checkmarkOutline, closeOutline, eyeOutline, qrCodeOutline, alertCircleOutline });
   }
 
   ionViewWillEnter(): void {
@@ -183,7 +196,7 @@ export class TournamentDetailPage implements ViewWillEnter {
     return TOURNAMENT_STATUS_LABELS[status];
   }
 
-  statusColor(status: TournamentDetail['status']): string {
+  statusColor(status: TournamentDetail['status']): 'primary' | 'warning' | 'danger' | 'medium' {
     return TOURNAMENT_STATUS_COLORS[status];
   }
 

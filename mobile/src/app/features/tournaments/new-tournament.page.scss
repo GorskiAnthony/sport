@@ -1,24 +1,55 @@
-.state-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 64px 24px;
-  text-align: center;
-}
 
 .step-indicator {
   display: flex;
   align-items: center;
+  margin: 4px 0 24px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
   gap: 8px;
   color: var(--ion-color-medium);
-  font-size: 0.85rem;
-  margin: 0 0 20px;
 
-  span.active {
-    color: var(--ion-color-primary);
-    font-weight: 600;
+  &.active {
+    color: var(--ion-text-color);
+  }
+}
+
+.step-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  .step.active & {
+    background: var(--ion-color-primary);
+    border-color: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.step-connector {
+  flex: 1;
+  height: 1px;
+  margin: 0 12px;
+  background: var(--ion-color-medium);
+  opacity: 0.4;
+
+  &.done {
+    background: var(--ion-color-primary);
+    opacity: 1;
   }
 }
 

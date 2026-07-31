@@ -13,29 +13,39 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
   } @else if (notFound() || !tournament()) {
-    <div class="state-container">
-      <ion-text color="danger">Tournoi introuvable.</ion-text>
-    </div>
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Tournoi introuvable." />
   } @else if (tournament(); as t) {
     <ion-card>
       <ion-card-header>
         <ion-card-title>{{ t.name }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>{{ t.sport }} · {{ t.category }}</p>
+        <p class="sport-category">{{ t.sport }} · {{ t.category }}</p>
         <p>{{ t.startDate }} – {{ t.endDate }}</p>
         @if (t.location) {
           <p>{{ t.location }}</p>
         }
-        <ion-badge [color]="statusColor(t.status)">{{ statusLabel(t.status) }}</ion-badge>
+        <app-status-badge [color]="statusColor(t.status)" [label]="statusLabel(t.status)" />
       </ion-card-content>
     </ion-card>
 
     <div class="action-row">
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'edit']">Modifier</ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'live']">Voir en direct</ion-button>
-      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'referee-code']">Code arbitre</ion-button>
-      <ion-button fill="outline" size="small" color="danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">Supprimer</ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'edit']">
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Modifier
+      </ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'live']">
+        <ion-icon slot="start" name="eye-outline"></ion-icon>
+        Voir en direct
+      </ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'referee-code']">
+        <ion-icon slot="start" name="qr-code-outline"></ion-icon>
+        Code arbitre
+      </ion-button>
+      <ion-button fill="outline" size="small" color="danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Supprimer
+      </ion-button>
     </div>
 
     <h2 class="section-title">Équipes ({{ t.teams.length }})</h2>
@@ -130,15 +140,13 @@
             @for (round of roundsFor(group.matches, group.teams); track round.label) {
               <h3 class="round-label">{{ round.label }}</h3>
               @for (match of round.matches; track match.id) {
-                <p class="match-row">
-                  <span>{{ match.homeTeam.name }}</span>
-                  <span class="font-mono score">
-                    @if (match.status === 'FORFEIT') { Forfait }
-                    @else if (match.homeScore !== null && match.awayScore !== null) { {{ match.homeScore }} – {{ match.awayScore }} }
-                    @else { vs }
-                  </span>
-                  <span>{{ match.awayTeam.name }}</span>
-                </p>
+                <app-match-row
+                  [homeTeamName]="match.homeTeam.name"
+                  [awayTeamName]="match.awayTeam.name"
+                  [homeScore]="match.homeScore"
+                  [awayScore]="match.awayScore"
+                  [status]="match.status"
+                />
               }
             }
             <h4 class="standings-title">Classement</h4>
@@ -166,15 +174,13 @@
       @for (round of roundsFor(t.format === 'ROUND_ROBIN' ? t.matches : knockoutMatches(), t.teams); track round.label) {
         <h3 class="round-label">{{ round.label }}</h3>
         @for (match of round.matches; track match.id) {
-          <p class="match-row">
-            <span>{{ match.homeTeam.name }}</span>
-            <span class="font-mono score">
-              @if (match.status === 'FORFEIT') { Forfait }
-              @else if (match.homeScore !== null && match.awayScore !== null) { {{ match.homeScore }} – {{ match.awayScore }} }
-              @else { vs }
-            </span>
-            <span>{{ match.awayTeam.name }}</span>
-          </p>
+          <app-match-row
+            [homeTeamName]="match.homeTeam.name"
+            [awayTeamName]="match.awayTeam.name"
+            [homeScore]="match.homeScore"
+            [awayScore]="match.awayScore"
+            [status]="match.status"
+          />
         }
       }
 

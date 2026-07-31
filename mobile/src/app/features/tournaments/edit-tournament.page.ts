@@ -20,8 +20,11 @@ import {
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { SPORTS } from '../../shared/utils/sports';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 
 interface FormErrors {
   name?: string;
@@ -62,6 +65,7 @@ const CATEGORIES = [
     IonTextarea,
     IonText,
     IonSpinner,
+    EmptyStateComponent,
   ],
 })
 export class EditTournamentPage implements ViewWillEnter {
@@ -69,6 +73,10 @@ export class EditTournamentPage implements ViewWillEnter {
   private readonly tournamentService = inject(TournamentService);
   private readonly router = inject(Router);
   private readonly toastController = inject(ToastController);
+
+  constructor() {
+    addIcons({ alertCircleOutline });
+  }
 
   // Lu par le template pour construire le defaultHref de ion-back-button — pas private.
   tournamentId!: number;

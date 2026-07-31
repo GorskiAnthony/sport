@@ -9,18 +9,24 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   @if (planBlocked()) {
-    <div class="state-container">
-      <ion-text color="warning">
-        <h2>Limite de tournois atteinte</h2>
-      </ion-text>
-      <p>Votre offre actuelle ne permet pas de créer de nouveau tournoi. Passez à un plan supérieur depuis le site web pour en créer davantage.</p>
-    </div>
+    <app-empty-state
+      icon="lock-closed-outline"
+      tone="warning"
+      title="Limite de tournois atteinte"
+      message="Votre offre actuelle ne permet pas de créer de nouveau tournoi. Passez à un plan supérieur depuis le site web pour en créer davantage."
+    />
   } @else {
-    <p class="step-indicator">
-      <span [class.active]="step() === 1">1. Tournoi</span>
-      <span aria-hidden="true">→</span>
-      <span [class.active]="step() === 2">2. Équipes</span>
-    </p>
+    <div class="step-indicator" role="tablist" aria-label="Étapes de création">
+      <div class="step" [class.active]="step() === 1">
+        <span class="step-dot">1</span>
+        <span class="step-label">Tournoi</span>
+      </div>
+      <div class="step-connector" [class.done]="step() === 2"></div>
+      <div class="step" [class.active]="step() === 2">
+        <span class="step-dot">2</span>
+        <span class="step-label">Équipes</span>
+      </div>
+    </div>
 
     @if (step() === 1) {
       <form (submit)="$event.preventDefault(); submitStepOne()">

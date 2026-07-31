@@ -22,7 +22,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { trashOutline, addOutline } from 'ionicons/icons';
+import { trashOutline, addOutline, lockClosedOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TeamService } from '../../core/services/team.service';
 import { BracketService } from '../../core/services/bracket.service';
@@ -30,6 +30,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { TournamentFormat } from '../../core/models/tournament.model';
 import { Plan } from '../../core/models/user.model';
 import { FormatPicker } from '../../shared/ui/format-picker/format-picker';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { todayIsoDate } from '../../shared/utils/today';
 import { SPORTS } from '../../shared/utils/sports';
 
@@ -82,6 +83,7 @@ const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
     IonSpinner,
     IonIcon,
     FormatPicker,
+    EmptyStateComponent,
   ],
 })
 export class NewTournamentPage implements ViewWillEnter {
@@ -118,7 +120,7 @@ export class NewTournamentPage implements ViewWillEnter {
   readonly teams = signal<TeamRow[]>([]);
 
   constructor() {
-    addIcons({ trashOutline, addOutline });
+    addIcons({ trashOutline, addOutline, lockClosedOutline });
   }
 
   ionViewWillEnter(): void {

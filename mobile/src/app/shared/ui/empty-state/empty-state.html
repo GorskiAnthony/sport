@@ -1,0 +1,17 @@
+<div class="state-container">
+  @if (icon()) {
+    <ion-icon
+      [name]="icon()"
+      class="empty-state-icon"
+      [class.empty-state-icon--warning]="tone() === 'warning'"
+      [class.empty-state-icon--danger]="tone() === 'danger'"
+    ></ion-icon>
+  }
+  @if (title()) {
+    <h2>{{ title() }}</h2>
+  }
+  <p>{{ message() }}</p>
+  <div class="state-action">
+    <ng-content></ng-content>
+  </div>
+</div>

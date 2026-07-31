@@ -1,0 +1,35 @@
+<ng-template #inner>
+  <div class="teams-line">
+    <span class="team home">{{ homeTeamName() }}</span>
+    <span class="score font-mono">
+      @if (status() === 'FORFEIT') {
+        Forfait
+      } @else if (homeScore() !== null && awayScore() !== null) {
+        {{ homeScore() }} – {{ awayScore() }}
+      } @else {
+        vs
+      }
+    </span>
+    <span class="team away">{{ awayTeamName() }}</span>
+  </div>
+  @if (phase() || showStatusBadge()) {
+    <div class="meta-line">
+      @if (phase()) {
+        <span class="phase">{{ phase() }}</span>
+      }
+      @if (showStatusBadge() && status()) {
+        <app-status-badge [color]="statusColor" [label]="statusLabel" />
+      }
+    </div>
+  }
+</ng-template>
+
+@if (clickable()) {
+  <button type="button" class="match-row match-row--clickable" (click)="rowClick.emit()">
+    <ng-container *ngTemplateOutlet="inner"></ng-container>
+  </button>
+} @else {
+  <div class="match-row">
+    <ng-container *ngTemplateOutlet="inner"></ng-container>
+  </div>
+}

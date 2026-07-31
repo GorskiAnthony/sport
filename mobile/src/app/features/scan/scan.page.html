@@ -21,15 +21,13 @@
     }
 
     @case ('explain') {
-      <div class="state-container">
-        <ion-icon name="camera-outline" class="state-icon"></ion-icon>
-        <h2>Accès à l'appareil photo</h2>
-        <p>
-          Pour scanner le QR code d'un tournoi, l'application a besoin d'accéder à votre appareil
-          photo. Il ne sert qu'à lire le code — aucune photo n'est prise ni conservée.
-        </p>
+      <app-empty-state
+        icon="camera-outline"
+        title="Accès à l'appareil photo"
+        message="Pour scanner le QR code d'un tournoi, l'application a besoin d'accéder à votre appareil photo. Il ne sert qu'à lire le code — aucune photo n'est prise ni conservée."
+      >
         <ion-button expand="block" (click)="requestAccess()">Autoriser l'accès</ion-button>
-      </div>
+      </app-empty-state>
     }
 
     @case ('scanning') {
@@ -45,35 +43,36 @@
     }
 
     @case ('denied') {
-      <div class="state-container">
-        <ion-icon name="close-outline" class="state-icon danger"></ion-icon>
-        <h2>Accès refusé</h2>
-        <p>
-          Sans accès à l'appareil photo, impossible de scanner un QR code. Autorisez l'accès dans
-          les réglages de votre téléphone pour continuer.
-        </p>
+      <app-empty-state
+        icon="close-outline"
+        tone="danger"
+        title="Accès refusé"
+        message="Sans accès à l'appareil photo, impossible de scanner un QR code. Autorisez l'accès dans les réglages de votre téléphone pour continuer."
+      >
         <ion-button expand="block" (click)="openSettings()">
           <ion-icon slot="start" name="settings-outline"></ion-icon>
           Ouvrir les réglages
         </ion-button>
-      </div>
+      </app-empty-state>
     }
 
     @case ('not-found') {
-      <div class="state-container">
-        <ion-icon name="close-outline" class="state-icon danger"></ion-icon>
-        <h2>QR code non reconnu</h2>
-        <p>Ce code ne correspond pas à un tournoi. Vérifiez que c'est bien le code arbitre affiché par l'organisateur.</p>
+      <app-empty-state
+        icon="close-outline"
+        tone="danger"
+        title="QR code non reconnu"
+        message="Ce code ne correspond pas à un tournoi. Vérifiez que c'est bien le code arbitre affiché par l'organisateur."
+      >
         <ion-button expand="block" (click)="retry()">Réessayer</ion-button>
-      </div>
+      </app-empty-state>
     }
 
     @case ('unsupported') {
-      <div class="state-container">
-        <ion-icon name="camera-outline" class="state-icon"></ion-icon>
-        <h2>Scanner indisponible</h2>
-        <p>Cet appareil ne dispose pas d'un appareil photo utilisable pour scanner un QR code.</p>
-      </div>
+      <app-empty-state
+        icon="camera-outline"
+        title="Scanner indisponible"
+        message="Cet appareil ne dispose pas d'un appareil photo utilisable pour scanner un QR code."
+      />
     }
   }
 </ion-content>

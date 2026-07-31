@@ -5,34 +5,37 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p class="subtitle">
-    Vous allez accéder aux matchs de ce tournoi pour arbitrer. Aucun compte requis.
-  </p>
+  <div class="auth-card">
+    <img src="assets/brand/logo_white.png" alt="Tournoi Center" class="logo" />
+    <p class="subtitle">
+      Vous allez accéder aux matchs de ce tournoi pour arbitrer. Aucun compte requis.
+    </p>
 
-  <form (submit)="$event.preventDefault(); join()">
-    <ion-item fill="outline">
-      <ion-label position="stacked">Votre nom (optionnel)</ion-label>
-      <ion-input
-        type="text"
-        autocomplete="name"
-        placeholder="Anonyme"
-        [value]="refereeName()"
-        (ionInput)="onNameInput($any($event.detail).value)"
-      ></ion-input>
-    </ion-item>
+    <form (submit)="$event.preventDefault(); join()">
+      <ion-item fill="outline">
+        <ion-label position="stacked">Votre nom (optionnel)</ion-label>
+        <ion-input
+          type="text"
+          autocomplete="name"
+          placeholder="Anonyme"
+          [value]="refereeName()"
+          (ionInput)="onNameInput($any($event.detail).value)"
+        ></ion-input>
+      </ion-item>
 
-    @if (error()) {
-      <ion-text color="danger" class="field-error">
-        Ce QR code n'est plus valide. Demandez-en un nouveau à l'organisateur.
-      </ion-text>
-    }
-
-    <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
-      @if (loading()) {
-        <ion-spinner name="dots"></ion-spinner>
-      } @else {
-        Rejoindre
+      @if (error()) {
+        <ion-text color="danger" class="field-error">
+          Ce QR code n'est plus valide. Demandez-en un nouveau à l'organisateur.
+        </ion-text>
       }
-    </ion-button>
-  </form>
+
+      <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
+        @if (loading()) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          Rejoindre
+        }
+      </ion-button>
+    </form>
+  </div>
 </ion-content>

@@ -5,6 +5,7 @@ import { IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, 
 import { addIcons } from 'ionicons';
 import { cameraOutline, flashOutline, flashOffOutline, closeOutline, settingsOutline } from 'ionicons/icons';
 import { QrScannerService } from '../../core/services/qr-scanner.service';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import type { PluginListenerHandle } from '@capacitor/core';
 
 type ScanState = 'checking' | 'explain' | 'scanning' | 'denied' | 'unsupported' | 'not-found';
@@ -18,7 +19,7 @@ type ScanState = 'checking' | 'explain' | 'scanning' | 'denied' | 'unsupported' 
   selector: 'app-scan',
   templateUrl: './scan.page.html',
   styleUrls: ['./scan.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonIcon],
+  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonIcon, EmptyStateComponent],
 })
 export class ScanPage implements ViewWillEnter, ViewWillLeave {
   private readonly scanner = inject(QrScannerService);

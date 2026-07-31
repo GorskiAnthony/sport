@@ -5,44 +5,47 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p class="subtitle">Organisateur, connectez-vous pour gérer vos tournois.</p>
+  <div class="auth-card">
+    <img src="assets/brand/logo_white.png" alt="Tournoi Center" class="logo" />
+    <p class="subtitle">Organisateur, connectez-vous pour gérer vos tournois.</p>
 
-  <form (submit)="$event.preventDefault(); submit()">
-    <ion-item fill="outline" [class.ion-invalid]="!!errors().email">
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input
-        type="email"
-        inputmode="email"
-        autocomplete="email"
-        [value]="email()"
-        (ionInput)="onEmailInput($any($event.detail).value)"
-      ></ion-input>
-    </ion-item>
-    @if (errors().email) {
-      <ion-text color="danger" class="field-error">{{ errors().email }}</ion-text>
-    }
-
-    <ion-item fill="outline" [class.ion-invalid]="!!errors().password">
-      <ion-label position="stacked">Mot de passe</ion-label>
-      <ion-input
-        type="password"
-        autocomplete="current-password"
-        [value]="password()"
-        (ionInput)="onPasswordInput($any($event.detail).value)"
-      ></ion-input>
-    </ion-item>
-    @if (errors().password) {
-      <ion-text color="danger" class="field-error">{{ errors().password }}</ion-text>
-    }
-
-    <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
-      @if (loading()) {
-        <ion-spinner name="dots"></ion-spinner>
-      } @else {
-        Se connecter
+    <form (submit)="$event.preventDefault(); submit()">
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().email">
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          [value]="email()"
+          (ionInput)="onEmailInput($any($event.detail).value)"
+        ></ion-input>
+      </ion-item>
+      @if (errors().email) {
+        <ion-text color="danger" class="field-error">{{ errors().email }}</ion-text>
       }
-    </ion-button>
-  </form>
+
+      <ion-item fill="outline" [class.ion-invalid]="!!errors().password">
+        <ion-label position="stacked">Mot de passe</ion-label>
+        <ion-input
+          type="password"
+          autocomplete="current-password"
+          [value]="password()"
+          (ionInput)="onPasswordInput($any($event.detail).value)"
+        ></ion-input>
+      </ion-item>
+      @if (errors().password) {
+        <ion-text color="danger" class="field-error">{{ errors().password }}</ion-text>
+      }
+
+      <ion-button expand="block" type="submit" class="submit-button" [disabled]="loading()">
+        @if (loading()) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          Se connecter
+        }
+      </ion-button>
+    </form>
+  </div>
 
   <div class="referee-cta">
     <p>Vous êtes arbitre ?</p>

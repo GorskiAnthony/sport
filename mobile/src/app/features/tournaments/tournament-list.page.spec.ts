@@ -2,13 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { AuthService } from '../../core/auth/auth.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentListPage } from './tournament-list.page';
 import { TournamentSummary } from '../../core/models/tournament.model';
 
 describe('TournamentListPage', () => {
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
   let tournamentServiceSpy: jasmine.SpyObj<TournamentService>;
   let router: Router;
 
@@ -16,7 +14,7 @@ describe('TournamentListPage', () => {
     {
       id: 1,
       name: 'Coupe des vacances',
-      sport: 'Football',
+      sport: 'football',
       category: 'Senior',
       location: 'Marseille',
       startDate: '2026-08-01',
@@ -29,15 +27,13 @@ describe('TournamentListPage', () => {
   ];
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
     tournamentServiceSpy = jasmine.createSpyObj('TournamentService', ['getMine']);
 
     await TestBed.configureTestingModule({
       imports: [TournamentListPage],
       providers: [
-        { provide: AuthService, useValue: authServiceSpy },
         { provide: TournamentService, useValue: tournamentServiceSpy },
-        // routerLink (bouton "+" et lignes de tournoi) a besoin d'un vrai Router pour calculer
+        // routerLink (bouton "+" et cartes de tournoi) a besoin d'un vrai Router pour calculer
         // ses href — voir login.page.spec.ts pour la même raison.
         provideRouter([]),
       ],
@@ -126,45 +122,21 @@ describe('TournamentListPage', () => {
     expect(page.tournaments()).toEqual(tournaments);
   });
 
-  it('opens the referee code screen and stops the row click from also firing', () => {
+  it('opens the referee code screen for a tournament', () => {
     tournamentServiceSpy.getMine.and.returnValue(of([]));
     const page = createPage();
-    const event = jasmine.createSpyObj('Event', ['stopPropagation']);
 
-    page.openRefereeCode(event, 42);
+    page.openRefereeCode(42);
 
-    expect(event.stopPropagation).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/tournaments', 42, 'referee-code']);
   });
 
-  it('logs out and navigates to /login', () => {
-    tournamentServiceSpy.getMine.and.returnValue(of([]));
-    const page = createPage();
-
-    page.logout();
-
-    expect(authServiceSpy.logout).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-  });
-
-  it('navigates to the tournament management hub when a row is opened', () => {
+  it('navigates to the tournament management hub when a card is opened', () => {
     tournamentServiceSpy.getMine.and.returnValue(of([]));
     const page = createPage();
 
     page.openTournament(42);
 
     expect(router.navigate).toHaveBeenCalledWith(['/tournaments', 42]);
-  });
-
-  it('maps status to the design-system label and color', () => {
-    tournamentServiceSpy.getMine.and.returnValue(of([]));
-    const page = createPage();
-
-    expect(page.statusLabel('ONGOING')).toBe('En cours');
-    expect(page.statusColor('ONGOING')).toBe('primary');
-    expect(page.statusLabel('UPCOMING')).toBe('À venir');
-    expect(page.statusColor('UPCOMING')).toBe('warning');
-    expect(page.statusLabel('FINISHED')).toBe('Terminé');
-    expect(page.statusColor('FINISHED')).toBe('medium');
   });
 });

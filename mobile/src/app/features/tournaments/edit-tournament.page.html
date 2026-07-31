@@ -13,9 +13,7 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
   } @else if (notFound()) {
-    <div class="state-container">
-      <ion-text color="danger">Tournoi introuvable.</ion-text>
-    </div>
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Tournoi introuvable." />
   } @else {
     <form (submit)="$event.preventDefault(); submit()">
       <ion-item fill="outline" [class.ion-invalid]="!!errors().name">

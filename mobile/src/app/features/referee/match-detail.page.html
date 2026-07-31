@@ -13,10 +13,9 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
   } @else if (error() || !match()) {
-    <div class="state-container">
-      <ion-text color="danger">Impossible de charger ce match.</ion-text>
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger ce match.">
       <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
-    </div>
+    </app-empty-state>
   } @else if (match(); as m) {
     <div class="match-header">
       <p class="meta">
@@ -26,7 +25,7 @@
       @if (m.date) {
         <p class="meta">{{ m.date | date: 'dd/MM/yy HH:mm' }}</p>
       }
-      <ion-badge [color]="statusColor(m.status)">{{ statusLabel(m.status) }}</ion-badge>
+      <app-status-badge [color]="statusColor(m.status)" [label]="statusLabel(m.status)" />
     </div>
 
     @switch (m.status) {

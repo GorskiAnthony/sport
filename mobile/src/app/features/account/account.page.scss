@@ -1,0 +1,41 @@
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 16px 40px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-primary-rgb), 0.15);
+  color: var(--ion-color-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+h2 {
+  margin: 0 0 2px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.email {
+  margin: 0 0 16px;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+.plan-chip {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}

@@ -13,10 +13,9 @@
       <ion-spinner name="dots"></ion-spinner>
     </div>
   } @else if (error()) {
-    <div class="state-container">
-      <ion-text color="danger">Impossible de charger le code.</ion-text>
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger le code.">
       <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
-    </div>
+    </app-empty-state>
   } @else {
     <p class="subtitle">
       Un arbitre qui scanne ce QR code accède directement aux matchs de ce tournoi, sans compte

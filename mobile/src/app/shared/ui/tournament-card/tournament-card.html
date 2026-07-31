@@ -1,0 +1,25 @@
+<div
+  class="tournament-card"
+  role="button"
+  tabindex="0"
+  (click)="open.emit()"
+  (keydown.enter)="open.emit()"
+  (keydown.space)="open.emit()"
+>
+  <span class="sport-icon" aria-hidden="true">{{ sportIcon() }}</span>
+
+  <div class="tournament-info">
+    <h2>{{ tournament().name }}</h2>
+    <p class="meta">{{ tournament().sport }} · {{ tournament().category }}</p>
+    <p class="meta font-mono">{{ tournament().teamsCount }}/{{ tournament().maxTeams }} équipes</p>
+  </div>
+
+  <div class="tournament-actions">
+    <app-status-badge [color]="statusColor()" [label]="statusLabel()" />
+    <button type="button" class="referee-code-button" (click)="onRefereeCodeClick($event)" aria-label="Code arbitre">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </button>
+  </div>
+
+  <ion-icon name="chevron-forward-outline" class="chevron" aria-hidden="true"></ion-icon>
+</div>

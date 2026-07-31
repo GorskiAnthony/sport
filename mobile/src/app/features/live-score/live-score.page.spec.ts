@@ -129,14 +129,4 @@ describe('LiveScorePage', () => {
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/matches', 42]);
   });
-
-  it('maps status to the design-system label and color', () => {
-    matchServiceSpy.getByTournament.and.returnValue(of([]));
-    const page = createPage();
-
-    expect(page.statusLabel('ONGOING')).toBe('En direct');
-    expect(page.statusColor('ONGOING')).toBe('primary');
-    expect(page.statusLabel('FORFEIT')).toBe('Forfait');
-    expect(page.statusColor('FORFEIT')).toBe('danger');
-  });
 });

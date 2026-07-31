@@ -9,31 +9,15 @@ import {
   IonBackButton,
   IonButton,
   IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonBadge,
   IonSpinner,
-  IonText,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { alertCircleOutline, calendarOutline } from 'ionicons/icons';
 import { MatchService } from '../../core/services/match.service';
 import { LiveUpdateService } from '../../core/services/live-update.service';
-import { Match, MatchStatus } from '../../core/models/match.model';
-
-const STATUS_LABELS: Record<MatchStatus, string> = {
-  SCHEDULED: 'À venir',
-  ONGOING: 'En direct',
-  FINISHED: 'Terminé',
-  FORFEIT: 'Forfait',
-};
-
-// Même mapping que frontend/src/app/shared/ui/status-badge — voir .claude/skills/design-system.
-const STATUS_COLORS: Record<MatchStatus, string> = {
-  SCHEDULED: 'warning',
-  ONGOING: 'primary',
-  FINISHED: 'medium',
-  FORFEIT: 'danger',
-};
+import { Match } from '../../core/models/match.model';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
+import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
 
 @Component({
   selector: 'app-live-score',
@@ -47,12 +31,9 @@ const STATUS_COLORS: Record<MatchStatus, string> = {
     IonBackButton,
     IonButton,
     IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonBadge,
     IonSpinner,
-    IonText,
+    EmptyStateComponent,
+    MatchRowComponent,
   ],
 })
 export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
@@ -71,6 +52,10 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   readonly loading = signal(true);
   readonly error = signal(false);
 
+  constructor() {
+    addIcons({ alertCircleOutline, calendarOutline });
+  }
+
   // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
   // détruire/recréer (ngOnInit/ngOnDestroy ne se redéclenchent pas de façon fiable) — on
   // s'abonne/désabonne au WebSocket en symétrie avec l'entrée/sortie réelle de l'écran.
@@ -86,14 +71,6 @@ export class LiveScorePage implements ViewWillEnter, ViewWillLeave {
   ionViewWillLeave(): void {
     this.unsubscribeLive?.();
     this.unsubscribeLive = null;
-  }
-
-  statusLabel(status: MatchStatus): string {
-    return STATUS_LABELS[status];
-  }
-
-  statusColor(status: MatchStatus): string {
-    return STATUS_COLORS[status];
   }
 
   load(): void {

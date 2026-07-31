@@ -11,10 +11,12 @@ import {
   IonButton,
   IonContent,
   IonSpinner,
-  IonText,
   AlertController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 
 /** L'organisateur montre ce QR code à ses arbitres — le scanner leur donne un accès direct au
  *  tournoi, sans compte (voir mobile/src/app/features/join/join.page.ts). */
@@ -22,7 +24,7 @@ import { TournamentService } from '../../core/services/tournament.service';
   selector: 'app-referee-code',
   templateUrl: './referee-code.page.html',
   styleUrls: ['./referee-code.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonSpinner, IonText],
+  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonSpinner, EmptyStateComponent],
 })
 export class RefereeCodePage implements ViewWillEnter {
   private readonly route = inject(ActivatedRoute);
@@ -35,6 +37,10 @@ export class RefereeCodePage implements ViewWillEnter {
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly regenerating = signal(false);
+
+  constructor() {
+    addIcons({ alertCircleOutline });
+  }
 
   ionViewWillEnter(): void {
     this.tournamentId = Number(this.route.snapshot.paramMap.get('id'));

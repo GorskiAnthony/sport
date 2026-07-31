@@ -9,22 +9,17 @@ import {
   IonButtons,
   IonButton,
   IonIcon,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonBadge,
   IonSpinner,
-  IonText,
   IonRefresher,
   IonRefresherContent,
   RefresherCustomEvent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { logOutOutline, qrCodeOutline, addOutline } from 'ionicons/icons';
-import { AuthService } from '../../core/auth/auth.service';
+import { addOutline, trophyOutline, alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
-import { TournamentStatus, TournamentSummary } from '../../core/models/tournament.model';
-import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/tournament-status';
+import { TournamentSummary } from '../../core/models/tournament.model';
+import { TournamentCardComponent } from '../../shared/ui/tournament-card/tournament-card';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 
 @Component({
   selector: 'app-tournament-list',
@@ -39,18 +34,14 @@ import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared
     IonButtons,
     IonButton,
     IonIcon,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonBadge,
     IonSpinner,
-    IonText,
     IonRefresher,
     IonRefresherContent,
+    TournamentCardComponent,
+    EmptyStateComponent,
   ],
 })
 export class TournamentListPage implements ViewWillEnter {
-  private readonly authService = inject(AuthService);
   private readonly tournamentService = inject(TournamentService);
   private readonly router = inject(Router);
 
@@ -59,7 +50,7 @@ export class TournamentListPage implements ViewWillEnter {
   readonly error = signal(false);
 
   constructor() {
-    addIcons({ logOutOutline, qrCodeOutline, addOutline });
+    addIcons({ addOutline, trophyOutline, alertCircleOutline });
   }
 
   // Ionic met en cache l'instance de la page pour l'animation de retour plutôt que de la
@@ -67,14 +58,6 @@ export class TournamentListPage implements ViewWillEnter {
   // score en direct), d'où le hook de cycle de vie Ionic ici.
   ionViewWillEnter(): void {
     this.load();
-  }
-
-  statusLabel(status: TournamentStatus): string {
-    return TOURNAMENT_STATUS_LABELS[status];
-  }
-
-  statusColor(status: TournamentStatus): string {
-    return TOURNAMENT_STATUS_COLORS[status];
   }
 
   load(): void {
@@ -106,17 +89,11 @@ export class TournamentListPage implements ViewWillEnter {
     });
   }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
   openTournament(tournamentId: number): void {
     this.router.navigate(['/tournaments', tournamentId]);
   }
 
-  openRefereeCode(event: Event, tournamentId: number): void {
-    event.stopPropagation();
+  openRefereeCode(tournamentId: number): void {
     this.router.navigate(['/tournaments', tournamentId, 'referee-code']);
   }
 }
