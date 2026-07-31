@@ -80,6 +80,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/tournaments/referee-code.page').then((m) => m.RefereeCodePage),
   },
+  {
+    path: 'tournaments/:id/buvette',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/buvette/buvette.page').then((m) => m.BuvettePage),
+  },
   // Route partagée entre l'organisateur (depuis /tournaments/:id/live) et une session de
   // tournoi obtenue par QR code (depuis /join/:token) — les deux ont les mêmes droits sur un
   // match de ce tournoi côté backend (voir MatchService.requireCanManage), donc pas de

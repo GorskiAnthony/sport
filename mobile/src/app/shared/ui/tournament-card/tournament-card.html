@@ -1,11 +1,4 @@
-<div
-  class="tournament-card"
-  role="button"
-  tabindex="0"
-  (click)="onCardClick()"
-  (keydown.enter)="onCardClick()"
-  (keydown.space)="onCardClick()"
->
+<button type="button" class="tournament-card" (click)="onCardClick()">
   <span class="sport-icon" aria-hidden="true">{{ sportIcon() }}</span>
 
   <div class="tournament-info">
@@ -22,4 +15,4 @@
   </div>
 
   <ion-icon name="chevron-forward-outline" class="chevron" aria-hidden="true"></ion-icon>
-</div>
+</button>

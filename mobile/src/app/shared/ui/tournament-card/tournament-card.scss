@@ -18,7 +18,12 @@
 }
 
 .tournament-card {
+  // Un vrai <button> plutôt qu'un <div role="button"> fait main (voir match-row.ts, même
+  // pattern) — un tap sur un div custom peut ne pas remonter de façon fiable en clic sur
+  // certaines WebView Android, alors qu'un élément natif cliquable l'est toujours. Les règles
+  // ci-dessous neutralisent le style par défaut du <button> pour garder l'apparence de carte.
   display: grid;
+  width: 100%;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 12px;
@@ -26,6 +31,10 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 20px;
   padding: 16px;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.55);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;

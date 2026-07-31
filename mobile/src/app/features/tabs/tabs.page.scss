@@ -5,3 +5,13 @@ ion-tab-bar {
   --border: none;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
 }
+
+// ion-tabs projette son <ion-router-outlet> par défaut dans un <div class="tabs-inner"> interne,
+// mais laisse une seconde instance (l'élément original, non wrappé) comme enfant direct — vide,
+// en position absolute plein écran, peinte après tabs-inner donc au-dessus. Résultat : elle
+// intercepte tous les taps sur le contenu de l'onglet actif (seule la tab bar, encore après elle
+// dans le DOM, reste cliquable). Neutraliser son hit-testing pour laisser passer les taps vers
+// la vraie page en dessous.
+ion-tabs > ion-router-outlet {
+  pointer-events: none;
+}

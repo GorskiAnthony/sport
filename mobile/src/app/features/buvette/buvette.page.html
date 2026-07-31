@@ -1,0 +1,231 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tournaments/' + tournamentId"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <app-breadcrumb [segments]="breadcrumbSegments()" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (!isPro()) {
+    <app-empty-state
+      icon="cart-outline"
+      tone="warning"
+      message="Gérez un catalogue de produits et encaissez les ventes du jour J — réservé au plan Pro. Passez à un plan supérieur depuis le site web pour y accéder."
+    />
+  } @else if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (error()) {
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger la buvette.">
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </app-empty-state>
+  } @else {
+    <ion-segment [value]="tab()" (ionChange)="switchTab($any($event.detail).value)">
+      <ion-segment-button value="caisse">
+        <ion-icon name="cart-outline"></ion-icon>
+        <ion-label>Caisse</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="produits">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>Produits</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="resume">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <ion-label>Résumé</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (tab() === 'caisse') {
+      @if (products().length === 0) {
+        <app-empty-state
+          icon="cart-outline"
+          message="Aucun produit dans le catalogue. Ajoutez-en depuis l'onglet Produits pour commencer à encaisser."
+        />
+      } @else {
+        <div class="product-grid">
+          @for (product of products(); track product.id) {
+            <button type="button" class="product-tile" (click)="addToCart(product)">
+              <span class="name">{{ product.name }}</span>
+              <span class="price">{{ formatPrice(product.price) }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="cart-card">
+          <div class="cart-header">
+            <h2>Ticket en cours</h2>
+            @if (cart().length > 0) {
+              <button type="button" class="clear-cart" (click)="clearCart()">Vider</button>
+            }
+          </div>
+          @if (cart().length === 0) {
+            <p class="cart-empty">Touchez un produit pour l'ajouter au ticket.</p>
+          } @else {
+            <ul class="cart-lines">
+              @for (line of cart(); track line.product.id) {
+                <li>
+                  <span class="line-name">{{ line.product.name }}</span>
+                  <div class="line-qty">
+                    <button type="button" (click)="removeFromCart(line.product.id)" aria-label="Retirer">−</button>
+                    <span class="qty">{{ line.quantity }}</span>
+                    <button type="button" (click)="addToCart(line.product)" aria-label="Ajouter">+</button>
+                  </div>
+                  <span class="line-price">{{ formatPrice(line.product.price * line.quantity) }}</span>
+                </li>
+              }
+            </ul>
+            <div class="cart-total">
+              <span>Total</span>
+              <span class="total-value">{{ formatPrice(cartTotal()) }}</span>
+            </div>
+            <ion-button expand="block" [disabled]="submittingSale()" (click)="checkout()">
+              @if (submittingSale()) {
+                <ion-spinner name="dots"></ion-spinner>
+              } @else {
+                Encaisser
+              }
+            </ion-button>
+          }
+        </div>
+      }
+    }
+
+    @if (tab() === 'produits') {
+      <div class="section-actions">
+        @if (!addingProduct() && editingProductId() === null) {
+          <ion-button size="small" fill="outline" (click)="startAddProduct()">
+            <ion-icon slot="start" name="add-outline"></ion-icon>
+            Ajouter un produit
+          </ion-button>
+        }
+      </div>
+
+      @if (addingProduct()) {
+        <ion-item fill="outline">
+          <ion-input
+            placeholder="Nom"
+            [value]="productForm().name"
+            (ionInput)="onProductNameInput($any($event.detail).value)"
+          ></ion-input>
+          <ion-input
+            slot="end"
+            type="text"
+            inputmode="decimal"
+            placeholder="Prix (€)"
+            [value]="productForm().price"
+            (ionInput)="onProductPriceInput($any($event.detail).value)"
+          ></ion-input>
+          <ion-button slot="end" fill="clear" [disabled]="savingProduct()" (click)="saveProduct()" aria-label="Valider">
+            <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+          </ion-button>
+          <ion-button slot="end" fill="clear" (click)="cancelProductEdit()" aria-label="Annuler">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+
+      @if (products().length === 0 && !addingProduct()) {
+        <app-empty-state icon="cart-outline" message="Aucun produit pour le moment." />
+      } @else {
+        <ion-list>
+          @for (product of products(); track product.id) {
+            @if (editingProductId() === product.id) {
+              <ion-item fill="outline" class="team-edit-row">
+                <ion-input
+                  [value]="productForm().name"
+                  (ionInput)="onProductNameInput($any($event.detail).value)"
+                ></ion-input>
+                <ion-input
+                  slot="end"
+                  type="text"
+                  inputmode="decimal"
+                  [value]="productForm().price"
+                  (ionInput)="onProductPriceInput($any($event.detail).value)"
+                ></ion-input>
+                <ion-button slot="end" fill="clear" [disabled]="savingProduct()" (click)="saveProduct()" aria-label="Valider">
+                  <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+                </ion-button>
+                <ion-button slot="end" fill="clear" (click)="cancelProductEdit()" aria-label="Annuler">
+                  <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            } @else {
+              <ion-item>
+                <ion-label>{{ product.name }}</ion-label>
+                <ion-text slot="end" class="font-mono">{{ formatPrice(product.price) }}</ion-text>
+                <ion-button slot="end" fill="clear" (click)="startEditProduct(product)" aria-label="Modifier le produit">
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button
+                  slot="end"
+                  fill="clear"
+                  color="danger"
+                  (click)="pendingDeleteProduct.set(product); confirmDeleteProduct()"
+                  aria-label="Supprimer le produit"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+          }
+        </ion-list>
+      }
+    }
+
+    @if (tab() === 'resume') {
+      @if (loadingSummary()) {
+        <div class="state-container">
+          <ion-spinner name="dots"></ion-spinner>
+        </div>
+      } @else if (summary(); as s) {
+        <div class="summary-cards">
+          <div class="summary-card">
+            <p class="label">Chiffre d'affaires</p>
+            <p class="value">{{ formatPrice(s.totalRevenue) }}</p>
+          </div>
+          <div class="summary-card">
+            <p class="label">Ventes</p>
+            <p class="value">{{ s.saleCount }}</p>
+          </div>
+        </div>
+
+        @if (s.byProduct.length > 0) {
+          <h2 class="section-title">Ventes par produit</h2>
+          <ion-list>
+            @for (row of s.byProduct; track row.productName) {
+              <ion-item lines="full">
+                <ion-label>
+                  <h3>{{ row.productName }}</h3>
+                  <p>{{ row.quantitySold }} vendu(s)</p>
+                </ion-label>
+                <ion-text slot="end" class="font-mono">{{ formatPrice(row.revenue) }}</ion-text>
+              </ion-item>
+            }
+          </ion-list>
+        }
+
+        @if (sales().length > 0) {
+          <h2 class="section-title">Historique des ventes</h2>
+          <ion-list>
+            @for (sale of sales(); track sale.id) {
+              <ion-item lines="full">
+                <ion-label>
+                  <h3>{{ sale.items.length }} article{{ sale.items.length > 1 ? 's' : '' }}</h3>
+                  <p>{{ sale.createdAt | date: 'dd/MM HH:mm' }}</p>
+                </ion-label>
+                <ion-text slot="end" class="font-mono">{{ formatPrice(sale.total) }}</ion-text>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      } @else {
+        <app-empty-state icon="stats-chart-outline" message="Aucune vente enregistrée pour le moment." />
+      }
+    }
+  }
+</ion-content>

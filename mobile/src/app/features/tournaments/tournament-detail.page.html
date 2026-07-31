@@ -48,6 +48,10 @@
         <ion-icon slot="start" name="qr-code-outline"></ion-icon>
         Code arbitre
       </ion-button>
+      <ion-button fill="outline" size="small" [routerLink]="['/tournaments', t.id, 'buvette']">
+        <ion-icon slot="start" name="cart-outline"></ion-icon>
+        Buvette
+      </ion-button>
       <ion-button fill="outline" size="small" color="danger" [disabled]="deleting()" (click)="confirmDeleteTournament()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>
         Supprimer
