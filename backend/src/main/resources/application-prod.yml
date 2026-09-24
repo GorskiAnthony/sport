@@ -1,3 +1,10 @@
+app:
+  mobile:
+    # Pas de valeur par défaut en prod (contrairement à application.yml) : un MOBILE_URL manquant
+    # doit faire échouer le démarrage plutôt que de générer silencieusement des QR code arbitre
+    # pointant vers localhost:8100 (voir GroupKnockoutGenerator/TournamentService.getRefereeJoinInfo).
+    url: ${MOBILE_URL}
+
 logging:
   level:
     com.tournoicenter: INFO

@@ -87,6 +87,7 @@ POSTGRES_PASSWORD=<généré avec: openssl rand -base64 24>
 JWT_SECRET=<généré avec: openssl rand -base64 32>
 JWT_EXPIRATION_DAYS=7
 CLIENT_URL=https://sport.example.com
+MOBILE_URL=https://m.sport.example.com
 
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -101,6 +102,10 @@ FRONTEND_TAG=latest   # idem
 l'utilise plus pour CORS sur le parcours principal (proxifié par nginx), mais le backend s'en sert pour
 construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse ces
 redirections.
+
+`MOBILE_URL` est requis en profil `prod` (pas de valeur par défaut, le backend refuse de démarrer sans elle) :
+c'est le domaine du build web de l'app mobile, utilisé pour construire le lien du QR code d'invitation arbitre
+(`{MOBILE_URL}/join/{token}`).
 
 Ne jamais committer ce fichier rempli — `.env.prod.example` (le template vide) est le seul versionné.
 

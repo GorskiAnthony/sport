@@ -57,11 +57,32 @@ class PlanLimitServiceTest {
 
     @Test
     void freePlanRejectsTeamBeyondFourteen() {
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournamentWithMaxTeams(14)));
         when(teamRepository.countByTournamentId(10L)).thenReturn(14L);
 
         assertThatThrownBy(() -> planLimitService.checkTeamLimit(10L, Plan.FREE))
                 .isInstanceOf(PlanLimitExceededException.class)
                 .hasMessageContaining("14 équipe");
+    }
+
+    @Test
+    void tournamentMaxTeamsIsEnforcedEvenBelowPlanLimit() {
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournamentWithMaxTeams(10)));
+        when(teamRepository.countByTournamentId(10L)).thenReturn(10L);
+
+        assertThatThrownBy(() -> planLimitService.checkTeamLimit(10L, Plan.FREE))
+                .isInstanceOf(PlanLimitExceededException.class)
+                .hasMessageContaining("10 équipe");
+    }
+
+    @Test
+    void tournamentMaxTeamsIsEnforcedEvenOnUnlimitedPlan() {
+        when(tournamentRepository.findById(10L)).thenReturn(Optional.of(tournamentWithMaxTeams(10)));
+        when(teamRepository.countByTournamentId(10L)).thenReturn(10L);
+
+        assertThatThrownBy(() -> planLimitService.checkTeamLimit(10L, Plan.PRO))
+                .isInstanceOf(PlanLimitExceededException.class)
+                .hasMessageContaining("10 équipe");
     }
 
     @Test
@@ -83,9 +104,13 @@ class PlanLimitServiceTest {
                 .hasMessageContaining("14 équipe");
     }
 
+    private Tournament tournamentWithMaxTeams(int maxTeams) {
+        return new Tournament("Cup", "football", "u15", "Lyon",
+                LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 3), maxTeams, null);
+    }
+
     private Tournament tournamentWithEventPassExpiry(Instant expiresAt) {
-        Tournament tournament = new Tournament("Cup", "football", "u15", "Lyon",
-                LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 3), 14, null);
+        Tournament tournament = tournamentWithMaxTeams(14);
         tournament.setEventPassExpiresAt(expiresAt);
         return tournament;
     }

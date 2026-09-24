@@ -1,7 +1,9 @@
 package com.tournoicenter.service;
 
 import com.tournoicenter.domain.Plan;
+import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.exception.PlanLimitExceededException;
+import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
 import org.springframework.stereotype.Service;
@@ -32,21 +34,24 @@ public class PlanLimitService {
     }
 
     public void checkTeamLimit(Long tournamentId, Plan plan) {
-        PlanLimits limits = PlanLimits.of(plan);
-        if (limits.maxTeams() == Integer.MAX_VALUE) {
-            return;
-        }
-        boolean hasActiveEventPass = tournamentRepository.findById(tournamentId)
-                .map(tournament -> tournament.getEventPassExpiresAt() != null
-                        && tournament.getEventPassExpiresAt().isAfter(Instant.now()))
-                .orElse(false);
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tournoi introuvable."));
+
+        boolean hasActiveEventPass = tournament.getEventPassExpiresAt() != null
+                && tournament.getEventPassExpiresAt().isAfter(Instant.now());
         if (hasActiveEventPass) {
             return;
         }
+
+        PlanLimits limits = PlanLimits.of(plan);
+        // Le nombre max d'équipes est aussi réglable par tournoi (formulaire de création/édition) :
+        // c'est une limite indépendante de celle du plan, les deux s'appliquent.
+        int effectiveLimit = Math.min(limits.maxTeams(), tournament.getMaxTeams());
+
         long count = teamRepository.countByTournamentId(tournamentId);
-        if (count >= limits.maxTeams()) {
+        if (count >= effectiveLimit) {
             throw new PlanLimitExceededException(
-                    "Limite de %d équipe(s) atteinte sur votre plan.".formatted(limits.maxTeams()));
+                    "Limite de %d équipe(s) atteinte pour ce tournoi.".formatted(effectiveLimit));
         }
     }
 }
