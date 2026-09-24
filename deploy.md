@@ -92,6 +92,7 @@ JWT_SECRET=<généré avec: openssl rand -base64 32>
 JWT_EXPIRATION_DAYS=7
 CLIENT_URL=https://sport.example.com
 MOBILE_URL=https://m.sport.example.com
+CORS_ADDITIONAL_ORIGINS=https://m.sport.example.com
 
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -103,14 +104,21 @@ FRONTEND_TAG=latest   # idem
 MOBILE_TAG=latest     # idem
 ```
 
-**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le navigateur ne
-l'utilise plus pour CORS sur le parcours principal (proxifié par nginx), mais le backend s'en sert pour
-construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse ces
-redirections.
+**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le backend s'en
+sert pour construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse
+ces redirections. C'est aussi la seule origine autorisée par défaut en CORS : même si l'appel `/api/*` d'un
+domaine donné (frontend ou mobile) passe par un reverse proxy nginx sur le *même* domaine que la page, Traefik
+termine le TLS en amont — le backend voit donc un hop interne en HTTP, perd la trace du HTTPS d'origine, et
+traite l'appel comme cross-origin. Sans l'origine exacte du domaine appelant dans `CLIENT_URL` (déjà couvert
+pour le frontend) ou `CORS_ADDITIONAL_ORIGINS`, ces appels échouent en `403 Forbidden`.
 
 `MOBILE_URL` est requis en profil `prod` (pas de valeur par défaut, le backend refuse de démarrer sans elle) :
 c'est le domaine du build web de l'app mobile, utilisé pour construire le lien du QR code d'invitation arbitre
 (`{MOBILE_URL}/join/{token}`).
+
+`CORS_ADDITIONAL_ORIGINS` doit inclure `MOBILE_URL` (même valeur), sans quoi les appels `/api/*` faits depuis
+l'app mobile web échouent en 403 — voir "Dépannage" plus bas. Plusieurs origines séparées par des virgules si
+besoin.
 
 Ne jamais committer ce fichier rempli — `.env.prod.example` (le template vide) est le seul versionné.
 
@@ -323,6 +331,10 @@ Repasse `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` (variables d'environnement du 
 
 ## Dépannage
 
+- **Un appel `/api/*` échoue en 403 Forbidden depuis le frontend ou l'app mobile web** (visible dans l'onglet
+  Réseau du navigateur) : l'origine du domaine appelant n'est pas dans `CLIENT_URL`/`CORS_ADDITIONAL_ORIGINS` —
+  voir l'encadré CORS de l'étape 3. Fréquent après avoir ajouté un nouveau domaine (ex. celui de l'app mobile)
+  sans mettre à jour `CORS_ADDITIONAL_ORIGINS` en conséquence.
 - **Je viens de redeployer mais je ne vois pas les derniers changements** : vérifie d'abord que la release
   a bien réussi (onglet Actions du repo GitHub), puis compare la date de build réellement servie —
   `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
