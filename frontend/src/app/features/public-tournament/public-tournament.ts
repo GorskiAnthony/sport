@@ -148,7 +148,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
 
         const origin = this.document.location.origin;
         const canonicalUrl = `${origin}/t/${tournament.id}`;
-        const description = `${tournament.name} (${tournament.sport}) — ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`;
+        const description = `${tournament.name} (${tournament.sport}), ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`;
 
         setPageMeta(this.titleService, this.metaService, {
           title: tournament.name,
@@ -244,7 +244,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     const t = this.tournament();
     if (!t) return [];
     return [
-      { label: 'Lieu', value: t.location ?? '—' },
+      { label: 'Lieu', value: t.location ?? '-' },
       { label: 'Début', value: formatDateFr(t.startDate) },
       { label: 'Fin', value: formatDateFr(t.endDate) },
       { label: 'Équipes', value: String(t.teams.length) },

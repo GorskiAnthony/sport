@@ -168,7 +168,7 @@ export class DashboardTournamentDetailPage implements OnInit {
       next: (result) => {
         this.advancing.set(false);
         if (result.tournamentComplete) {
-          this.toast.success(`🏆 Champion : ${result.champion?.name ?? '—'}`, 'Tournoi terminé');
+          this.toast.success(`🏆 Champion : ${result.champion?.name ?? '-'}`, 'Tournoi terminé');
         } else {
           this.toast.success('Le tour suivant a été généré.', 'Tour suivant');
         }

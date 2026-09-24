@@ -133,12 +133,12 @@
                     </div>
                   </td>
                   <td class="px-5 py-4"><span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="catStyles[t.category] ?? 'bg-slate-500/20 text-slate-300'">{{ t.category }}</span></td>
-                  <td class="px-5 py-4 text-slate-400">{{ t.contact ?? '—' }}</td>
+                  <td class="px-5 py-4 text-slate-400">{{ t.contact ?? '-' }}</td>
                   <td class="px-5 py-4">
                     @if (t.checkedInAt) {
                       <span class="text-xs font-semibold text-green-400">✓ {{ t.checkedInAt | date: 'HH:mm' }}</span>
                     } @else {
-                      <span class="text-xs text-slate-500">—</span>
+                      <span class="text-xs text-slate-500">-</span>
                     }
                   </td>
                   <td class="px-5 py-4">

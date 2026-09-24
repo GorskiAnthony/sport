@@ -24,7 +24,7 @@ export interface PageMetaOptions {
  *  qu'un lien partagé (Slack, Discord, WhatsApp, X/Twitter, Facebook, iMessage...) affiche une
  *  vraie carte d'aperçu plutôt que le titre générique du site. */
 export function setPageMeta(title: Title, meta: Meta, options: PageMetaOptions): void {
-  const fullTitle = `${options.title} — ${SITE_NAME}`;
+  const fullTitle = `${options.title} | ${SITE_NAME}`;
 
   title.setTitle(fullTitle);
   meta.updateTag({ name: 'description', content: options.description });

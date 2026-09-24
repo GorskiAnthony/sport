@@ -247,7 +247,7 @@ export class TournamentDetailPage implements ViewWillEnter {
       next: (result) => {
         this.advancing.set(false);
         if (result.tournamentComplete) {
-          void this.showToast(`🏆 Champion : ${result.champion?.name ?? '—'}`, 'success');
+          void this.showToast(`🏆 Champion : ${result.champion?.name ?? '-'}`, 'success');
         } else {
           void this.showToast('Le tour suivant a été généré.', 'success');
         }

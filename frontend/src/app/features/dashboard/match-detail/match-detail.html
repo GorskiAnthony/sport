@@ -10,7 +10,7 @@
   <app-confirm-modal
     [open]="!!pendingForfeit()"
     title="Déclarer forfait ?"
-    [description]="(pendingForfeit()?.name ?? '') + ' sera déclarée forfait sur ce match — la victoire est automatiquement attribuée à l\'adversaire, sans score.'"
+    [description]="(pendingForfeit()?.name ?? '') + ' sera déclarée forfait sur ce match : la victoire est automatiquement attribuée à l\'adversaire, sans score.'"
     confirmLabel="Déclarer forfait"
     [danger]="true"
     (confirmed)="confirmForfeit()"
@@ -84,7 +84,7 @@
             </div>
           } @else {
             <div class="flex items-center justify-between gap-3 bg-[#0D1117] border border-white/10 rounded-lg px-4 py-3">
-              <p class="text-slate-500 text-sm">Réservé au plan Pro — notez le comportement de chaque équipe et affichez un classement fair-play.</p>
+              <p class="text-slate-500 text-sm">Réservé au plan Pro : notez le comportement de chaque équipe et affichez un classement fair-play.</p>
               <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
             </div>
           }
