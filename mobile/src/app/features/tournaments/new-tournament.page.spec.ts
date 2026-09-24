@@ -85,6 +85,15 @@ describe('NewTournamentPage', () => {
     }).compileComponents();
   });
 
+  // Toujours après aujourd'hui (contrairement à une date codée en dur, qui finit par passer dans
+  // le présent et casse la validation "la fin doit être après le début" — startDate() par défaut
+  // vaut la date du jour, voir new-tournament.page.ts).
+  function futureIsoDate(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
   function createPage(): NewTournamentPage {
     const fixture = TestBed.createComponent(NewTournamentPage);
     fixture.detectChanges();
@@ -128,7 +137,7 @@ describe('NewTournamentPage', () => {
     page.onSportChange('football');
     page.onCategoryChange('u15');
     page.format.set('ROUND_ROBIN');
-    page.onEndDateInput('2026-08-02');
+    page.onEndDateInput(futureIsoDate());
 
     page.submitStepOne();
 
@@ -146,7 +155,7 @@ describe('NewTournamentPage', () => {
     page.onSportChange('football');
     page.onCategoryChange('u15');
     page.format.set('ROUND_ROBIN');
-    page.onEndDateInput('2026-08-02');
+    page.onEndDateInput(futureIsoDate());
 
     page.submitStepOne();
     await Promise.resolve();

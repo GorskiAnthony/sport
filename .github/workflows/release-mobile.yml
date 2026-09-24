@@ -1,15 +1,15 @@
-name: Release frontend
+name: Release mobile
 
 on:
   push:
     branches: [dev, main]
     paths:
-      - 'frontend/**'
+      - 'mobile/**'
   workflow_dispatch: {}
 
 concurrency:
-  # Shared with release-backend.yml/release-mobile.yml: all three write version-bump commits and tags
-  # back to the same branch via @semantic-release/git, so they must not race.
+  # Shared with release-frontend.yml/release-backend.yml: all three write version-bump commits
+  # and tags back to the same branch via @semantic-release/git, so they must not race.
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
@@ -25,9 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Explicit branch ref (not the default github.sha) so a job that was
-          # queued behind release-backend.yml picks up its version-bump commit
-          # instead of checking out the stale commit that originally triggered this run.
+          # Explicit branch ref (not the default github.sha) so a job that was queued behind
+          # release-backend.yml/release-frontend.yml picks up their version-bump commit instead
+          # of checking out the stale commit that originally triggered this run.
           ref: ${{ github.ref_name }}
           fetch-depth: 0
 
@@ -35,12 +35,13 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+          cache-dependency-path: mobile/package-lock.json
 
-      - name: Verify frontend builds and tests pass
-        working-directory: frontend
+      - name: Verify mobile builds and tests pass
+        working-directory: mobile
         run: |
           npm ci
-          npx ng build --configuration production
+          npx ng build --configuration production,docker
           npx ng test
 
       - name: Install release tooling
@@ -58,22 +59,22 @@ jobs:
       # changelog/package.json, tags, publishes a GitHub release, and pushes `:latest`.
       - name: Release
         if: github.ref_name == 'main'
-        working-directory: frontend
+        working-directory: mobile
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-frontend
+          MOBILE_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-mobile
         run: |
-          export FRONTEND_IMAGE=$(echo "$FRONTEND_IMAGE" | tr '[:upper:]' '[:lower:]')
+          export MOBILE_IMAGE=$(echo "$MOBILE_IMAGE" | tr '[:upper:]' '[:lower:]')
           npx semantic-release -e semantic-release-monorepo
 
       # dev: no versioning/changelog — just refresh the mutable `:dev` tag Dokploy's
-      # preprod service tracks (FRONTEND_TAG=dev).
+      # preprod service tracks (MOBILE_TAG=dev).
       - name: Publish dev image
         if: github.ref_name == 'dev'
-        working-directory: frontend
+        working-directory: mobile
         env:
-          FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-frontend
+          MOBILE_IMAGE: ghcr.io/${{ github.repository_owner }}/sport-mobile
         run: |
-          export FRONTEND_IMAGE=$(echo "$FRONTEND_IMAGE" | tr '[:upper:]' '[:lower:]')
-          docker build -t "$FRONTEND_IMAGE:dev" .
-          docker push "$FRONTEND_IMAGE:dev"
+          export MOBILE_IMAGE=$(echo "$MOBILE_IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build -t "$MOBILE_IMAGE:dev" .
+          docker push "$MOBILE_IMAGE:dev"

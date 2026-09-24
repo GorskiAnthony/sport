@@ -94,9 +94,13 @@ services:
     restart: unless-stopped
     logging: *default-logging
 
-  # mobile:
-  #   image: ghcr.io/gorskianthony/sport-mobile:${MOBILE_TAG:-latest}
-  #   Réservé — à activer une fois l'app mobile publiée.
+  mobile:
+    image: ghcr.io/gorskianthony/sport-mobile:${MOBILE_TAG:-latest}
+    pull_policy: always
+    depends_on:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
 
 volumes:
   postgres-data:

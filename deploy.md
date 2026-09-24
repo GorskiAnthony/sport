@@ -1,8 +1,8 @@
 # Déploiement en production avec Dokploy
 
-Ce guide déploie les 3 services (Postgres, backend, frontend) sur une instance [Dokploy](https://dokploy.com/)
-en utilisant les images Docker déjà construites et versionnées par la CI/CD (`ghcr.io/gorskianthony/sport-backend`
-et `sport-frontend`), via `docker-compose.prod.yml`.
+Ce guide déploie les 4 services (Postgres, backend, frontend, mobile) sur une instance [Dokploy](https://dokploy.com/)
+en utilisant les images Docker déjà construites et versionnées par la CI/CD (`ghcr.io/gorskianthony/sport-backend`,
+`sport-frontend` et `sport-mobile`), via `docker-compose.prod.yml`.
 
 ## Vue d'ensemble
 
@@ -19,8 +19,11 @@ Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─
   (classement/organisateur/tournoi public — voir `frontend/src/app/app.routes.server.ts`). Limite connue : si le
   process Node plante, nginx reste up mais ces pages répondent en 502 (pas de superviseur de process).
 
-- **frontend** et **backend** : images publiées automatiquement par `.github/workflows/release-*.yml` à chaque
-  release (voir README.md pour la stratégie de branches `dev`/`main`).
+- **frontend**, **backend** et **mobile** : images publiées automatiquement par `.github/workflows/release-*.yml`
+  à chaque release (voir README.md pour la stratégie de branches `dev`/`main`). Le conteneur **mobile** sert le
+  build web (SPA, pas de SSR) de l'app Ionic sur son propre domaine (`MOBILE_URL`) : c'est lui qui répond à
+  `/join/:token`, le lien du QR code d'invitation arbitre (voir `mobile/nginx.conf`, même logique de reverse
+  proxy `/api/*` que le frontend).
 - **postgres** : conteneur géré directement dans le compose (pas besoin du service "Database" natif de Dokploy).
 - Rien n'est buildé sur le serveur de prod — Dokploy ne fait que `docker pull` + `docker compose up`.
 - Le frontend appelle l'API en chemin relatif (`/api/...`) — nginx la relaie en interne vers le conteneur
@@ -44,7 +47,7 @@ Par défaut, les packages GHCR créés par une Action GitHub sont **privés**. D
 
 **Option A — rendre les packages publics (le plus simple)**
 Sur GitHub : `github.com/GorskiAnthony?tab=packages` → `sport-backend` → *Package settings* → *Change visibility*
-→ **Public**. Répéter pour `sport-frontend`.
+→ **Public**. Répéter pour `sport-frontend` et `sport-mobile`.
 
 **Option B — garder privé et donner l'accès à Dokploy**
 Dans Dokploy, section *Registry* (ou *Docker* selon la version) : ajouter un registry privé avec :
@@ -60,19 +63,20 @@ Dans Dokploy, section *Registry* (ou *Docker* selon la version) : ajouter un reg
 4. **Compose Path** : `docker-compose.prod.yml` (pas `docker-compose.yml`, qui est pour le dev local).
 5. **Compose Type** : `docker-compose` (pas Stack/Swarm).
 
-⚠️ **La branche choisie ici et les tags d'image (`BACKEND_TAG`/`FRONTEND_TAG`, section suivante) doivent
-correspondre**, sinon un déploiement peut sembler réussir (bon commit affiché dans l'onglet Deployments) tout
-en tournant avec l'ancienne image : la branche ne détermine que le contenu du repo (donc de
+⚠️ **La branche choisie ici et les tags d'image (`BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG`, section suivante)
+doivent correspondre**, sinon un déploiement peut sembler réussir (bon commit affiché dans l'onglet Deployments)
+tout en tournant avec l'ancienne image : la branche ne détermine que le contenu du repo (donc de
 `docker-compose.prod.yml`) que Dokploy lit, **pas** l'image Docker réellement tirée — ça, c'est uniquement les
-variables d'environnement `BACKEND_TAG`/`FRONTEND_TAG` qui le décident, indépendamment de la branche source.
-Concrètement :
-- Service sur branche `main` → `BACKEND_TAG=latest` / `FRONTEND_TAG=latest` (le tag stable, mis à jour par une
-  release sur `main`).
-- Service sur branche `dev` → `BACKEND_TAG=dev` / `FRONTEND_TAG=dev` (le tag pre-release, mis à jour par
-  *chaque* push sur `dev` — pas besoin de merger vers `main` pour tester).
+variables d'environnement `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` qui le décident, indépendamment de la
+branche source. Concrètement :
+- Service sur branche `main` → `BACKEND_TAG=latest` / `FRONTEND_TAG=latest` / `MOBILE_TAG=latest` (le tag
+  stable, mis à jour par une release sur `main`).
+- Service sur branche `dev` → `BACKEND_TAG=dev` / `FRONTEND_TAG=dev` / `MOBILE_TAG=dev` (le tag pre-release,
+  mis à jour par *chaque* push sur `dev` — pas besoin de merger vers `main` pour tester).
 
-Si un environnement de préprod pointe sur `dev` mais garde `BACKEND_TAG`/`FRONTEND_TAG` à leur valeur par défaut
-(`latest`), il restera bloqué sur le dernier `main` publié, même après un redeploy — voir "Dépannage" plus bas.
+Si un environnement de préprod pointe sur `dev` mais garde `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` à leur
+valeur par défaut (`latest`), il restera bloqué sur le dernier `main` publié, même après un redeploy — voir
+"Dépannage" plus bas.
 
 ## 3. Variables d'environnement
 
@@ -96,6 +100,7 @@ STRIPE_PRICE_PRO=
 
 BACKEND_TAG=latest    # dev si ce service suit la branche dev — voir l'avertissement de l'étape 2
 FRONTEND_TAG=latest   # idem
+MOBILE_TAG=latest     # idem
 ```
 
 **Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le navigateur ne
@@ -117,18 +122,20 @@ Toujours dans le service Compose, onglet **Domains** :
 |---|---|---|
 | `frontend` | 80 | `sport.example.com` |
 | `backend` | 3000 | `api.sport.example.com` |
+| `mobile` | 80 | `m.sport.example.com` (doit correspondre à `MOBILE_URL`) |
 
-Active **HTTPS** sur les deux — Dokploy provisionne et renouvelle les certificats Let's Encrypt automatiquement
+Active **HTTPS** sur les trois — Dokploy provisionne et renouvelle les certificats Let's Encrypt automatiquement
 via Traefik, aucune config manuelle nécessaire. Assure-toi juste que le DNS pointe déjà vers le serveur avant
 d'activer HTTPS (sinon la validation Let's Encrypt échoue).
 
 ## 5. Premier déploiement
 
 Clique **Deploy**. Dokploy va :
-1. Pull `postgres:16-alpine`, `ghcr.io/gorskianthony/sport-backend:latest`, `sport-frontend:latest`.
+1. Pull `postgres:16-alpine`, `ghcr.io/gorskianthony/sport-backend:latest`, `sport-frontend:latest`,
+   `sport-mobile:latest`.
 2. Démarrer `postgres`, attendre son healthcheck.
 3. Démarrer `backend` (qui applique automatiquement les migrations Flyway au démarrage).
-4. Démarrer `frontend`.
+4. Démarrer `frontend` et `mobile`.
 
 Suis les logs dans l'onglet **Logs** du service. Le backend est prêt quand tu vois `Started TournoiCenterApplication`.
 
@@ -305,14 +312,14 @@ sur un service Dokploy de staging séparé, pointé vers un bucket/backup de tes
 - Dans Dokploy, active **Auto Deploy** (webhook) sur le service si tu veux qu'un nouveau `:latest` redéploie
   automatiquement, ou clique **Redeploy** manuellement après une release (grâce au point ci-dessus, les deux
   approches repartent bien de l'image la plus récente).
-- Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG` à un numéro de
-  version exact (ex. `1.2.0`) dans les variables d'environnement du service.
+- Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` à
+  un numéro de version exact (ex. `1.2.0`) dans les variables d'environnement du service.
 
 ## Rollback
 
-Repasse `BACKEND_TAG` et/ou `FRONTEND_TAG` (variables d'environnement du service) à la version précédente
-(visible dans les tags Git `backend-vX.Y.Z` / GitHub Releases), puis **Redeploy**. Aucune image à reconstruire,
-c'est juste un changement de tag suivi d'un `docker compose up`.
+Repasse `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` (variables d'environnement du service) à la version précédente
+(visible dans les tags Git `backend-vX.Y.Z`/`frontend-vX.Y.Z`/`mobile-vX.Y.Z` / GitHub Releases), puis
+**Redeploy**. Aucune image à reconstruire, c'est juste un changement de tag suivi d'un `docker compose up`.
 
 ## Dépannage
 
@@ -321,8 +328,8 @@ c'est juste un changement de tag suivi d'un `docker compose up`.
   `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
   est visible dans le `<script>` de `curl -s https://sport.example.com/ | grep main-`) — à l'heure de la
   dernière release. Deux causes possibles, à vérifier dans cet ordre :
-  1. **Mauvais tag suivi** : le service est sur la branche `dev` mais `BACKEND_TAG`/`FRONTEND_TAG` valent encore
-     `latest` (ou l'inverse) — voir l'avertissement de l'étape 2. C'est la cause la plus probable si le *bon*
+  1. **Mauvais tag suivi** : le service est sur la branche `dev` mais `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG`
+     valent encore `latest` (ou l'inverse) — voir l'avertissement de l'étape 2. C'est la cause la plus probable si le *bon*
      commit apparaît dans l'onglet **Deployments** mais que le site ne change pas : le commit affiché reflète la
      branche source, pas l'image réellement tirée. Corrige les tags pour qu'ils correspondent à la branche, puis
      redeploy.

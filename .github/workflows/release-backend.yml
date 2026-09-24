@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  # Shared with release-frontend.yml: both write version-bump commits and tags
+  # Shared with release-frontend.yml/release-mobile.yml: all three write version-bump commits and tags
   # back to the same branch via @semantic-release/git, so they must not race.
   group: release-${{ github.ref }}
   cancel-in-progress: false

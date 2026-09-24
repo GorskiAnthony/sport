@@ -10,6 +10,8 @@ import {
   IonButton,
   IonIcon,
   IonInput,
+  IonItem,
+  IonLabel,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -36,7 +38,7 @@ const PLAN_META: Record<Plan, PlanMeta> = {
   selector: 'app-account',
   templateUrl: './account.page.html',
   styleUrls: ['./account.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonInput],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonInput, IonItem, IonLabel],
 })
 export class AccountPage implements ViewWillEnter {
   private readonly authService = inject(AuthService);
