@@ -81,4 +81,14 @@ public class TeamController {
         teamService.delete(id, principal.userId());
         return ApiResponse.of(Map.of("success", true));
     }
+
+    @PatchMapping("/{id}/check-in")
+    public ApiResponse<TeamResponse> checkIn(@PathVariable Long id) {
+        return ApiResponse.of(teamService.checkIn(id));
+    }
+
+    @DeleteMapping("/{id}/check-in")
+    public ApiResponse<TeamResponse> undoCheckIn(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable Long id) {
+        return ApiResponse.of(teamService.undoCheckIn(id, principal.userId()));
+    }
 }

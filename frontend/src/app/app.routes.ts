@@ -28,6 +28,10 @@ export const routes: Routes = [
         path: 't/:id',
         loadComponent: () => import('./features/public-tournament/public-tournament').then((m) => m.PublicTournamentPage),
       },
+      {
+        path: 'checkin/tournaments/:id',
+        loadComponent: () => import('./features/team-checkin/team-checkin').then((m) => m.TeamCheckinPage),
+      },
     ],
   },
   {
@@ -181,6 +185,10 @@ export const routes: Routes = [
   {
     path: 'print/tournaments/:id',
     loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
+  },
+  {
+    path: 'tv/tournaments/:id',
+    loadComponent: () => import('./features/tv-tournament/tv-tournament').then((m) => m.TvTournamentPage),
   },
   {
     path: 'print/tournaments/:id/planning',

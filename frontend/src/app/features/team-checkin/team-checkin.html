@@ -1,0 +1,54 @@
+@if (loading()) {
+  <div class="flex-1 flex items-center justify-center">
+    <div class="w-8 h-8 rounded-full border-2 border-green-500/20 border-t-green-500 animate-spin" aria-label="Chargement…"></div>
+  </div>
+} @else if (notFound() || !tournament()) {
+  <div class="flex-1 flex flex-col items-center justify-center text-center px-6">
+    <p class="text-slate-400 mb-4">Tournoi introuvable.</p>
+    <a routerLink="/tournaments" class="text-green-400 hover:text-green-300 text-sm">← Retour aux tournois</a>
+  </div>
+} @else if (!tournament()!.checkInEnabled) {
+  <div class="flex-1 flex flex-col items-center justify-center text-center px-6 gap-3">
+    <p class="text-white font-semibold">Le check-in n'est pas activé pour ce tournoi.</p>
+    <a [routerLink]="['/t', tournament()!.id]" class="text-green-400 hover:text-green-300 text-sm">Voir la page du tournoi →</a>
+  </div>
+} @else {
+  <div class="flex-1 max-w-xl mx-auto w-full px-6 py-10 space-y-6">
+    <div class="text-center">
+      <app-sport-icon [sport]="tournament()!.sport" size="lg" />
+      <h1 class="text-white text-2xl font-extrabold mt-3">{{ tournament()!.name }}</h1>
+      <p class="text-slate-400 text-sm mt-1">
+        Touchez le nom de votre équipe pour signaler votre arrivée.
+      </p>
+      <p class="text-slate-500 text-xs mt-1">{{ checkedInCount() }} / {{ teams().length }} équipes arrivées</p>
+    </div>
+
+    <div class="space-y-2">
+      @for (team of teams(); track team.id) {
+        <button
+          type="button"
+          (click)="checkIn(team)"
+          [disabled]="!!team.checkedInAt || checkingInId() === team.id"
+          class="w-full flex items-center justify-between gap-3 px-5 py-4 rounded-xl border text-left transition-colors"
+          [class]="team.checkedInAt
+            ? 'bg-green-500/10 border-green-500/30 cursor-default'
+            : 'bg-[#161B22] border-white/10 hover:border-green-500/40 active:bg-white/5'"
+        >
+          <span class="min-w-0">
+            <span class="block text-white font-semibold truncate">{{ team.name }}</span>
+            <span class="block text-slate-400 text-xs">{{ team.category }}</span>
+          </span>
+          @if (team.checkedInAt) {
+            <span class="flex-shrink-0 text-green-400 text-sm font-semibold whitespace-nowrap">
+              ✓ Arrivée {{ team.checkedInAt | date: 'HH:mm' }}
+            </span>
+          } @else if (checkingInId() === team.id) {
+            <span class="flex-shrink-0 text-slate-400 text-sm">…</span>
+          } @else {
+            <span class="flex-shrink-0 text-green-400 text-sm font-semibold whitespace-nowrap">Je suis arrivé·e</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+}

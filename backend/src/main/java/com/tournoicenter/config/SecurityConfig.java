@@ -88,6 +88,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teams/followed/enriched").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/*/follow").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll()
+                        // Pas de compte équipe : le check-in doit être joignable par n'importe quel
+                        // représentant d'équipe scannant le QR du tournoi, sans authentification.
+                        .requestMatchers(HttpMethod.PATCH, "/api/teams/*/check-in").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/matches/**").permitAll()
                         // Seules ces trois actions sont ouvertes à une session de tournoi (QR
                         // code arbitre, voir MatchActor.TournamentSessionActor) — tout le reste

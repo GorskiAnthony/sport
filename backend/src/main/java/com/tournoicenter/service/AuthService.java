@@ -6,6 +6,7 @@ import com.tournoicenter.domain.User;
 import com.tournoicenter.dto.auth.AuthResponse;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
+import com.tournoicenter.dto.auth.UpdateProfileRequest;
 import com.tournoicenter.dto.auth.UserResponse;
 import com.tournoicenter.exception.AccountLockedException;
 import com.tournoicenter.exception.EmailNotFoundException;
@@ -132,6 +133,16 @@ public class AuthService {
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        user.setName(request.name());
+        user.setAvatarUrl(request.avatarUrl());
+        user.setBannerUrl(request.bannerUrl());
+        userRepository.save(user);
         return UserResponse.from(user);
     }
 

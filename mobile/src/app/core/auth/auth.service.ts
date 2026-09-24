@@ -108,6 +108,15 @@ export class AuthService {
     );
   }
 
+  updateProfile(payload: { name: string; avatarUrl: string | null; bannerUrl: string | null }): Observable<User> {
+    return this.http.patch<User>(`${environment.apiUrl}/auth/me`, payload).pipe(
+      tap((user) => {
+        void this.tokenStorage.setSession(this.tokenSignal() ?? '', JSON.stringify(user));
+        this.currentUserSignal.set(user);
+      }),
+    );
+  }
+
   private persistSession(response: AuthResponse): void {
     void this.tokenStorage.setSession(response.token, JSON.stringify(response.user));
     this.tokenSignal.set(response.token);

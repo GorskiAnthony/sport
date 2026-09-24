@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -37,7 +39,7 @@ const CAT_STYLES: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-teams-page',
   standalone: true,
-  imports: [ConfirmModal],
+  imports: [ConfirmModal, DatePipe, RouterLink],
   templateUrl: './teams.html',
 })
 export class DashboardTeamsPage implements OnInit {
@@ -219,6 +221,15 @@ export class DashboardTeamsPage implements OnInit {
       } else {
         this.toast.info(`${created.length} équipe(s) importée(s), ${failedCount} en échec (limite de votre plan ?).`, 'Import partiel');
       }
+    });
+  }
+
+  undoCheckIn(team: Team): void {
+    this.teamService.undoCheckIn(team.id).subscribe({
+      next: (updated) => {
+        this.teams.update((list) => list.map((t) => (t.id === updated.id ? updated : t)));
+      },
+      error: () => this.toast.error('Une erreur est survenue.'),
     });
   }
 

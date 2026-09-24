@@ -13,12 +13,14 @@ public record TeamResponse(
         String contact,
         Long tournamentId,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Instant checkedInAt
 ) {
     public static TeamResponse from(Team team) {
         return new TeamResponse(
                 team.getId(), team.getName(), team.getClub(), team.getLogo(), team.getCategory(),
-                team.getContact(), team.getTournament().getId(), team.getCreatedAt(), team.getUpdatedAt()
+                team.getContact(), team.getTournament().getId(), team.getCreatedAt(), team.getUpdatedAt(),
+                team.getCheckedInAt()
         );
     }
 }

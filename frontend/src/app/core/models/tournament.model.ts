@@ -34,6 +34,8 @@ export interface TournamentDetail
   sponsorClicks: number;
   teams: Team[];
   matches: Match[];
+  tvModeEnabled: boolean;
+  checkInEnabled: boolean;
 }
 
 export interface RecentTournament {

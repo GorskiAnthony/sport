@@ -13,7 +13,7 @@ describe('AuthService', () => {
 
   const authResponse: AuthResponse = {
     token: 'jwt-token',
-    user: { id: 1, name: 'Alice', email: 'alice@example.com', role: 'ORGANIZER', plan: 'CLASSIC' },
+    user: { id: 1, name: 'Alice', email: 'alice@example.com', role: 'ORGANIZER', plan: 'CLASSIC', avatarUrl: null, bannerUrl: null },
   };
 
   beforeEach(() => {

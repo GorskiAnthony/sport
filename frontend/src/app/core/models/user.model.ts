@@ -7,6 +7,8 @@ export interface User {
   email: string;
   role: Role;
   plan: Plan;
+  avatarUrl: string | null;
+  bannerUrl: string | null;
 }
 
 export interface AuthResponse {

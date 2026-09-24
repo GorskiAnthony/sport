@@ -7,7 +7,7 @@ export const environment = {
   // Backend lancé en local (voir backend/.env.example, PORT). Sur émulateur Android, remplacer
   // localhost par 10.0.2.2 (l'émulateur a sa propre boucle locale) ; sur device physique, par
   // l'IP LAN de la machine — voir mobile/README.md.
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'http://192.168.0.19:3000/api',
 };
 
 /*

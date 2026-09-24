@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { BracketService } from '../../../core/services/bracket.service';
 import { TournamentFormat } from '../../../core/models/bracket.model';
@@ -40,8 +41,12 @@ export class DashboardTournamentDetailPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
   private readonly bracketService = inject(BracketService);
   private readonly toast = inject(ToastService);
+  private readonly authService = inject(AuthService);
 
   private readonly tournamentId = Number(this.route.snapshot.paramMap.get('id'));
+
+  readonly isPro = computed(() => this.authService.currentUser()?.plan === 'PRO');
+  readonly isClassicOrPro = computed(() => (this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE');
 
   readonly tournament = signal<TournamentDetail | null>(null);
   readonly loading = signal(true);

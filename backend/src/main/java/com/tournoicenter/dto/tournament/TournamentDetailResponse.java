@@ -4,6 +4,7 @@ import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.domain.TournamentStatus;
 import com.tournoicenter.dto.match.MatchResponse;
 import com.tournoicenter.dto.team.TeamResponse;
+import com.tournoicenter.service.PlanLimits;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,9 +35,12 @@ public record TournamentDetailResponse(
         List<TeamResponse> teams,
         List<MatchResponse> matches,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        boolean tvModeEnabled,
+        boolean checkInEnabled
 ) {
     public static TournamentDetailResponse from(Tournament t) {
+        PlanLimits planLimits = PlanLimits.of(t.getOrganizer().getPlan());
         return new TournamentDetailResponse(
                 t.getId(), t.getName(), t.getSport(), t.getCategory(), t.getLocation(),
                 t.getStartDate(), t.getEndDate(), t.getStatus(), t.getMaxTeams(), t.getDescription(),
@@ -45,7 +49,9 @@ public record TournamentDetailResponse(
                 t.getOrganizer().getId(),
                 t.getTeams().stream().map(TeamResponse::from).toList(),
                 t.getMatches().stream().map(MatchResponse::from).toList(),
-                t.getCreatedAt(), t.getUpdatedAt()
+                t.getCreatedAt(), t.getUpdatedAt(),
+                planLimits.tvMode(),
+                planLimits.checkIn()
         );
     }
 }

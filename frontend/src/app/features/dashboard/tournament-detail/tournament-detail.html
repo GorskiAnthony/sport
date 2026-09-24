@@ -26,6 +26,8 @@
       [startDate]="tournament()!.startDate"
       [endDate]="tournament()!.endDate"
       [teamsCount]="tournament()!.teams.length"
+      [tvModeEnabled]="isPro()"
+      [checkInEnabled]="isClassicOrPro()"
       (closed)="shareOpen.set(false)"
     />
 

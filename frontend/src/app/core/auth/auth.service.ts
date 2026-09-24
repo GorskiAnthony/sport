@@ -97,6 +97,17 @@ export class AuthService {
     );
   }
 
+  updateProfile(payload: { name: string; avatarUrl: string | null; bannerUrl: string | null }): Observable<User> {
+    return this.http.patch<User>(`${environment.apiUrl}/auth/me`, payload).pipe(
+      tap((user) => {
+        if (this.isBrowser) {
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }
+        this.currentUserSignal.set(user);
+      }),
+    );
+  }
+
   private persistSession(response: AuthResponse): void {
     if (this.isBrowser) {
       localStorage.setItem(TOKEN_KEY, response.token);

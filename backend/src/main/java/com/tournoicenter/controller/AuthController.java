@@ -5,6 +5,7 @@ import com.tournoicenter.dto.auth.ForgotPasswordRequest;
 import com.tournoicenter.dto.auth.LoginRequest;
 import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.ResetPasswordRequest;
+import com.tournoicenter.dto.auth.UpdateProfileRequest;
 import com.tournoicenter.dto.auth.UserResponse;
 import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.service.AuthService;
@@ -55,5 +56,10 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal JwtPrincipal principal) {
         return authService.getCurrentUser(principal.userId());
+    }
+
+    @PatchMapping("/me")
+    public UserResponse updateProfile(@AuthenticationPrincipal JwtPrincipal principal, @Valid @RequestBody UpdateProfileRequest request) {
+        return authService.updateProfile(principal.userId(), request);
     }
 }

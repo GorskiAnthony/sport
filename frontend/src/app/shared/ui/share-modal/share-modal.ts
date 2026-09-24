@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, OnChanges, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { toDataURL } from 'qrcode';
-import { LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2 } from '@lucide/angular';
+import { LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2, LucideTv, LucideUserCheck } from '@lucide/angular';
 import { tournamentShareSlug } from '../../utils/slug';
 import { formatDateFr } from '../../utils/date';
 
@@ -8,7 +9,7 @@ import { formatDateFr } from '../../utils/date';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-share-modal',
   standalone: true,
-  imports: [LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2],
+  imports: [RouterLink, LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2, LucideTv, LucideUserCheck],
   templateUrl: './share-modal.html',
 })
 export class ShareModal implements OnChanges {
@@ -21,6 +22,8 @@ export class ShareModal implements OnChanges {
   readonly startDate = input<string | null>(null);
   readonly endDate = input<string | null>(null);
   readonly teamsCount = input<number | null>(null);
+  readonly tvModeEnabled = input<boolean>(false);
+  readonly checkInEnabled = input<boolean>(false);
 
   readonly closed = output<void>();
 
@@ -34,6 +37,8 @@ export class ShareModal implements OnChanges {
   });
 
   readonly printUrl = computed(() => `/print/tournaments/${this.tournamentId()}`);
+  readonly tvModeUrl = computed(() => `/tv/tournaments/${this.tournamentId()}`);
+  readonly checkInUrl = computed(() => `/checkin/tournaments/${this.tournamentId()}`);
 
   /** Only a pool format (round-robin / group-knockout) has a meaningful "round by round"
    *  planning to print — a single-elimination bracket is already just one match per box. */
@@ -98,5 +103,13 @@ export class ShareModal implements OnChanges {
 
   printPlanning(): void {
     window.open(this.planningPrintUrl(), '_blank', 'noopener');
+  }
+
+  openTvMode(): void {
+    window.open(this.tvModeUrl(), '_blank', 'noopener');
+  }
+
+  openCheckIn(): void {
+    window.open(this.checkInUrl(), '_blank', 'noopener');
   }
 }

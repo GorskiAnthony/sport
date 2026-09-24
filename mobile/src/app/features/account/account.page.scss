@@ -1,3 +1,43 @@
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.banner {
+  display: block;
+  width: 100%;
+  height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 8px;
+  background: var(--ion-card-background, #161b22);
+  border: 2px dashed rgba(148, 163, 184, 0.25);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.banner-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+
 .profile-card {
   display: flex;
   flex-direction: column;
@@ -19,6 +59,19 @@
   font-weight: 700;
   margin-bottom: 16px;
   box-shadow: 0 12px 28px -8px rgba(34, 197, 94, 0.55);
+  cursor: pointer;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.name-item {
+  width: 100%;
+  margin-bottom: 12px;
 }
 
 h2 {
@@ -39,4 +92,5 @@ h2 {
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
+  margin-bottom: 16px;
 }

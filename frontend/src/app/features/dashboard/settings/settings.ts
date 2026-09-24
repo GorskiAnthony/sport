@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
@@ -30,7 +31,10 @@ export class DashboardSettingsPage implements OnInit {
 
   readonly user = this.authService.currentUser;
   readonly name = signal(this.user()?.name ?? '');
+  readonly avatarUrl = signal(this.user()?.avatarUrl ?? '');
+  readonly bannerUrl = signal(this.user()?.bannerUrl ?? '');
   readonly portalLoading = signal(false);
+  readonly saving = signal(false);
 
   ngOnInit(): void {
     // Retour possible depuis le portail de facturation Stripe (annulation/downgrade) : le plan
@@ -46,8 +50,46 @@ export class DashboardSettingsPage implements OnInit {
     return PLAN_BADGE_CLASSES[this.user()?.plan ?? 'FREE'];
   }
 
+  onAvatarSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.avatarUrl.set((ev.target?.result as string) ?? '');
+    reader.readAsDataURL(file);
+  }
+
+  onBannerSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.bannerUrl.set((ev.target?.result as string) ?? '');
+    reader.readAsDataURL(file);
+  }
+
   saveProfile(): void {
-    this.toast.success('Paramètres sauvegardés.', 'Enregistré');
+    if (!this.name().trim()) {
+      this.toast.error('Le nom est requis.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.authService
+      .updateProfile({
+        name: this.name(),
+        avatarUrl: this.avatarUrl() || null,
+        bannerUrl: this.bannerUrl() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.toast.success('Paramètres sauvegardés.', 'Enregistré');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.saving.set(false);
+          const message = (err.error as { message?: string } | null)?.message;
+          this.toast.error(message ?? 'Une erreur est survenue.', 'Erreur');
+        },
+      });
   }
 
   openBillingPortal(): void {

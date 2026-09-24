@@ -5,6 +5,44 @@
     <h2 class="text-white font-semibold mb-4">Profil</h2>
     <form (submit)="$event.preventDefault(); saveProfile()" class="space-y-4">
       <div class="flex flex-col gap-1.5">
+        <label class="text-slate-400 text-xs">Bannière</label>
+        <label
+          for="s-banner-input"
+          class="relative block w-full h-32 rounded-lg bg-[#0D1117] border-2 border-dashed border-white/10 overflow-hidden cursor-pointer hover:border-green-500/40 transition-colors"
+        >
+          @if (bannerUrl()) {
+            <img [src]="bannerUrl()" alt="Bannière" class="w-full h-full object-cover" />
+          } @else {
+            <div class="w-full h-full flex items-center justify-center text-slate-600 text-xs">Choisir une bannière</div>
+          }
+        </label>
+        <input id="s-banner-input" type="file" accept="image/*" class="sr-only" (change)="onBannerSelected($event)" />
+        <p class="text-slate-600 text-[10px]">PNG, JPG · max 4 Mo · sera mise en avant sur votre page publique</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <label
+          for="s-avatar-input"
+          class="w-16 h-16 rounded-full bg-[#0D1117] border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer hover:border-green-500/40 transition-colors overflow-hidden shrink-0"
+        >
+          @if (avatarUrl()) {
+            <img [src]="avatarUrl()" alt="Photo de profil" class="w-full h-full object-cover" />
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-600" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+          }
+        </label>
+        <div>
+          <label for="s-avatar-input" class="text-xs text-green-400 hover:text-green-300 font-medium transition-colors cursor-pointer">
+            {{ avatarUrl() ? 'Changer la photo' : 'Choisir une photo' }}
+          </label>
+          <p class="text-slate-600 text-[10px] mt-0.5">PNG, JPG · max 2 Mo</p>
+        </div>
+        <input id="s-avatar-input" type="file" accept="image/*" class="sr-only" (change)="onAvatarSelected($event)" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
         <label for="s-name" class="text-slate-400 text-xs">Nom</label>
         <input id="s-name" [value]="name()" (input)="name.set($any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" />
       </div>
@@ -12,8 +50,8 @@
         <label for="s-email" class="text-slate-400 text-xs">Email</label>
         <input id="s-email" [value]="user()?.email ?? ''" disabled class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed" />
       </div>
-      <button type="submit" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
-        Enregistrer
+      <button type="submit" [disabled]="saving()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50">
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
       </button>
     </form>
   </section>

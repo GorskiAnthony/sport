@@ -1,7 +1,17 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular/common';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon } from '@ionic/angular/standalone';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonInput,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { logOutOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/auth/auth.service';
@@ -26,16 +36,24 @@ const PLAN_META: Record<Plan, PlanMeta> = {
   selector: 'app-account',
   templateUrl: './account.page.html',
   styleUrls: ['./account.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, IonInput],
 })
 export class AccountPage implements ViewWillEnter {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toastController = inject(ToastController);
 
   readonly user = this.authService.currentUser;
 
+  readonly name = signal('');
+  readonly avatarUrl = signal<string | null>(null);
+  readonly bannerUrl = signal<string | null>(null);
+  readonly saving = signal(false);
+
+  readonly isOrganizer = computed(() => this.user()?.role === 'ORGANIZER');
+
   readonly initials = computed(() => {
-    const name = this.user()?.name.trim() ?? '';
+    const name = this.name().trim();
     if (!name) return '?';
     const parts = name.split(/\s+/);
     return parts
@@ -54,11 +72,70 @@ export class AccountPage implements ViewWillEnter {
   // silencieux, on garde les données déjà en cache plutôt que d'ajouter un état d'erreur pour un
   // cas non bloquant.
   ionViewWillEnter(): void {
-    this.authService.refreshUser().subscribe({ error: () => {} });
+    this.authService.refreshUser().subscribe({
+      next: (user) => this.syncForm(user.name, user.avatarUrl, user.bannerUrl),
+      error: () => {
+        const current = this.user();
+        if (current) this.syncForm(current.name, current.avatarUrl, current.bannerUrl);
+      },
+    });
+  }
+
+  onNameInput(value: string | null | undefined): void {
+    this.name.set(value ?? '');
+  }
+
+  onAvatarSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.avatarUrl.set((ev.target?.result as string) ?? null);
+    reader.readAsDataURL(file);
+  }
+
+  onBannerSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.bannerUrl.set((ev.target?.result as string) ?? null);
+    reader.readAsDataURL(file);
+  }
+
+  save(): void {
+    if (!this.name().trim()) {
+      void this.showToast('Le nom est requis.', 'danger');
+      return;
+    }
+
+    this.saving.set(true);
+    this.authService
+      .updateProfile({ name: this.name(), avatarUrl: this.avatarUrl(), bannerUrl: this.bannerUrl() })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          void this.showToast('Profil mis à jour.', 'success');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.saving.set(false);
+          const message = (err.error as { message?: string } | null)?.message ?? 'Une erreur est survenue.';
+          void this.showToast(message, 'danger');
+        },
+      });
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  private syncForm(name: string, avatarUrl: string | null, bannerUrl: string | null): void {
+    this.name.set(name);
+    this.avatarUrl.set(avatarUrl);
+    this.bannerUrl.set(bannerUrl);
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger'): Promise<void> {
+    const toast = await this.toastController.create({ message, duration: 3000, color, position: 'top' });
+    await toast.present();
   }
 }

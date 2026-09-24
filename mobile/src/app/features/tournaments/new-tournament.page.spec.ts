@@ -21,7 +21,15 @@ describe('NewTournamentPage', () => {
   let toastControllerSpy: jasmine.SpyObj<ToastController>;
   let toastSpy: jasmine.SpyObj<HTMLIonToastElement>;
 
-  const organizer: User = { id: 1, name: 'Alice', email: 'alice@example.com', role: 'ORGANIZER', plan: 'CLASSIC' };
+  const organizer: User = {
+    id: 1,
+    name: 'Alice',
+    email: 'alice@example.com',
+    role: 'ORGANIZER',
+    plan: 'CLASSIC',
+    avatarUrl: null,
+    bannerUrl: null,
+  };
 
   const createdTournament: TournamentSummary = {
     id: 42,

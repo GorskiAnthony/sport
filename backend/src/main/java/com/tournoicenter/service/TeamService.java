@@ -4,13 +4,16 @@ import com.tournoicenter.domain.Team;
 import com.tournoicenter.domain.Tournament;
 import com.tournoicenter.dto.team.TeamRequest;
 import com.tournoicenter.dto.team.TeamResponse;
+import com.tournoicenter.exception.ApiException;
 import com.tournoicenter.exception.ForbiddenException;
 import com.tournoicenter.exception.ResourceNotFoundException;
 import com.tournoicenter.repository.TeamRepository;
 import com.tournoicenter.repository.TournamentRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -19,11 +22,14 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final TournamentRepository tournamentRepository;
     private final PlanLimitService planLimitService;
+    private final TournamentLiveService tournamentLiveService;
 
-    public TeamService(TeamRepository teamRepository, TournamentRepository tournamentRepository, PlanLimitService planLimitService) {
+    public TeamService(TeamRepository teamRepository, TournamentRepository tournamentRepository,
+                        PlanLimitService planLimitService, TournamentLiveService tournamentLiveService) {
         this.teamRepository = teamRepository;
         this.tournamentRepository = tournamentRepository;
         this.planLimitService = planLimitService;
+        this.tournamentLiveService = tournamentLiveService;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +70,30 @@ public class TeamService {
         if (request.category() != null) team.setCategory(request.category());
         if (request.contact() != null) team.setContact(request.contact());
 
+        return TeamResponse.from(team);
+    }
+
+    /** Public — no team account exists, so any team representative can self-check-in by tapping
+     *  their name on the check-in page reached via the tournament's shared QR/link (see
+     *  TeamCheckinPage). Idempotent: a second tap doesn't reset the original arrival time. */
+    @Transactional
+    public TeamResponse checkIn(Long id) {
+        Team team = getOrThrow(id);
+        if (!PlanLimits.of(team.getTournament().getOrganizer().getPlan()).checkIn()) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Le check-in équipes est réservé aux plans Classic et Pro.");
+        }
+        if (team.getCheckedInAt() == null) {
+            team.setCheckedInAt(Instant.now());
+            tournamentLiveService.notifyTournamentChanged(team.getTournament().getId());
+        }
+        return TeamResponse.from(team);
+    }
+
+    @Transactional
+    public TeamResponse undoCheckIn(Long id, Long requesterId) {
+        Team team = getOrThrow(id);
+        requireOwner(team, requesterId);
+        team.setCheckedInAt(null);
         return TeamResponse.from(team);
     }
 

@@ -29,6 +29,9 @@ public class Team {
     @Column
     private String contact;
 
+    @Column(name = "checked_in_at")
+    private Instant checkedInAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
@@ -92,6 +95,14 @@ public class Team {
 
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+    public Instant getCheckedInAt() {
+        return checkedInAt;
+    }
+
+    public void setCheckedInAt(Instant checkedInAt) {
+        this.checkedInAt = checkedInAt;
     }
 
     public Tournament getTournament() {
