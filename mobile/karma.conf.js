@@ -37,8 +37,18 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false,
+    // GitHub Actions (comme tout runner CI headless) n'a pas de serveur X : 'Chrome' plante avec
+    // "Missing X server or $DISPLAY". CI=true est positionné automatiquement par Actions, donc ce
+    // switch n'affecte jamais `npm test` en local. --no-sandbox est nécessaire car le runner
+    // tourne en root ; --disable-dev-shm-usage évite un /dev/shm trop petit qui fait planter Chrome.
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+      }
+    },
+    browsers: [process.env['CI'] ? 'ChromeHeadlessCI' : 'Chrome'],
+    singleRun: !!process.env['CI'],
     restartOnFileChange: true
   });
 };
