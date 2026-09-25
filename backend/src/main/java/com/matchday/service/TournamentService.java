@@ -78,8 +78,8 @@ public class TournamentService {
      *  request is a fine trade-off for always-fresh paging. */
     @Transactional(readOnly = true)
     public Page<TournamentSummaryResponse> findAllPaged(String search, String sport, int page, int size) {
-        String query = (search == null || search.isBlank()) ? null : search.trim();
-        String sportFilter = (sport == null || sport.isBlank()) ? null : sport.trim();
+        String query = (search == null || search.isBlank()) ? "" : search.trim();
+        String sportFilter = (sport == null || sport.isBlank()) ? "" : sport.trim();
         int safePage = Math.max(0, page);
         int safeSize = ALLOWED_PAGE_SIZES.contains(size) ? size : 25;
         return tournamentRepository.searchPublicPaged(query, sportFilter, PageRequest.of(safePage, safeSize))

@@ -56,14 +56,23 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> searchPublic(@Param("query") String query);
 
     /** Paged counterpart to searchPublic() above, for the /tournaments listing UI — adds an
-     *  exact sport filter (unlike the free-text match on t.sport in searchPublic). */
+     *  exact sport filter (unlike the free-text match on t.sport in searchPublic).
+     *
+     *  query/sport are compared to '' rather than checked with IS NULL, unlike searchPublic()
+     *  above: that method is only ever called with a non-blank query (findAll() routes the blank
+     *  case to a different, plain query instead), so its "IS NULL OR ..." branch is dead code in
+     *  practice. This method, backing the always-on pagination UI, is routinely called with both
+     *  filters genuinely unset — and Postgres/Hibernate can't infer a type for a bare NULL bind
+     *  parameter used only inside LOWER(CONCAT(...)), so it falls back to bytea and every request
+     *  without a filter blew up with "function lower(bytea) does not exist". Binding a typed
+     *  empty string instead sidesteps the inference entirely. */
     @Query("""
             SELECT t FROM Tournament t
-            WHERE (:query IS NULL
+            WHERE (:query = ''
                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.location) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.sport) LIKE LOWER(CONCAT('%', :query, '%')))
-              AND (:sport IS NULL OR t.sport = :sport)
+              AND (:sport = '' OR t.sport = :sport)
             ORDER BY t.startDate DESC
             """)
     Page<Tournament> searchPublicPaged(@Param("query") String query, @Param("sport") String sport, Pageable pageable);
