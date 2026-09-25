@@ -1,10 +1,12 @@
 package com.matchday.config;
 
+import com.matchday.security.AuthCookieService;
 import com.matchday.security.CsrfCookieFilter;
 import com.matchday.security.JsonAuthErrorHandler;
 import com.matchday.security.JwtAuthenticationFilter;
 import com.matchday.security.JwtService;
 import com.matchday.security.RateLimitingFilter;
+import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -151,8 +154,23 @@ public class SecurityConfig {
     /** A request carrying an Authorization header authenticates via Bearer (native mobile),
      *  which CSRF can't touch by construction — only cookie-authenticated browser requests need
      *  the check. Combined with ignoringRequestMatchers above for the handful of endpoints that
-     *  have no session yet. */
+     *  have no session yet.
+     *
+     *  Requiring the CSRF token merely because Authorization is absent (regardless of whether the
+     *  auth_token cookie is even present) broke TournamentFlowTest/TournamentViewFlowTest: a truly
+     *  anonymous mutating request — no header, no cookie, nothing to forge — got rejected 403 by
+     *  CSRF before authorization ever ran, instead of the 401 those tests (rightly) expect for
+     *  "not authenticated". Scoping the check to requests that actually carry the auth_token
+     *  cookie fixes that and is also the more precise rule: CSRF only matters once there's an
+     *  ambient cookie session an attacker's cross-site request could ride along on. */
     private RequestMatcher csrfProtectionMatcher() {
-        return request -> !CSRF_SAFE_METHODS.contains(request.getMethod()) && request.getHeader("Authorization") == null;
+        return request -> {
+            if (CSRF_SAFE_METHODS.contains(request.getMethod()) || request.getHeader("Authorization") != null) {
+                return false;
+            }
+            Cookie[] cookies = request.getCookies();
+            return cookies != null
+                    && Arrays.stream(cookies).anyMatch(cookie -> AuthCookieService.COOKIE_NAME.equals(cookie.getName()));
+        };
     }
 }
