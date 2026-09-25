@@ -9,6 +9,8 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * The public {@code /topic/tournaments/{id}} broadcast is intentionally open — spectators watch a
  * tournament's live page without signing in. {@code /topic/notifications/{userId}} carries a
@@ -48,6 +50,16 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         if (header != null && header.startsWith("Bearer ")) {
             jwtService.parseToken(header.substring(7))
                     .ifPresent(principal -> accessor.setUser(new StompPrincipal(principal)));
+            return;
+        }
+
+        // Web clients: no Authorization header, so fall back to the token
+        // JwtHandshakeCookieInterceptor pulled from the auth_token cookie during the HTTP
+        // upgrade and stashed in the WS session attributes.
+        Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+        if (sessionAttributes != null
+                && sessionAttributes.get(JwtHandshakeCookieInterceptor.TOKEN_ATTRIBUTE) instanceof String token) {
+            jwtService.parseToken(token).ifPresent(principal -> accessor.setUser(new StompPrincipal(principal)));
         }
     }
 

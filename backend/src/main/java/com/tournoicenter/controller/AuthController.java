@@ -7,32 +7,50 @@ import com.tournoicenter.dto.auth.RegisterRequest;
 import com.tournoicenter.dto.auth.ResetPasswordRequest;
 import com.tournoicenter.dto.auth.UpdateProfileRequest;
 import com.tournoicenter.dto.auth.UserResponse;
+import com.tournoicenter.config.JwtProperties;
+import com.tournoicenter.security.AuthCookieService;
 import com.tournoicenter.security.JwtPrincipal;
 import com.tournoicenter.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthCookieService authCookieService;
+    private final Duration tokenTtl;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, AuthCookieService authCookieService,
+                           JwtProperties jwtProperties) {
         this.authService = authService;
+        this.authCookieService = authCookieService;
+        this.tokenTtl = Duration.ofDays(jwtProperties.expirationDays());
     }
 
+    /** Body keeps the token for native mobile clients (Bearer flow, unchanged) — browsers get
+     *  the same token again via the Set-Cookie header below and simply never persist the body's
+     *  copy (see frontend/mobile AuthService: response.token is only read on native builds). */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
+        AuthResponse body = authService.register(request);
+        response.addHeader(HttpHeaders.SET_COOKIE, authCookieService.build(body.token(), tokenTtl).toString());
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public AuthResponse login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+        AuthResponse body = authService.login(request);
+        response.addHeader(HttpHeaders.SET_COOKIE, authCookieService.build(body.token(), tokenTtl).toString());
+        return body;
     }
 
     @PostMapping("/forgot-password")
@@ -46,8 +64,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public void logout(@AuthenticationPrincipal JwtPrincipal principal) {
+    public void logout(@AuthenticationPrincipal JwtPrincipal principal, HttpServletResponse response) {
         authService.logout(principal);
+        response.addHeader(HttpHeaders.SET_COOKIE, authCookieService.clear().toString());
     }
 
     /** Le plan renvoyé au login est figé dans le JWT jusqu'à sa réémission ; cet endpoint

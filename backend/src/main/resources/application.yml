@@ -61,6 +61,10 @@ management:
       show-details: when-authorized
 
 app:
+  cookie:
+    # Secure=false uniquement en dev (pas de HTTPS en local, voir application-dev.yml) — un
+    # cookie Secure ne serait alors jamais renvoyé par le navigateur.
+    secure: ${COOKIE_SECURE:true}
   cors:
     allowed-origin: ${CLIENT_URL:http://localhost:4200}
     # CORS/WebSocket allowlist only (never used to build links) — covers the Ionic dev server

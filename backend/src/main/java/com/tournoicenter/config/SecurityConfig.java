@@ -1,5 +1,6 @@
 package com.tournoicenter.config;
 
+import com.tournoicenter.security.CsrfCookieFilter;
 import com.tournoicenter.security.JsonAuthErrorHandler;
 import com.tournoicenter.security.JwtAuthenticationFilter;
 import com.tournoicenter.security.JwtService;
@@ -8,17 +9,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 public class SecurityConfig {
@@ -47,10 +52,44 @@ public class SecurityConfig {
                                                      JsonAuthErrorHandler jsonAuthErrorHandler,
                                                      RateLimitingFilter rateLimitingFilter,
                                                      CorsConfigurationSource corsConfigurationSource) throws Exception {
+        // Retiré avant même de commencer la chaîne fluide ci-dessous (removeConfigurer() ne
+        // renvoie pas HttpSecurity, donc ne peut pas s'y insérer) : voir le commentaire détaillé
+        // sur .securityContext(...) plus bas pour la raison.
+        http.removeConfigurer(SessionManagementConfigurer.class);
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Le Bearer token (natif) est par nature immunisé au CSRF — seules les requêtes
+                // authentifiées par le cookie httpOnly (voir AuthCookieService) en ont besoin.
+                // requireCsrfProtectionMatcher restreint donc la vérification aux requêtes
+                // mutantes SANS header Authorization ; ignoringRequestMatchers couvre en plus
+                // les endpoints permitAll() qui n'ont encore aucune session au moment de
+                // l'appel (register/login typiquement — pas de cookie XSRF-TOKEN à renvoyer
+                // avant la toute première réponse du backend) et les webhooks/QR tokens dont le
+                // secret transmis joue déjà ce rôle.
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .requireCsrfProtectionMatcher(csrfProtectionMatcher())
+                        .ignoringRequestMatchers(
+                                "/api/auth/register", "/api/auth/login",
+                                "/api/auth/forgot-password", "/api/auth/reset-password",
+                                "/api/subscriptions/webhook",
+                                "/api/tournaments/*/sponsor-click", "/api/tournaments/join",
+                                "/api/teams/*/check-in"))
+                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class)
+                // Repository explicite (jamais de HttpSession, comme SessionCreationPolicy.STATELESS
+                // aurait fait), + retrait pur et simple de SessionManagementConfigurer : sans ça,
+                // SessionManagementFilter voit une Authentication fraîchement posée dans le
+                // SecurityContextHolder par JwtAuthenticationFilter, jamais "vue" via une session
+                // (il n'y en a pas), et traite donc CHAQUE requête authentifiée comme une toute
+                // nouvelle authentification — déclenchant sa stratégie par défaut, qui inclut
+                // CsrfAuthenticationStrategy. Celle-ci efface puis régénère le cookie XSRF-TOKEN à
+                // chaque appel (constaté en local : le cookie que le client vient de lire est déjà
+                // invalide au prochain appel). Ni repasser sessionAuthenticationStrategy sur le DSL
+                // ni pré-poser un SessionAuthenticationStrategy partagé n'empêche CsrfConfigurer de
+                // l'y ajouter quand même — seul le retrait complet du configurer fonctionne. Sans
+                // intérêt de toute façon ici : pas de session à protéger contre la fixation.
+                .securityContext(context -> context.securityContextRepository(new RequestAttributeSecurityContextRepository()))
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(jsonAuthErrorHandler)
                         .accessDeniedHandler(jsonAuthErrorHandler))
@@ -105,5 +144,15 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    private static final Set<String> CSRF_SAFE_METHODS = Set.of("GET", "HEAD", "TRACE", "OPTIONS");
+
+    /** A request carrying an Authorization header authenticates via Bearer (native mobile),
+     *  which CSRF can't touch by construction — only cookie-authenticated browser requests need
+     *  the check. Combined with ignoringRequestMatchers above for the handful of endpoints that
+     *  have no session yet. */
+    private RequestMatcher csrfProtectionMatcher() {
+        return request -> !CSRF_SAFE_METHODS.contains(request.getMethod()) && request.getHeader("Authorization") == null;
     }
 }

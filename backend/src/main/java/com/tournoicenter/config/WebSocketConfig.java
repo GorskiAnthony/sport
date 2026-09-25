@@ -1,5 +1,6 @@
 package com.tournoicenter.config;
 
+import com.tournoicenter.security.JwtHandshakeCookieInterceptor;
 import com.tournoicenter.security.StompAuthChannelInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -16,10 +17,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final CorsProperties corsProperties;
     private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
+    private final JwtHandshakeCookieInterceptor jwtHandshakeCookieInterceptor;
 
-    public WebSocketConfig(CorsProperties corsProperties, StompAuthChannelInterceptor stompAuthChannelInterceptor) {
+    public WebSocketConfig(CorsProperties corsProperties, StompAuthChannelInterceptor stompAuthChannelInterceptor,
+                            JwtHandshakeCookieInterceptor jwtHandshakeCookieInterceptor) {
         this.corsProperties = corsProperties;
         this.stompAuthChannelInterceptor = stompAuthChannelInterceptor;
+        this.jwtHandshakeCookieInterceptor = jwtHandshakeCookieInterceptor;
     }
 
     @Override
@@ -29,7 +33,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/api/ws").setAllowedOrigins(corsProperties.corsAllowedOrigins().toArray(String[]::new));
+        registry.addEndpoint("/api/ws")
+                .setAllowedOrigins(corsProperties.corsAllowedOrigins().toArray(String[]::new))
+                .addInterceptors(jwtHandshakeCookieInterceptor);
     }
 
     @Override

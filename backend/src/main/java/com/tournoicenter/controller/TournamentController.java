@@ -8,10 +8,14 @@ import com.tournoicenter.dto.tournament.TournamentJoinRequest;
 import com.tournoicenter.dto.tournament.TournamentJoinResponse;
 import com.tournoicenter.dto.tournament.TournamentRequest;
 import com.tournoicenter.dto.tournament.TournamentSummaryResponse;
+import com.tournoicenter.security.AuthCookieService;
 import com.tournoicenter.security.JwtPrincipal;
+import com.tournoicenter.security.JwtService;
 import com.tournoicenter.service.TournamentService;
 import com.tournoicenter.service.TournamentViewService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,15 +28,20 @@ public class TournamentController {
 
     private final TournamentService tournamentService;
     private final TournamentViewService tournamentViewService;
+    private final AuthCookieService authCookieService;
+    private final JwtService jwtService;
 
-    public TournamentController(TournamentService tournamentService, TournamentViewService tournamentViewService) {
+    public TournamentController(TournamentService tournamentService, TournamentViewService tournamentViewService,
+                                 AuthCookieService authCookieService, JwtService jwtService) {
         this.tournamentService = tournamentService;
         this.tournamentViewService = tournamentViewService;
+        this.authCookieService = authCookieService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping
-    public ApiResponse<List<TournamentSummaryResponse>> findAll() {
-        return ApiResponse.of(tournamentService.findAll());
+    public ApiResponse<List<TournamentSummaryResponse>> findAll(@RequestParam(required = false) String search) {
+        return ApiResponse.of(tournamentService.findAll(search));
     }
 
     @GetMapping("/me")
@@ -97,9 +106,16 @@ public class TournamentController {
         return ApiResponse.of(tournamentService.regenerateRefereeJoinToken(id, principal.userId()));
     }
 
-    /** Public — le token du QR code est lui-même le justificatif d'accès, voir SecurityConfig. */
+    /** Public — le token du QR code est lui-même le justificatif d'accès, voir SecurityConfig.
+     *  Le corps garde sessionToken pour le natif (Bearer, inchangé) ; le même cookie httpOnly
+     *  que AuthController.login/register est posé ici pour le build web mobile — voir
+     *  JwtAuthenticationFilter, qui retente parseRefereeSessionToken sur la valeur du cookie. */
     @PostMapping("/join")
-    public ApiResponse<TournamentJoinResponse> joinAsReferee(@Valid @RequestBody TournamentJoinRequest request) {
-        return ApiResponse.of(tournamentService.joinAsReferee(request.token(), request.refereeName()));
+    public ApiResponse<TournamentJoinResponse> joinAsReferee(@Valid @RequestBody TournamentJoinRequest request,
+                                                               HttpServletResponse response) {
+        TournamentJoinResponse body = tournamentService.joinAsReferee(request.token(), request.refereeName());
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                authCookieService.build(body.sessionToken(), jwtService.refereeSessionTtl()).toString());
+        return ApiResponse.of(body);
     }
 }

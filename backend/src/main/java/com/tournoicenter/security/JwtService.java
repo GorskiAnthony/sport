@@ -95,6 +95,13 @@ public class JwtService {
         return builder.compact();
     }
 
+    /** Exposed so callers that mirror this token into a cookie (see AuthCookieService /
+     *  TournamentController.joinAsReferee) can align the cookie's Max-Age with the token's own
+     *  lifetime instead of duplicating the literal. */
+    public Duration refereeSessionTtl() {
+        return REFEREE_SESSION_TTL;
+    }
+
     public Optional<RefereeSessionPrincipal> parseRefereeSessionToken(String token) {
         try {
             Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
