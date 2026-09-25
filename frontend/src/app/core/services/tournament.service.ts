@@ -4,7 +4,7 @@ import { Observable, of, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { RecentTournament, RefereeJoinInfo, TournamentDetail, TournamentRequest, TournamentSummary } from '../models/tournament.model';
+import { RecentTournament, RefereeJoinInfo, TournamentDetail, TournamentPage, TournamentRequest, TournamentSummary } from '../models/tournament.model';
 
 const SEARCH_CACHE_TTL_MS = 30_000;
 
@@ -18,7 +18,8 @@ export class TournamentService {
   private readonly searchCache = new Map<string, { data: TournamentSummary[]; expiresAt: number }>();
 
   /** search narrows the results server-side (GET /api/tournaments?search=...) — see
-   *  tournaments.ts for the debounced search box. */
+   *  tournaments.ts for the debounced search box. Unpaginated: used where every tournament is
+   *  needed (home page stats, /sports counts) — see searchPaged() for the /tournaments list UI. */
   getAll(search?: string): Observable<TournamentSummary[]> {
     const key = search?.trim() ?? '';
     const cached = this.searchCache.get(key);
@@ -31,6 +32,24 @@ export class TournamentService {
       map((res) => res.data),
       tap((data) => this.searchCache.set(key, { data, expiresAt: Date.now() + SEARCH_CACHE_TTL_MS })),
     );
+  }
+
+  /** Paginated variant of getAll() — passing page/size (or sport) switches the backend to the
+   *  paged query, which carries the total count in the X-Total-Count header rather than
+   *  changing the JSON body shape (see TournamentController.findAll). */
+  searchPaged(options: { search?: string; sport?: string; page: number; size: number }): Observable<TournamentPage> {
+    let params = new HttpParams().set('page', options.page).set('size', options.size);
+    if (options.search?.trim()) params = params.set('search', options.search.trim());
+    if (options.sport) params = params.set('sport', options.sport);
+
+    return this.http
+      .get<ApiResponse<TournamentSummary[]>>(this.baseUrl, { params, observe: 'response' })
+      .pipe(
+        map((res) => ({
+          items: res.body?.data ?? [],
+          totalCount: Number(res.headers.get('X-Total-Count') ?? res.body?.data.length ?? 0),
+        })),
+      );
   }
 
   getMine(): Observable<TournamentSummary[]> {

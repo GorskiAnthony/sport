@@ -20,6 +20,8 @@ import com.matchday.util.ImageDataUrl;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +69,21 @@ public class TournamentService {
                 ? tournamentRepository.findAllByOrderByStartDateDesc()
                 : tournamentRepository.searchPublic(query);
         return tournaments.stream().map(TournamentSummaryResponse::from).toList();
+    }
+
+    private static final List<Integer> ALLOWED_PAGE_SIZES = List.of(25, 50, 75, 100);
+
+    /** Not cached like findAll() above — page/sport combinations are too numerous to be worth
+     *  the cache churn, and this backs a UI (the /tournaments list) where a few extra ms per
+     *  request is a fine trade-off for always-fresh paging. */
+    @Transactional(readOnly = true)
+    public Page<TournamentSummaryResponse> findAllPaged(String search, String sport, int page, int size) {
+        String query = (search == null || search.isBlank()) ? null : search.trim();
+        String sportFilter = (sport == null || sport.isBlank()) ? null : sport.trim();
+        int safePage = Math.max(0, page);
+        int safeSize = ALLOWED_PAGE_SIZES.contains(size) ? size : 25;
+        return tournamentRepository.searchPublicPaged(query, sportFilter, PageRequest.of(safePage, safeSize))
+                .map(TournamentSummaryResponse::from);
     }
 
     @Transactional(readOnly = true)

@@ -43,6 +43,11 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        // Nécessaire pour que le JS du frontend puisse lire ce header custom en cross-origin
+        // (dev local uniquement — en prod nginx sert /api/* en same-origin, voir deploy.md) :
+        // un header non standard n'est pas exposé au navigateur par défaut, même si la requête
+        // elle-même réussit.
+        configuration.setExposedHeaders(List.of("X-Total-Count"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

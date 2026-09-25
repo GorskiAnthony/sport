@@ -2,6 +2,7 @@ package com.matchday.repository;
 
 import com.matchday.domain.Tournament;
 import com.matchday.domain.TournamentStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -53,6 +54,19 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
             ORDER BY t.startDate DESC
             """)
     List<Tournament> searchPublic(@Param("query") String query);
+
+    /** Paged counterpart to searchPublic() above, for the /tournaments listing UI — adds an
+     *  exact sport filter (unlike the free-text match on t.sport in searchPublic). */
+    @Query("""
+            SELECT t FROM Tournament t
+            WHERE (:query IS NULL
+                OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(t.location) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(t.sport) LIKE LOWER(CONCAT('%', :query, '%')))
+              AND (:sport IS NULL OR t.sport = :sport)
+            ORDER BY t.startDate DESC
+            """)
+    Page<Tournament> searchPublicPaged(@Param("query") String query, @Param("sport") String sport, Pageable pageable);
 
     @Query("SELECT t.location AS location, COUNT(t) AS count FROM Tournament t GROUP BY t.location ORDER BY COUNT(t) DESC")
     List<LocationCount> countGroupedByLocation(Pageable pageable);

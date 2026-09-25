@@ -38,6 +38,11 @@ export interface TournamentDetail
   checkInEnabled: boolean;
 }
 
+export interface TournamentPage {
+  items: TournamentSummary[];
+  totalCount: number;
+}
+
 export interface RecentTournament {
   tournament: TournamentSummary;
   firstViewedAt: string;

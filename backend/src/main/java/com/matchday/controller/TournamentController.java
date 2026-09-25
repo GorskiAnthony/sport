@@ -15,6 +15,7 @@ import com.matchday.service.TournamentService;
 import com.matchday.service.TournamentViewService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +40,24 @@ public class TournamentController {
         this.jwtService = jwtService;
     }
 
+    /** page/size/sport are opt-in: home/sports pages that need every tournament to compute
+     *  aggregate figures keep calling this with none of them and get the legacy unpaginated
+     *  array. The /tournaments list UI passes them and gets a page back, with the total count
+     *  carried in X-Total-Count (see CorsConfigurationSource) rather than changing the JSON
+     *  shape — so both callers hit the same endpoint without a dual response contract. */
     @GetMapping
-    public ApiResponse<List<TournamentSummaryResponse>> findAll(@RequestParam(required = false) String search) {
-        return ApiResponse.of(tournamentService.findAll(search));
+    public ApiResponse<List<TournamentSummaryResponse>> findAll(@RequestParam(required = false) String search,
+                                                                  @RequestParam(required = false) String sport,
+                                                                  @RequestParam(required = false) Integer page,
+                                                                  @RequestParam(required = false) Integer size,
+                                                                  HttpServletResponse response) {
+        if (page == null && size == null && sport == null) {
+            return ApiResponse.of(tournamentService.findAll(search));
+        }
+        Page<TournamentSummaryResponse> paged = tournamentService.findAllPaged(
+                search, sport, page == null ? 0 : page, size == null ? 25 : size);
+        response.setHeader("X-Total-Count", String.valueOf(paged.getTotalElements()));
+        return ApiResponse.of(paged.getContent());
     }
 
     @GetMapping("/me")
