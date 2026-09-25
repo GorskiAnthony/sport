@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastContainer } from '../../shared/ui/toast-container/toast-container';
 import { DashboardRightPanel } from './right-panel/right-panel';
@@ -35,6 +37,7 @@ const NAV: DashboardNavItem[] = [
 export class DashboardLayout {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly title = inject(Title);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly nav = NAV;
@@ -45,6 +48,20 @@ export class DashboardLayout {
     const name = this.user()?.name ?? '';
     return name.split(' ').map((part) => part[0]).join('').toUpperCase().slice(0, 2);
   });
+
+  constructor() {
+    // Les pages de l'espace connecté n'appellent pas setPageMeta (voir index.html) : sans ça,
+    // l'onglet garde le dernier titre posé par une page publique (ex. "Tarifs | Matchday")
+    // indéfiniment, y compris en changeant de page ici, puisque ce layout reste monté tant qu'on
+    // navigue dans /dashboard/**.
+    this.syncTitle();
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => this.syncTitle());
+  }
+
+  private syncTitle(): void {
+    const active = this.nav.find((item) => this.router.isActive(item.path, item.end));
+    this.title.setTitle(`${active?.label ?? 'Tableau de bord'} | Matchday`);
+  }
 
   openSidebar(): void {
     this.sidebarOpen.set(true);
