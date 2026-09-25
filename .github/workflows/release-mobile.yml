@@ -78,3 +78,11 @@ jobs:
           export MOBILE_IMAGE=$(echo "$MOBILE_IMAGE" | tr '[:upper:]' '[:lower:]')
           docker build -t "$MOBILE_IMAGE:dev" .
           docker push "$MOBILE_IMAGE:dev"
+
+      # Dokploy's own "On Push" git trigger fires the moment this branch is pushed — long before
+      # this job finishes building and pushing the image above, so it always redeploys the
+      # *previous* :dev image. Triggering the redeploy here instead, once the new image is
+      # actually in the registry, is what makes autodeploy pull the right thing.
+      - name: Trigger Dokploy redeploy
+        if: github.ref_name == 'dev'
+        run: curl -fsS -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}"
