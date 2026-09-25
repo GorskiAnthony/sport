@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
+import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, Role, User } from '../models/user.model';
 import { TokenStorageService } from './token-storage.service';
@@ -17,15 +18,21 @@ interface LoginPayload {
   password: string;
 }
 
-/** Équivalent mobile de frontend/src/app/core/auth/auth.service.ts : même API backend, mais
- *  TokenStorageService (Capacitor Preferences, async) au lieu de localStorage. Le token est mis
- *  en cache dans un signal pour que l'intercepteur HTTP (synchrone) puisse le lire sans
- *  attendre — restoreSession() doit avoir tourné avant le premier appel authentifié, ce que
- *  garantit le provideAppInitializer branché dans main.ts. */
+/** Équivalent mobile de frontend/src/app/core/auth/auth.service.ts, avec une bifurcation par
+ *  plateforme (Capacitor.isNativePlatform()) :
+ *  - natif : inchangé — JWT dans TokenStorageService (Capacitor Secure Storage, chiffré via
+ *    Keystore/Keychain), mis en cache dans tokenSignal pour que l'intercepteur HTTP (synchrone)
+ *    puisse construire le header Authorization sans attendre.
+ *  - build web (déployé sur le domaine mobile-web, voir mobile/nginx.conf) : même stratégie que
+ *    le frontend — le JWT vit dans un cookie httpOnly posé par le backend (AuthCookieService),
+ *    jamais lu ni persisté ici ; SecureStoragePlugin dégraderait de toute façon vers
+ *    localStorage dans un navigateur (voir web.js du plugin), donc aucune raison de s'en servir
+ *    côté web. L'utilisateur courant est réhydraté via GET /auth/me à chaque démarrage. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokenStorage = inject(TokenStorageService);
+  private readonly isNative = Capacitor.isNativePlatform();
 
   private readonly tokenSignal = signal<string | null>(null);
   private readonly currentUserSignal = signal<User | null>(null);
@@ -38,18 +45,18 @@ export class AuthService {
   /** À appeler avant que l'app ne rende quoi que ce soit authentifié — voir main.ts
    *  (provideAppInitializer) ET auth.guard.ts, qui l'attendent tous les deux. Mémoïsée : malgré
    *  withEnabledBlockingInitialNavigation, le guard de la toute première navigation peut
-   *  s'exécuter avant que cette promesse (lecture async du stockage sécurisé) ne soit résolue —
-   *  la garantie d'ordonnancement du bootstrap Angular ne suffit pas ici. Le guard rappelle donc
-   *  restoreSession() lui-même et attend la même promesse en vol plutôt que de lire les signaux
-   *  en supposant qu'ils sont déjà à jour. */
+   *  s'exécuter avant que cette promesse (lecture async du stockage sécurisé, ou appel réseau
+   *  côté web) ne soit résolue — la garantie d'ordonnancement du bootstrap Angular ne suffit pas
+   *  ici. Le guard rappelle donc restoreSession() lui-même et attend la même promesse en vol
+   *  plutôt que de lire les signaux en supposant qu'ils sont déjà à jour. */
   restoreSession(): Promise<void> {
     if (!this.restoreSessionPromise) {
-      this.restoreSessionPromise = this.doRestoreSession();
+      this.restoreSessionPromise = this.isNative ? this.doRestoreNativeSession() : this.doRestoreWebSession();
     }
     return this.restoreSessionPromise;
   }
 
-  private async doRestoreSession(): Promise<void> {
+  private async doRestoreNativeSession(): Promise<void> {
     const [token, userJson] = await Promise.all([this.tokenStorage.getToken(), this.tokenStorage.getUser()]);
 
     this.tokenSignal.set(token);
@@ -60,6 +67,13 @@ export class AuthService {
     } catch {
       await this.tokenStorage.removeUser();
     }
+  }
+
+  private async doRestoreWebSession(): Promise<void> {
+    const user = await firstValueFrom(
+      this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(catchError(() => of(null))),
+    );
+    this.currentUserSignal.set(user);
   }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
@@ -84,25 +98,30 @@ export class AuthService {
 
   logout(): void {
     // Révocation côté serveur d'abord — fire-and-forget : subscribe() est synchrone donc
-    // l'intercepteur lit encore le token (pas encore effacé) pour cet appel-là. Le logout
-    // client doit réussir même si l'appel réseau échoue (token déjà expiré, hors ligne...).
-    if (this.tokenSignal()) {
+    // l'intercepteur/le cookie sont encore valides pour cet appel-là. Le logout client doit
+    // réussir même si l'appel réseau échoue (token déjà expiré, hors ligne...).
+    if (this.isNative ? this.tokenSignal() !== null : this.isAuthenticated()) {
       this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
     }
 
-    void this.tokenStorage.clear();
-    this.tokenSignal.set(null);
+    if (this.isNative) {
+      void this.tokenStorage.clear();
+      this.tokenSignal.set(null);
+    }
     this.currentUserSignal.set(null);
   }
 
+  /** null sur le build web : le token n'est plus lisible côté client, voir la doc de classe. */
   getToken(): string | null {
-    return this.tokenSignal();
+    return this.isNative ? this.tokenSignal() : null;
   }
 
   refreshUser(): Observable<User> {
     return this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(
       tap((user) => {
-        void this.tokenStorage.setSession(this.tokenSignal() ?? '', JSON.stringify(user));
+        if (this.isNative) {
+          void this.tokenStorage.setSession(this.tokenSignal() ?? '', JSON.stringify(user));
+        }
         this.currentUserSignal.set(user);
       }),
     );
@@ -111,15 +130,19 @@ export class AuthService {
   updateProfile(payload: { name: string; avatarUrl: string | null; bannerUrl: string | null }): Observable<User> {
     return this.http.patch<User>(`${environment.apiUrl}/auth/me`, payload).pipe(
       tap((user) => {
-        void this.tokenStorage.setSession(this.tokenSignal() ?? '', JSON.stringify(user));
+        if (this.isNative) {
+          void this.tokenStorage.setSession(this.tokenSignal() ?? '', JSON.stringify(user));
+        }
         this.currentUserSignal.set(user);
       }),
     );
   }
 
   private persistSession(response: AuthResponse): void {
-    void this.tokenStorage.setSession(response.token, JSON.stringify(response.user));
-    this.tokenSignal.set(response.token);
+    if (this.isNative) {
+      void this.tokenStorage.setSession(response.token, JSON.stringify(response.user));
+      this.tokenSignal.set(response.token);
+    }
     this.currentUserSignal.set(response.user);
   }
 }

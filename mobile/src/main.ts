@@ -11,7 +11,7 @@ import {
   withEnabledBlockingInitialNavigation,
 } from '@angular/router';
 import { provideAppInitializer, inject } from '@angular/core';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 
 import { routes } from './app/app.routes';
@@ -32,7 +32,12 @@ bootstrapApplication(AppComponent, {
     // tant qu'aucune interaction ne force Ionic à resynchroniser. Le mode "blocking" attend la
     // fin de la navigation initiale avant le premier rendu, pour éviter cette course.
     provideRouter(routes, withPreloading(PreloadAllModules), withEnabledBlockingInitialNavigation()),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    // withXsrfConfiguration : sans effet en natif (pas de cookies) ; nécessaire sur le build web
+    // pour les mêmes raisons que frontend/app.config.ts — voir SecurityConfig côté backend.
+    provideHttpClient(
+      withInterceptors([authInterceptor]),
+      withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
+    ),
     // Recharge le token/user stockés (Capacitor Preferences, async) avant tout rendu, pour que
     // les guards et l'intercepteur voient un état cohérent dès le premier écran.
     provideAppInitializer(() => inject(AuthService).restoreSession()),
