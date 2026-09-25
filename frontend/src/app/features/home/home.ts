@@ -44,8 +44,13 @@ export class HomePage implements OnInit {
   ngOnInit(): void {
     this.tournamentService.getAll().subscribe({
       next: (tournaments) => {
+        // status ne passe à FINISHED que quand les matchs sont réellement joués jusqu'au bout
+        // (voir BracketGenerationService/RoundRobinStatusSync côté backend) — un tournoi dont la
+        // date de fin est passée mais dont les scores n'ont jamais été saisis reste bloqué à
+        // UPCOMING indéfiniment, d'où le filtre sur endDate en plus du status.
+        const today = new Date().toISOString().slice(0, 10);
         const upcoming = tournaments
-          .filter((t) => t.status !== 'FINISHED')
+          .filter((t) => t.status !== 'FINISHED' && t.endDate >= today)
           .sort((a, b) => a.startDate.localeCompare(b.startDate))
           .slice(0, 3);
         this.upcomingTournaments.set(upcoming);
