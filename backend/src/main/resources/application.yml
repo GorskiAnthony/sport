@@ -1,10 +1,10 @@
 spring:
   application:
-    name: TournoiCenter
+    name: Matchday
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tournoi_center}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/matchday}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:postgres}
     hikari:
@@ -95,4 +95,4 @@ app:
 
 logging:
   level:
-    com.tournoicenter: INFO
+    com.matchday: INFO

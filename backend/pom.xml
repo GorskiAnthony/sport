@@ -8,11 +8,11 @@
 		<version>4.1.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.tournoicenter</groupId>
+	<groupId>com.matchday</groupId>
 	<artifactId>backend</artifactId>
 	<version>1.6.0</version>
-	<name>TournoiCenter</name>
-	<description>API REST - Tournoi Center</description>
+	<name>Matchday</name>
+	<description>API REST - Matchday</description>
 	<url/>
 	<licenses>
 		<license/>

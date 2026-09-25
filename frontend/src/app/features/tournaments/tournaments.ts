@@ -30,7 +30,7 @@ export class TournamentsPage implements OnInit {
   constructor() {
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Tournois',
-      description: 'Parcourez les tournois sportifs organisés sur Tournoi Center : dates, lieux, équipes et classements en direct.',
+      description: 'Parcourez les tournois sportifs organisés sur Matchday : dates, lieux, équipes et classements en direct.',
       url: this.document.location.origin + '/tournaments',
     });
   }

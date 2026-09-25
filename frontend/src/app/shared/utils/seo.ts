@@ -1,6 +1,6 @@
 import { Meta, Title } from '@angular/platform-browser';
 
-const SITE_NAME = 'Tournoi Center';
+const SITE_NAME = 'Matchday';
 
 export interface PageMetaOptions {
   title: string;

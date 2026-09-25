@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'fr.tournoicenter.mobile',
-  appName: 'Tournoi Center',
+  appId: 'fr.matchday.mobile',
+  appName: 'Matchday',
   webDir: 'www',
   backgroundColor: '#0d1117',
   server: {

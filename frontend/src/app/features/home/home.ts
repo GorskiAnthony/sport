@@ -36,7 +36,7 @@ export class HomePage implements OnInit {
     const origin = this.document.location.origin;
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Organisez vos tournois sportifs',
-      description: 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Tournoi Center gère le tableau, les classements et le partage avec vos spectateurs.',
+      description: 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Matchday gère le tableau, les classements et le partage avec vos spectateurs.',
       url: origin,
       image: `${origin}/hero.png`,
     });

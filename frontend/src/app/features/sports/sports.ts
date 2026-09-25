@@ -27,7 +27,7 @@ export class SportsPage {
   constructor() {
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Sports',
-      description: 'Football, basketball, tennis, volleyball, rugby, esport, handball, futsal : découvrez tous les sports gérables sur Tournoi Center.',
+      description: 'Football, basketball, tennis, volleyball, rugby, esport, handball, futsal : découvrez tous les sports gérables sur Matchday.',
     });
   }
 

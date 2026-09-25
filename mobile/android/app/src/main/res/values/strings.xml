@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Tournoi Center</string>
-    <string name="title_activity_main">Tournoi Center</string>
-    <string name="package_name">fr.tournoicenter.mobile</string>
-    <string name="custom_url_scheme">fr.tournoicenter.mobile</string>
+    <string name="app_name">Matchday</string>
+    <string name="title_activity_main">Matchday</string>
+    <string name="package_name">fr.matchday.mobile</string>
+    <string name="custom_url_scheme">fr.matchday.mobile</string>
 </resources>

@@ -7,4 +7,4 @@ app:
 
 logging:
   level:
-    com.tournoicenter: INFO
+    com.matchday: INFO

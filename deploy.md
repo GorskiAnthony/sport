@@ -84,7 +84,7 @@ Dans l'onglet **Environment** du service Compose, colle et complète (voir `.env
 la liste commentée) :
 
 ```env
-POSTGRES_DB=tournoi_center
+POSTGRES_DB=matchday
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<généré avec: openssl rand -base64 24>
 
@@ -145,7 +145,7 @@ Clique **Deploy**. Dokploy va :
 3. Démarrer `backend` (qui applique automatiquement les migrations Flyway au démarrage).
 4. Démarrer `frontend` et `mobile`.
 
-Suis les logs dans l'onglet **Logs** du service. Le backend est prêt quand tu vois `Started TournoiCenterApplication`.
+Suis les logs dans l'onglet **Logs** du service. Le backend est prêt quand tu vois `Started MatchdayApplication`.
 
 ## 6. Vérification post-déploiement
 
@@ -171,7 +171,7 @@ en prod : crée un compte normal via `/register`, puis promeus-le directement en
 serveur :
 
 ```bash
-docker exec -it <conteneur_postgres> psql -U postgres -d tournoi_center \
+docker exec -it <conteneur_postgres> psql -U postgres -d matchday \
   -c "UPDATE users SET role = 'ADMIN' WHERE email = 'ton-email@exemple.com';"
 ```
 

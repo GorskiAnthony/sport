@@ -1,9 +1,9 @@
 ---
 name: design-system
-description: Tournoi Center's visual design language (colors, typography, shape, components) as extracted from the Angular web frontend. Load before styling or building any new UI surface — a new web page, a shared UI component, or a screen in the future Ionic mobile app — to keep the same look across platforms. Trigger on "design", "UI", "style", "theme", "composant", "écran mobile", "cohérence visuelle".
+description: Matchday's visual design language (colors, typography, shape, components) as extracted from the Angular web frontend. Load before styling or building any new UI surface — a new web page, a shared UI component, or a screen in the future Ionic mobile app — to keep the same look across platforms. Trigger on "design", "UI", "style", "theme", "composant", "écran mobile", "cohérence visuelle".
 ---
 
-# Design system — Tournoi Center
+# Design system — Matchday
 
 Source of truth is the web app (`frontend/src/app`). This file is a snapshot extracted from
 it — if the web design changes, update this file to match, don't let it drift.

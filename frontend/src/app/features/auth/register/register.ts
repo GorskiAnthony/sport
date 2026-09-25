@@ -43,7 +43,7 @@ export class RegisterPage {
   readonly subtitle = signal(
     this.requestedRole === 'SPECTATOR'
       ? 'Créez un compte spectateur gratuit pour suivre vos équipes favorites et être notifié de leurs matchs.'
-      : 'Rejoignez la communauté Tournoi Center.',
+      : 'Rejoignez la communauté Matchday.',
   );
   readonly name = signal('');
   readonly email = signal('');

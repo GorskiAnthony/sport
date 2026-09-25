@@ -50,7 +50,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
   constructor() {
     setPageMeta(this.titleService, this.metaService, {
       title: 'Tournoi',
-      description: 'Suivez ce tournoi en direct sur Tournoi Center : classement, matchs et équipes.',
+      description: 'Suivez ce tournoi en direct sur Matchday : classement, matchs et équipes.',
     });
   }
 
