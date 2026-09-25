@@ -7,7 +7,6 @@ import { Button } from '../../shared/ui/button/button';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
-import { SPORTS } from '../../shared/utils/sports';
 import { setPageMeta } from '../../shared/utils/seo';
 
 type FeatureIcon = 'trophy' | 'shuffle' | 'chart' | 'link';
@@ -52,10 +51,11 @@ export class HomePage implements OnInit {
         this.upcomingTournaments.set(upcoming);
 
         const teamsCount = tournaments.reduce((sum, t) => sum + t.teamsCount, 0);
+        const sportsCount = new Set(tournaments.map((t) => t.sport)).size;
         this.stats.set([
           { value: tournaments.length, suffix: '', label: 'Tournois organisés' },
           { value: teamsCount, suffix: '', label: 'Équipes inscrites' },
-          { value: SPORTS.length, suffix: '', label: 'Sports couverts' },
+          { value: sportsCount, suffix: '', label: 'Sports couverts' },
         ]);
       },
       error: () => {
