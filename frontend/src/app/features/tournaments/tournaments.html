@@ -1,6 +1,20 @@
 <div class="flex-1 max-w-7xl mx-auto px-6 py-12">
   <app-page-header badge="Tous les tournois" title="Trouvez" highlight="votre tournoi." subtitle="Suivez les tournois en cours et à venir près de chez vous." />
 
+  <div class="relative max-w-md mb-6">
+    <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input
+      type="search"
+      [value]="search()"
+      (input)="onSearchInput($event)"
+      placeholder="Rechercher par nom, sport ou lieu…"
+      aria-label="Rechercher un tournoi"
+      class="w-full bg-[#161B22] border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-green-500/50"
+    />
+  </div>
+
   @if (loading()) {
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" role="list">
       @for (i of skeletons; track i) {
@@ -8,7 +22,9 @@
       }
     </ul>
   } @else if (tournaments().length === 0) {
-    <p class="text-slate-400 text-sm">Aucun tournoi pour le moment.</p>
+    <p class="text-slate-400 text-sm">
+      {{ search() ? 'Aucun tournoi ne correspond à cette recherche.' : 'Aucun tournoi pour le moment.' }}
+    </p>
   } @else {
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" role="list">
       @for (t of tournaments(); track t.id) {

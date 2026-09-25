@@ -1,12 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, Role, User } from '../models/user.model';
-
-const TOKEN_KEY = 'token';
-const USER_KEY = 'user';
 
 interface RegisterPayload {
   name: string;
@@ -20,29 +17,55 @@ interface LoginPayload {
   password: string;
 }
 
+/** The JWT lives in an httpOnly cookie the backend sets on register/login (see AuthCookieService
+ *  server-side) — nothing here ever reads or persists it; the browser attaches it automatically
+ *  on every /api/* request (see the credentials interceptor). The `user` object isn't persisted
+ *  either (previously localStorage, readable by any injected script for as long as the session
+ *  lasted) — it only ever lives in this in-memory signal, rebuilt from GET /auth/me on each app
+ *  start. SSR keeps rendering logged-out, as before (no cookie forwarding to the SSR process);
+ *  the client rehydrates after bootstrap via restoreSession(). */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Pas de localStorage côté serveur (SSR) : le user "connecté" n'existe que dans le
-  // navigateur, l'app y est rendue déconnectée puis réhydratée avec le vrai état côté client.
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly http = inject(HttpClient);
 
-  private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
+  private readonly currentUserSignal = signal<User | null>(null);
 
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
-  constructor(private readonly http: HttpClient) {}
+  private restoreSessionPromise: Promise<void> | null = null;
+
+  /** Call once at app start (see app.config.ts) before anything that depends on
+   *  isAuthenticated()/currentUser() renders — memoized and safe to call again from auth.guard.ts
+   *  if a navigation guard runs before the initializer's promise has resolved. */
+  restoreSession(): Promise<void> {
+    if (!this.isBrowser) {
+      return Promise.resolve();
+    }
+    if (!this.restoreSessionPromise) {
+      this.restoreSessionPromise = this.doRestoreSession();
+    }
+    return this.restoreSessionPromise;
+  }
+
+  private async doRestoreSession(): Promise<void> {
+    const user = await firstValueFrom(
+      this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(catchError(() => of(null))),
+    );
+    this.currentUserSignal.set(user);
+  }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${environment.apiUrl}/auth/register`, payload)
-      .pipe(tap((response) => this.persistSession(response)));
+      .pipe(tap((response) => this.currentUserSignal.set(response.user)));
   }
 
   login(payload: LoginPayload): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${environment.apiUrl}/auth/login`, payload)
-      .pipe(tap((response) => this.persistSession(response)));
+      .pipe(tap((response) => this.currentUserSignal.set(response.user)));
   }
 
   forgotPassword(email: string): Observable<void> {
@@ -54,76 +77,32 @@ export class AuthService {
   }
 
   logout(): void {
-    // Revoke server-side first — subscribe() dispatches synchronously, so the auth interceptor
-    // still reads the (still-present) token for this one request. Fire-and-forget: logout must
-    // still succeed client-side even if this call fails (network down, token already expired).
-    if (this.getToken()) {
+    // Revoke server-side and clear the cookie — fire-and-forget: logout must still succeed
+    // client-side even if this call fails (network down, cookie already expired).
+    if (this.isAuthenticated()) {
       this.http.post<void>(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
     }
-
-    if (this.isBrowser) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-    }
     this.currentUserSignal.set(null);
-  }
-
-  getToken(): string | null {
-    return this.isBrowser ? localStorage.getItem(TOKEN_KEY) : null;
   }
 
   updatePlan(plan: User['plan']): void {
     const current = this.currentUserSignal();
     if (!current) return;
-
-    const updated: User = { ...current, plan };
-    if (this.isBrowser) {
-      localStorage.setItem(USER_KEY, JSON.stringify(updated));
-    }
-    this.currentUserSignal.set(updated);
+    this.currentUserSignal.set({ ...current, plan });
   }
 
   /** Le plan stocké côté client date du dernier login/register (ou du dernier appel à
    *  updatePlan) : après un paiement Stripe (checkout hébergé, mis à jour par webhook côté
    *  serveur), rien ne le rafraîchit spontanément. À appeler au retour d'un checkout réussi. */
   refreshUser(): Observable<User> {
-    return this.http.get<User>(`${environment.apiUrl}/auth/me`).pipe(
-      tap((user) => {
-        if (this.isBrowser) {
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-        }
-        this.currentUserSignal.set(user);
-      }),
-    );
+    return this.http
+      .get<User>(`${environment.apiUrl}/auth/me`)
+      .pipe(tap((user) => this.currentUserSignal.set(user)));
   }
 
   updateProfile(payload: { name: string; avatarUrl: string | null; bannerUrl: string | null }): Observable<User> {
-    return this.http.patch<User>(`${environment.apiUrl}/auth/me`, payload).pipe(
-      tap((user) => {
-        if (this.isBrowser) {
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-        }
-        this.currentUserSignal.set(user);
-      }),
-    );
-  }
-
-  private persistSession(response: AuthResponse): void {
-    if (this.isBrowser) {
-      localStorage.setItem(TOKEN_KEY, response.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-    }
-    this.currentUserSignal.set(response.user);
-  }
-
-  private readStoredUser(): User | null {
-    if (!this.isBrowser) return null;
-    try {
-      const stored = localStorage.getItem(USER_KEY);
-      return stored ? (JSON.parse(stored) as User) : null;
-    } catch {
-      localStorage.removeItem(USER_KEY);
-      return null;
-    }
+    return this.http
+      .patch<User>(`${environment.apiUrl}/auth/me`, payload)
+      .pipe(tap((user) => this.currentUserSignal.set(user)));
   }
 }

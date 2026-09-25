@@ -20,9 +20,11 @@ import { setPageMeta } from '../../shared/utils/seo';
 export class TournamentsPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
   private readonly document = inject(DOCUMENT);
+  private searchTimeout?: ReturnType<typeof setTimeout>;
 
   readonly tournaments = signal<TournamentSummary[]>([]);
   readonly loading = signal(true);
+  readonly search = signal('');
   readonly skeletons = [1, 2, 3, 4, 5, 6];
 
   constructor() {
@@ -34,7 +36,18 @@ export class TournamentsPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.tournamentService.getAll().subscribe({
+    this.load();
+  }
+
+  onSearchInput(event: Event): void {
+    this.search.set((event.target as HTMLInputElement).value);
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => this.load(), 300);
+  }
+
+  private load(): void {
+    this.loading.set(true);
+    this.tournamentService.getAll(this.search()).subscribe({
       next: (tournaments) => {
         this.tournaments.set(tournaments);
         this.loading.set(false);
