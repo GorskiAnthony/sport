@@ -20,6 +20,7 @@ import com.matchday.security.JwtPrincipal;
 import com.matchday.security.JwtService;
 import com.matchday.security.LoginAttemptService;
 import com.matchday.security.TokenRevocationService;
+import com.matchday.util.ImageDataUrl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,8 @@ import java.util.Optional;
 public class AuthService {
 
     private static final Duration RESET_TOKEN_TTL = Duration.ofHours(1);
+    private static final int MAX_AVATAR_BYTES = 2_100_000;
+    private static final int MAX_BANNER_BYTES = 4_200_000;
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -139,6 +142,8 @@ public class AuthService {
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        ImageDataUrl.validate(request.avatarUrl(), MAX_AVATAR_BYTES, "La photo de profil");
+        ImageDataUrl.validate(request.bannerUrl(), MAX_BANNER_BYTES, "La bannière");
         user.setName(request.name());
         user.setAvatarUrl(request.avatarUrl());
         user.setBannerUrl(request.bannerUrl());

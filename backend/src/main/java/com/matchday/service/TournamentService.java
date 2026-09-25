@@ -16,6 +16,7 @@ import com.matchday.repository.MatchRepository;
 import com.matchday.repository.TournamentRepository;
 import com.matchday.repository.UserRepository;
 import com.matchday.security.JwtService;
+import com.matchday.util.ImageDataUrl;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -29,6 +30,8 @@ import java.util.List;
 
 @Service
 public class TournamentService {
+
+    private static final int MAX_SPONSOR_LOGO_BYTES = 2_100_000;
 
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
@@ -226,6 +229,7 @@ public class TournamentService {
         if (hasContent && !PlanLimits.of(tournament.getOrganizer().getPlan()).sponsorBanner()) {
             throw new ApiException(HttpStatus.FORBIDDEN, "La bannière sponsor est réservée au plan Pro.");
         }
+        ImageDataUrl.validate(request.sponsorLogoUrl(), MAX_SPONSOR_LOGO_BYTES, "Le logo sponsor");
 
         if (request.sponsorName() != null) tournament.setSponsorName(request.sponsorName());
         if (request.sponsorLogoUrl() != null) tournament.setSponsorLogoUrl(request.sponsorLogoUrl());

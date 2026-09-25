@@ -9,6 +9,7 @@ import com.matchday.exception.ForbiddenException;
 import com.matchday.exception.ResourceNotFoundException;
 import com.matchday.repository.TeamRepository;
 import com.matchday.repository.TournamentRepository;
+import com.matchday.util.ImageDataUrl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import java.util.List;
 
 @Service
 public class TeamService {
+
+    private static final int MAX_LOGO_BYTES = 2_100_000;
 
     private final TeamRepository teamRepository;
     private final TournamentRepository tournamentRepository;
@@ -50,6 +53,7 @@ public class TeamService {
             throw new ForbiddenException();
         }
         planLimitService.checkTeamLimit(tournament.getId(), tournament.getOrganizer().getPlan());
+        ImageDataUrl.validate(request.logo(), MAX_LOGO_BYTES, "Le logo");
 
         Team team = new Team(request.name(), request.category(), tournament);
         team.setClub(request.club());
@@ -66,7 +70,10 @@ public class TeamService {
 
         if (request.name() != null) team.setName(request.name());
         if (request.club() != null) team.setClub(request.club());
-        if (request.logo() != null) team.setLogo(request.logo());
+        if (request.logo() != null) {
+            ImageDataUrl.validate(request.logo(), MAX_LOGO_BYTES, "Le logo");
+            team.setLogo(request.logo());
+        }
         if (request.category() != null) team.setCategory(request.category());
         if (request.contact() != null) team.setContact(request.contact());
 

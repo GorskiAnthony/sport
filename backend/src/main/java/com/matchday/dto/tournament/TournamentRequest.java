@@ -24,7 +24,7 @@ public record TournamentRequest(
         @Size(max = 5000) String rules,
         @Size(max = 1000) String terrains,
         @Size(max = 255) String sponsorName,
-        String sponsorLogoUrl,
+        @Size(max = 2_800_000, message = "Logo sponsor trop volumineux (max ~2 Mo).") String sponsorLogoUrl,
         String sponsorClickUrl,
         String format,
         Boolean splitEnabled,
