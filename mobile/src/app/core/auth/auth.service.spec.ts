@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Capacitor } from '@capacitor/core';
 import { AuthService } from './auth.service';
 import { TokenStorageService } from './token-storage.service';
 import { environment } from '../../../environments/environment';
@@ -17,6 +18,13 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
+    // Ces tests couvrent le chemin natif (Bearer + TokenStorageService) — voir la
+    // bifurcation Capacitor.isNativePlatform() dans AuthService. Sans ce spy, Karma tourne
+    // dans Chrome headless (pas de pont Capacitor natif), donc isNativePlatform() renvoie
+    // false et le service prendrait silencieusement le chemin web (cookie + GET /auth/me),
+    // que ces tests ne mockent pas.
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
+
     tokenStorageSpy = jasmine.createSpyObj('TokenStorageService', [
       'getToken',
       'getUser',

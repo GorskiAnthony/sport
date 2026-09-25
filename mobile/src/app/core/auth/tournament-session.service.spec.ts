@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { Capacitor } from '@capacitor/core';
 import { TournamentSessionService } from './tournament-session.service';
 import { TournamentSessionStorageService } from './tournament-session-storage.service';
 import { environment } from '../../../environments/environment';
@@ -13,6 +14,12 @@ describe('TournamentSessionService', () => {
   const joinResponse = { sessionToken: 'session-jwt', tournamentId: 10, tournamentName: 'Coupe des vacances' };
 
   beforeEach(() => {
+    // Ces tests couvrent le chemin natif (TournamentSessionStorageService) — voir la
+    // bifurcation Capacitor.isNativePlatform() dans TournamentSessionService. Sans ce spy,
+    // Karma tourne en Chrome headless (pas de pont Capacitor natif) et le service prendrait
+    // le chemin web (pas de persistance), que ces tests ne mockent pas.
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
+
     storageSpy = jasmine.createSpyObj('TournamentSessionStorageService', ['get', 'set', 'clear']);
     storageSpy.set.and.resolveTo();
     storageSpy.clear.and.resolveTo();
