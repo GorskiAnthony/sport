@@ -17,7 +17,7 @@ export class AboutPage {
   constructor() {
     setPageMeta(inject(Title), inject(Meta), {
       title: 'À propos',
-      description: 'Tournoi Center simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.',
+      description: 'Matchday simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.',
     });
   }
 
@@ -39,5 +39,5 @@ export class AboutPage {
     },
   ];
 
-  readonly team = [{ name: 'Anthony G.', role: 'Fondateur & CTO', initials: 'AG' }];
+  readonly team = [{ name: 'Anthony G.', role: 'Fondateur & CTO', avatar: '/anthony.jpeg' }];
 }

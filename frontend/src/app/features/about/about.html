@@ -3,7 +3,7 @@
     badge="À propos"
     title="Notre mission :"
     highlight="démocratiser l'organisation sportive."
-    subtitle="Tournoi Center est né de la frustration d'organisateurs qui perdaient des heures à gérer des tournois sur des feuilles Excel."
+    subtitle="Matchday est né de la frustration d'organisateurs qui perdaient des heures à gérer des tournois sur des feuilles Excel."
   />
 
   <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-labelledby="values-title">
@@ -28,9 +28,7 @@
     <div class="flex flex-wrap justify-center gap-6">
       @for (member of team; track member.name) {
         <div class="text-center">
-          <div class="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500/30 flex items-center justify-center text-green-400 text-2xl font-extrabold mx-auto mb-3">
-            {{ member.initials }}
-          </div>
+          <img class="w-20 h-20 rounded-full object-cover border-2 border-green-500/30 mx-auto mb-3" alt="{{ member.name }}" src="{{ member.avatar }}" />
           <p class="text-white font-semibold">{{ member.name }}</p>
           <p class="text-slate-400 text-sm">{{ member.role }}</p>
         </div>
