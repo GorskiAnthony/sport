@@ -1,20 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
 import { setPageMeta } from '../../shared/utils/seo';
-
-const SHOWCASE_COUNTS: Record<string, number> = {
-  football: 1240,
-  basketball: 380,
-  tennis: 210,
-  volleyball: 175,
-  rugby: 145,
-  esport: 220,
-  handball: 130,
-  futsal: 90,
-};
+import { TournamentService } from '../../core/services/tournament.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,7 +13,11 @@ const SHOWCASE_COUNTS: Record<string, number> = {
   imports: [PageHeader, SportIcon],
   templateUrl: './sports.html',
 })
-export class SportsPage {
+export class SportsPage implements OnInit {
+  private readonly tournamentService = inject(TournamentService);
+
+  readonly sports = signal(SPORTS.map((sport) => ({ ...sport, count: 0 })));
+
   constructor() {
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Sports',
@@ -31,8 +25,16 @@ export class SportsPage {
     });
   }
 
-  readonly sports = SPORTS.map((sport) => ({
-    ...sport,
-    count: SHOWCASE_COUNTS[sport.id] ?? 0,
-  }));
+  ngOnInit(): void {
+    this.tournamentService.getAll().subscribe({
+      next: (tournaments) => {
+        const counts = new Map<string, number>();
+        for (const t of tournaments) {
+          counts.set(t.sport, (counts.get(t.sport) ?? 0) + 1);
+        }
+        this.sports.set(SPORTS.map((sport) => ({ ...sport, count: counts.get(sport.id) ?? 0 })));
+      },
+      error: () => {},
+    });
+  }
 }
