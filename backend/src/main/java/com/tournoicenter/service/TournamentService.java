@@ -53,11 +53,17 @@ public class TournamentService {
     }
 
     /** Cached briefly (see application.yml) — the public tournament list is hit by every
-     *  visitor and doesn't need to be millisecond-fresh. */
+     *  visitor and doesn't need to be millisecond-fresh. The default key generator folds
+     *  `search` into the cache key automatically, so each distinct search term gets its own
+     *  short-lived entry alongside the unfiltered list. */
     @Cacheable("tournamentList")
     @Transactional(readOnly = true)
-    public List<TournamentSummaryResponse> findAll() {
-        return tournamentRepository.findAllByOrderByStartDateDesc().stream().map(TournamentSummaryResponse::from).toList();
+    public List<TournamentSummaryResponse> findAll(String search) {
+        String query = (search == null || search.isBlank()) ? null : search.trim();
+        List<Tournament> tournaments = query == null
+                ? tournamentRepository.findAllByOrderByStartDateDesc()
+                : tournamentRepository.searchPublic(query);
+        return tournaments.stream().map(TournamentSummaryResponse::from).toList();
     }
 
     @Transactional(readOnly = true)

@@ -36,7 +36,7 @@ public class SitemapController {
     @GetMapping(value = "/api/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String sitemap() {
         String baseUrl = corsProperties.allowedOrigin();
-        List<TournamentSummaryResponse> tournaments = tournamentService.findAll();
+        List<TournamentSummaryResponse> tournaments = tournamentService.findAll(null);
 
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

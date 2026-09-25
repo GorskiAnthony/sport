@@ -39,6 +39,21 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
             """)
     List<Tournament> search(@Param("query") String query, @Param("status") TournamentStatus status, Pageable pageable);
 
+    /** Public counterpart to search() above — deliberately does NOT match on organizer.email:
+     *  this backs the unauthenticated /api/tournaments list, and matching on email would let
+     *  anyone probe whether a given address belongs to an organizer (a search that returns
+     *  results vs. one that doesn't is itself a leak), which the admin-only search doesn't need
+     *  to worry about. */
+    @Query("""
+            SELECT t FROM Tournament t
+            WHERE (:query IS NULL
+                OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(t.location) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(t.sport) LIKE LOWER(CONCAT('%', :query, '%')))
+            ORDER BY t.startDate DESC
+            """)
+    List<Tournament> searchPublic(@Param("query") String query);
+
     @Query("SELECT t.location AS location, COUNT(t) AS count FROM Tournament t GROUP BY t.location ORDER BY COUNT(t) DESC")
     List<LocationCount> countGroupedByLocation(Pageable pageable);
 
