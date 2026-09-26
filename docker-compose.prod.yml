@@ -60,6 +60,14 @@ services:
     # a plain redeploy/restart silently keeps running whatever image is already
     # cached locally on the server, even after a new release has been published.
     pull_policy: always
+    # Confiné au réseau privé du stack : Dokploy attache aussi tous les projets à un
+    # réseau partagé (`dokploy-network`) pour Traefik, où Compose alias chaque service
+    # par son simple nom ("backend"). Deux stacks (prod/dev) dessus donnent au DNS
+    # interne deux IP différentes pour "backend", et nginx (côté frontend) finit par
+    # router aléatoirement vers l'un ou l'autre — deux bases de données, deux
+    # JWT_SECRET différents. Seul `frontend` a besoin d'être joignable depuis Traefik.
+    networks:
+      - default
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-matchday}
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -98,6 +106,9 @@ services:
   mobile:
     image: ghcr.io/gorskianthony/sport-mobile:${MOBILE_TAG:-latest}
     pull_policy: always
+    # Voir le commentaire sur `backend` ci-dessus — même collision d'alias possible.
+    networks:
+      - default
     depends_on:
       - backend
     restart: unless-stopped
