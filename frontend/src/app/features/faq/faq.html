@@ -1,0 +1,22 @@
+<div class="flex-1 max-w-3xl mx-auto px-6 py-12">
+  <app-page-header badge="FAQ" title="Questions" highlight="fréquentes." subtitle="Tout ce qu'il faut savoir avant de créer votre premier tournoi." />
+
+  <div class="space-y-3 mb-16">
+    @for (item of faq; track item.q) {
+      <details class="bg-[#161B22] border border-white/10 rounded-xl p-5 group">
+        <summary class="text-white font-semibold cursor-pointer list-none flex items-center justify-between gap-4">
+          {{ item.q }}
+          <svg class="w-4 h-4 flex-shrink-0 text-slate-400 transition-transform group-open:rotate-180" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <p class="text-slate-400 text-sm mt-3 leading-relaxed">{{ item.a }}</p>
+      </details>
+    }
+  </div>
+
+  <div class="text-center">
+    <app-button text="Créer mon premier tournoi" variant="primary" routerLink="/register" [arrow]="true" className="px-8 py-3 text-base" />
+    <p class="text-slate-400 text-sm mt-3">Gratuit, sans carte bancaire.</p>
+  </div>
+</div>

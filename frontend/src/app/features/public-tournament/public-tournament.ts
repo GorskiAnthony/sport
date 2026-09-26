@@ -170,7 +170,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
             ? { '@type': 'Place', name: tournament.location }
             : undefined,
           url: canonicalUrl,
-        });
+        }, 'event');
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
           this.tournamentService.recordView(this.tournamentId).subscribe({ error: () => {} });

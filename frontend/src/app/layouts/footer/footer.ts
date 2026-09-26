@@ -16,20 +16,15 @@ interface FooterLink {
 export class Footer {
   readonly plateforme: FooterLink[] = [
     { label: 'Tournois', href: '/tournaments' },
+    { label: 'Sports', href: '/sports' },
     { label: 'Organisateurs', href: '/organizers' },
     { label: 'Tarifs', href: '/pricing' },
-  ];
-
-  readonly ressources: FooterLink[] = [
-    { label: 'Aide', href: '#aide' },
-    { label: 'Guide utilisateur', href: '#guide' },
-    { label: 'Blog', href: '#blog' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'FAQ', href: '/faq' },
   ];
 
   readonly legal: FooterLink[] = [
-    { label: "Conditions d'utilisation", href: '#cgu' },
-    { label: 'Politique de confidentialité', href: '#confidentialite' },
-    { label: 'Mentions légales', href: '#mentions-legales' },
+    { label: "Conditions d'utilisation", href: '/cgu' },
+    { label: 'Politique de confidentialité', href: '/confidentialite' },
+    { label: 'Mentions légales', href: '/mentions-legales' },
   ];
 }

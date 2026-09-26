@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { LucideTarget, LucideZap, LucideShieldCheck } from '@lucide/angular';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
-import { setPageMeta } from '../../shared/utils/seo';
+import { Button } from '../../shared/ui/button/button';
+import { setPageMeta, setCanonical } from '../../shared/utils/seo';
 
 type ValueIcon = 'target' | 'zap' | 'shield';
 
@@ -10,15 +13,22 @@ type ValueIcon = 'target' | 'zap' | 'shield';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-about-page',
   standalone: true,
-  imports: [PageHeader, LucideTarget, LucideZap, LucideShieldCheck],
+  imports: [PageHeader, Button, RouterLink, LucideTarget, LucideZap, LucideShieldCheck],
   templateUrl: './about.html',
 })
 export class AboutPage {
   constructor() {
+    const document = inject(DOCUMENT);
+    const origin = document.location.origin;
+    const url = `${origin}/about`;
+
     setPageMeta(inject(Title), inject(Meta), {
       title: 'À propos',
       description: 'Matchday simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.',
+      url,
+      image: `${origin}/hero.png`,
     });
+    setCanonical(document, url);
   }
 
   readonly values: { icon: ValueIcon; title: string; desc: string }[] = [

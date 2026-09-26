@@ -235,6 +235,31 @@ sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au 
    instance a aujourd'hui son propre état ; un vrai chantier, à ne lancer que si le trafic doit rester élevé
    durablement, pas pour un pic ponctuel.
 
+## Analytics (Umami)
+
+Mesure d'audience auto-hébergée (pas de bannière cookie RGPD nécessaire : Umami ne pose pas de
+cookie de tracking). Volontairement **hors de `docker-compose.prod.yml`** : ce n'est pas une
+ressource par environnement (comme `backend`/`postgres`) mais une instance unique, partagée par
+tous les environnements de ce serveur (dev, prod, autres domaines sur ce VPS) — Umami distingue
+les sites via son rapport "Hostname", pas via des instances séparées.
+
+**Où ça tourne** : `~/umami/docker-compose.yml` sur le VPS (2 conteneurs, `umami` +
+`umami-postgres`, réseau dédié `umami_default` + `dokploy-network` en commun). Non exposé
+publiquement ni via Traefik — atteint uniquement en interne, par nom de conteneur, depuis
+n'importe quel service déjà attaché à `dokploy-network` (donc depuis `frontend`).
+
+**Câblage** : `frontend/nginx.conf` proxifie tout `/stats/**` vers `http://umami:3000/` (voir le
+commentaire dans le fichier). Ça sert à la fois le script de tracking (`/stats/script.js`, chargé
+depuis `frontend/src/index.html`) et le dashboard Umami lui-même — accessible depuis un navigateur
+sur `https://<domaine>/stats/`. Comme ce chemin est public (pas de sous-domaine ni de VPN dédié),
+**le mot de passe admin Umami doit rester fort** (changé par défaut à la création, ne jamais
+remettre `admin`/`umami`).
+
+**Si le serveur est reconstruit** : recréer `~/umami/docker-compose.yml` (service `umami-postgres`
++ `umami`, image `docker.umami.is/umami-software/umami:postgresql-latest` — pas `ghcr.io`, qui
+retourne `denied`), `docker compose up -d`, puis créer un site via l'UI (`https://<domaine>/stats/`)
+ou l'API (`POST /api/websites`) et reporter son `id` dans `data-website-id` de `index.html`.
+
 ## Rotation des logs
 
 `docker-compose.prod.yml` plafonne les logs des 3 services (ancre YAML `x-default-logging`,

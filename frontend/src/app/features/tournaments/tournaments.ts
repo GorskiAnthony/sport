@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
@@ -9,7 +9,7 @@ import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
-import { setPageMeta } from '../../shared/utils/seo';
+import { setPageMeta, setCanonical } from '../../shared/utils/seo';
 
 const PAGE_SIZES = [25, 50, 75, 100] as const;
 
@@ -23,6 +23,8 @@ const PAGE_SIZES = [25, 50, 75, 100] as const;
 export class TournamentsPage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
   private readonly document = inject(DOCUMENT);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private searchTimeout?: ReturnType<typeof setTimeout>;
 
   readonly tournaments = signal<TournamentSummary[]>([]);
@@ -40,15 +42,35 @@ export class TournamentsPage implements OnInit {
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
 
   constructor() {
+    const url = this.document.location.origin + '/tournaments';
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Tournois',
       description: 'Parcourez les tournois sportifs organisés sur Matchday : dates, lieux, équipes et classements en direct.',
-      url: this.document.location.origin + '/tournaments',
+      url,
+      image: `${this.document.location.origin}/football-stadium-sunset.webp`,
     });
+    // Canonical fixe sur l'URL sans paramètres : une recherche/filtre ne doit pas être indexée
+    // comme une page distincte de la liste des tournois (contenu quasi-identique, juste filtré).
+    setCanonical(this.document, url);
   }
 
   ngOnInit(): void {
+    // Recherche reflétée dans l'URL (?search=) : rend les recherches partageables/bookmarkables,
+    // et permet au JSON-LD WebSite (voir PublicLayout) de déclarer un vrai SearchAction plutôt
+    // qu'une capacité qui n'existerait pas.
+    const params = this.route.snapshot.queryParamMap;
+    this.search.set(params.get('search') ?? '');
+    this.sport.set(params.get('sport') ?? '');
     this.load();
+  }
+
+  private syncQueryParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { search: this.search() || null, sport: this.sport() || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   onSearchInput(event: Event): void {
@@ -56,6 +78,7 @@ export class TournamentsPage implements OnInit {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.page.set(0);
+      this.syncQueryParams();
       this.load();
     }, 300);
   }
@@ -63,6 +86,7 @@ export class TournamentsPage implements OnInit {
   onSportChange(event: Event): void {
     this.sport.set((event.target as HTMLSelectElement).value);
     this.page.set(0);
+    this.syncQueryParams();
     this.load();
   }
 

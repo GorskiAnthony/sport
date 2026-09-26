@@ -16,7 +16,7 @@
           <span class="text-green-400">Vivez la compétition.</span>
         </h1>
         <p class="mt-5 text-slate-300 text-base leading-relaxed max-w-sm">
-          Foot, basket, pétanque, esport, tennis... Créez, gérez et suivez vos tournois en temps réel, quel que soit votre sport.
+          Foot, basket, pétanque, esport, tennis... Oubliez les feuilles Excel : créez votre tournoi, ajoutez vos équipes, et laissez Matchday gérer classement, calendrier et partage en temps réel.
         </p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
           <app-button text="Créer un compte" variant="primary" routerLink="/register" [arrow]="true" />
@@ -124,4 +124,13 @@
       </div>
     </section>
   }
+
+  <section class="border-t border-white/10" aria-labelledby="home-faq-title">
+    <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p id="home-faq-title" class="text-slate-400 text-sm">
+        Une question sur les tournois, les formats ou les tarifs ?
+      </p>
+      <app-button text="Consulter la FAQ" variant="outline" routerLink="/faq" [arrow]="true" />
+    </div>
+  </section>
 </main>

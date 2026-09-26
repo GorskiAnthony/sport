@@ -1,6 +1,6 @@
 <footer class="bg-[#0D1117] border-t border-white/10">
   <div class="max-w-7xl mx-auto px-6 pt-14 pb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
       <div class="lg:col-span-1">
         <a href="/" aria-label="Matchday, retour à l'accueil" class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded w-fit block">
           <img src="/logo_white.png" alt="Matchday" class="h-16 w-auto" />
@@ -26,27 +26,12 @@
       </div>
 
       <div class="lg:col-span-1">
-        <nav aria-label="Ressources">
-          <h3 class="text-white text-xs font-semibold uppercase tracking-widest mb-4">Ressources</h3>
-          <ul class="space-y-3" role="list">
-            @for (link of ressources; track link.href) {
-              <li>
-                <a [href]="link.href" class="text-slate-400 text-sm hover:text-white transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
-                  {{ link.label }}
-                </a>
-              </li>
-            }
-          </ul>
-        </nav>
-      </div>
-
-      <div class="lg:col-span-1">
         <nav aria-label="Légal">
           <h3 class="text-white text-xs font-semibold uppercase tracking-widest mb-4">Légal</h3>
           <ul class="space-y-3" role="list">
             @for (link of legal; track link.href) {
               <li>
-                <a [href]="link.href" class="text-slate-400 text-sm hover:text-white transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+                <a [routerLink]="link.href" class="text-slate-400 text-sm hover:text-white transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
                   {{ link.label }}
                 </a>
               </li>
@@ -56,26 +41,14 @@
       </div>
 
       <div class="lg:col-span-1">
-        <h3 class="text-white text-xs font-semibold uppercase tracking-widest mb-4">Restez informé</h3>
-        <p class="text-slate-400 text-sm mb-4 leading-relaxed">Recevez les dernières actualités et tournois à venir.</p>
-        <form (submit)="$event.preventDefault()" aria-label="Inscription à la newsletter" class="flex gap-2">
-          <label for="newsletter-email" class="sr-only">Votre adresse email</label>
-          <input
-            id="newsletter-email"
-            type="email"
-            name="email"
-            placeholder="Votre email"
-            required
-            autocomplete="email"
-            class="flex-1 min-w-0 bg-[#161B22] border border-white/10 rounded px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-shadow"
-          />
-          <button type="submit" aria-label="S'inscrire à la newsletter" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-green-500 hover:bg-green-400 rounded transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-black" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </button>
-        </form>
+        <h3 class="text-white text-xs font-semibold uppercase tracking-widest mb-4">Contact</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-3">
+          Une question ? Écrivez-nous directement, sans formulaire ni ticket.
+        </p>
+        <a href="mailto:anthony.developpeurweb@gmail.com" class="text-green-400 text-sm hover:text-green-300 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 rounded">
+          anthony.developpeurweb&#64;gmail.com
+        </a>
+        <p class="text-slate-500 text-xs mt-3">Marseille, France</p>
       </div>
     </div>
 

@@ -21,8 +21,25 @@
     }
   </ol>
 
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-labelledby="benefits-title">
+    <h2 id="benefits-title" class="sr-only">Pourquoi les organisateurs choisissent Matchday</h2>
+    @for (benefit of benefits; track benefit.title) {
+      <div class="bg-[#161B22] border border-white/10 rounded-xl p-6 shadow-lg shadow-black/20">
+        <div class="w-11 h-11 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-4" aria-hidden="true">
+          @switch (benefit.icon) {
+            @case ('chart') { <svg lucideChartColumn class="w-5 h-5"></svg> }
+            @case ('share') { <svg lucideShare class="w-5 h-5"></svg> }
+            @case ('refresh') { <svg lucideRefreshCw class="w-5 h-5"></svg> }
+          }
+        </div>
+        <h3 class="text-white font-semibold mb-2">{{ benefit.title }}</h3>
+        <p class="text-slate-400 text-sm">{{ benefit.desc }}</p>
+      </div>
+    }
+  </section>
+
   <div class="text-center">
-    <app-button text="Devenir organisateur" variant="primary" routerLink="/register" className="px-8 py-3 text-base" />
+    <app-button text="Devenir organisateur" variant="primary" routerLink="/register" [arrow]="true" className="px-8 py-3 text-base" />
     <p class="text-slate-400 text-sm mt-3">Gratuit, sans carte bancaire.</p>
   </div>
 </div>
