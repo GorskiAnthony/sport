@@ -4,6 +4,7 @@ import com.matchday.config.JwtProperties;
 import com.matchday.domain.Plan;
 import com.matchday.domain.Role;
 import com.matchday.domain.User;
+import com.matchday.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,12 +25,14 @@ public class JwtService {
     private final SecretKey key;
     private final Duration expiration;
     private final TokenRevocationService tokenRevocationService;
+    private final UserRepository userRepository;
 
     private static final int MIN_SECRET_BYTES = 32;
     private static final String REFEREE_SESSION_TYPE = "referee_session";
     private static final Duration REFEREE_SESSION_TTL = Duration.ofDays(30);
 
-    public JwtService(JwtProperties properties, TokenRevocationService tokenRevocationService) {
+    public JwtService(JwtProperties properties, TokenRevocationService tokenRevocationService,
+                       UserRepository userRepository) {
         String secret = properties.secret();
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
             throw new IllegalStateException(
@@ -39,6 +42,7 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expiration = Duration.ofDays(properties.expirationDays());
         this.tokenRevocationService = tokenRevocationService;
+        this.userRepository = userRepository;
     }
 
     public String generateToken(User user) {
@@ -55,6 +59,11 @@ public class JwtService {
                 .compact();
     }
 
+    /** Unlike the jti blocklist above, this check is a genuine per-request DB read (single
+     *  indexed PK lookup) rather than an in-memory cache — deliberately, so a password reset or
+     *  a manual role change (`UPDATE users SET role = ... , token_valid_after = now() WHERE ...`)
+     *  invalidates every outstanding token for that user immediately, with no propagation delay
+     *  and no dependence on a single instance's memory surviving a restart. */
     public Optional<JwtPrincipal> parseToken(String token) {
         try {
             Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
@@ -63,6 +72,10 @@ public class JwtService {
                 return Optional.empty();
             }
             Long userId = Long.valueOf(claims.getSubject());
+            Instant tokenValidAfter = userRepository.findTokenValidAfterById(userId).orElse(null);
+            if (tokenValidAfter != null && !claims.getIssuedAt().toInstant().isAfter(tokenValidAfter)) {
+                return Optional.empty();
+            }
             String email = claims.get("email", String.class);
             Role role = Role.valueOf(claims.get("role", String.class));
             Plan plan = Plan.valueOf(claims.get("plan", String.class));

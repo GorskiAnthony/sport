@@ -42,6 +42,13 @@ public class User {
     @Column(name = "banner_url", columnDefinition = "TEXT")
     private String bannerUrl;
 
+    /** Tokens whose "issued at" claim is not strictly after this instant are rejected by
+     *  {@link com.matchday.security.JwtService#parseToken}, even if still within their normal
+     *  expiry — this is what lets a password reset (or a manual role change in prod) invalidate
+     *  every session already handed out for this user, instead of waiting out the JWT's TTL. */
+    @Column(name = "token_valid_after")
+    private Instant tokenValidAfter;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -132,6 +139,14 @@ public class User {
 
     public void setBannerUrl(String bannerUrl) {
         this.bannerUrl = bannerUrl;
+    }
+
+    public Instant getTokenValidAfter() {
+        return tokenValidAfter;
+    }
+
+    public void setTokenValidAfter(Instant tokenValidAfter) {
+        this.tokenValidAfter = tokenValidAfter;
     }
 
     public Instant getCreatedAt() {
