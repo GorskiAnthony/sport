@@ -1,3 +1,5 @@
+## [sport-backend-v1.10.0](https://github.com/GorskiAnthony/sport/compare/backend-v1.9.1...backend-v1.10.0) (2026-09-26)
+
 ## [sport-backend-v1.9.1](https://github.com/GorskiAnthony/sport/compare/backend-v1.9.0...backend-v1.9.1) (2026-09-26)
 
 ## [sport-backend-v1.9.0](https://github.com/GorskiAnthony/sport/compare/backend-v1.8.0...backend-v1.9.0) (2026-09-26)
