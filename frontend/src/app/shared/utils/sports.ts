@@ -15,7 +15,7 @@ export const SPORTS: SportOption[] = [
   { id: 'handball', label: 'Handball', icon: '🤾', description: 'Tournois entre clubs ou équipes amateurs, calendrier multi-terrains et scores en direct.' },
   { id: 'volleyball', label: 'Volleyball', icon: '🏐', description: 'Poules puis phase finale, en salle ou en beach-volley.' },
   { id: 'rugby', label: 'Rugby', icon: '🏉', description: 'Tournois à 7 ou à XV, du tournoi de plage au tournoi de club.' },
-  { id: 'tennis', label: 'Tennis', icon: '🎾', description: 'Tableaux à élimination directe en simple ou double, suivi des scores set par set.' },
+  { id: 'tennis', label: 'Tennis', icon: '🎾', description: 'Tableaux à élimination directe en simple ou double, score du match suivi en direct.' },
   { id: 'tennis_de_table', label: 'Tennis de table', icon: '🏓', description: 'Poules ou tableau à élimination directe, pour clubs ou compétitions amateurs.' },
   { id: 'badminton', label: 'Badminton', icon: '🏸', description: 'Simple ou double, en poules ou en élimination directe.' },
   { id: 'esport', label: 'Esport', icon: '🎮', description: 'Tournois FIFA, Rocket League, Valorant... avec bracket et classement suivis en direct par les joueurs et le public.' },
