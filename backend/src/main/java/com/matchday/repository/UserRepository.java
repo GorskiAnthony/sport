@@ -20,6 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByStripeId(String stripeId);
 
+    @Query("SELECT u.tokenValidAfter FROM User u WHERE u.id = :id")
+    Optional<Instant> findTokenValidAfterById(@Param("id") Long id);
+
     long countByRole(Role role);
 
     List<User> findAllByOrderByCreatedAtDesc(Pageable pageable);

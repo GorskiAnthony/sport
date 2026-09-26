@@ -123,6 +123,8 @@ public class AuthService {
 
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        // Un token émis avant ce reset ne doit plus servir (ex: session volée à l'origine du reset).
+        user.setTokenValidAfter(Instant.now());
         userRepository.save(user);
         passwordResetTokenRepository.deleteByUserId(user.getId());
     }
