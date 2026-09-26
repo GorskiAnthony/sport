@@ -19,7 +19,13 @@ FROM nginx:1.27-alpine AS runtime
 # dans les dates générées côté SSR (og:description, JSON-LD...).
 RUN apk add --no-cache nodejs icu-data-full
 WORKDIR /app
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Un .template dans /etc/nginx/templates/ (plutôt qu'un .conf copié en dur dans conf.d) passe par
+# l'entrypoint officiel de l'image nginx, qui envsubst les ${VAR} du fichier avant de démarrer —
+# c'est ce qui permet à BACKEND_UPSTREAM (voir nginx.conf) de varier par déploiement sans rebuild.
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Valeur par défaut adaptée au docker-compose.yml local (un seul projet, un seul "backend" possible)
+# — à surcharger en prod via la variable d'environnement du même nom, voir docker-compose.prod.yml.
+ENV BACKEND_UPSTREAM=backend:3000
 # outputMode "server" ne génère plus de index.html à la racine (seules les routes prérendues en
 # ont un, dans leur propre sous-dossier) : sans ce rm, l'index.html par défaut de l'image nginx de
 # base restait sur disque et try_files le servait pour "/" avant même d'atteindre le fallback SSR.

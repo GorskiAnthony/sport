@@ -12,7 +12,10 @@ RUN npx ng build --configuration production,docker
 
 FROM nginx:1.27-alpine AS runtime
 WORKDIR /app
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# .template (pas un .conf copié en dur) : passe par l'entrypoint officiel de l'image nginx, qui
+# envsubst les ${VAR} du fichier avant de démarrer — voir frontend/Dockerfile, même mécanisme.
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+ENV BACKEND_UPSTREAM=backend:3000
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/www /usr/share/nginx/html
 EXPOSE 80
