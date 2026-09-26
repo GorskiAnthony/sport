@@ -48,9 +48,10 @@ export function setPageMeta(title: Title, meta: Meta, options: PageMetaOptions):
   }
 }
 
-const JSON_LD_ID = 'app-json-ld';
-
-/** Injecte (ou remplace) un unique <script type="application/ld+json"> dans le <head>.
+/** Injecte (ou remplace) un <script type="application/ld+json"> dans le <head>, identifié par
+ *  `key` : plusieurs blocs structurés distincts peuvent coexister (ex. un bloc "site" sitewide posé
+ *  par PublicLayout + un bloc "event"/"faq" propre à la page), chacun remplaçant uniquement son
+ *  propre bloc au lieu d'écraser les autres.
  *  `document` doit être injecté par l'appelant (DOCUMENT depuis @angular/common) : inject() n'est
  *  utilisable que dans un contexte d'injection, alors que cette fonction est typiquement appelée
  *  depuis un callback asynchrone (données chargées) où ce contexte n'existe plus.
@@ -59,11 +60,12 @@ const JSON_LD_ID = 'app-json-ld';
  *  HTTP par rapport à la capture de stabilité d'Angular (non reproduit sur Title/Meta dans nos tests,
  *  cause exacte non isolée). Dégradation silencieuse : au pire le rich result JSON-LD manque sur ce
  *  chargement, le reste de la page (titre, contenu) n'est pas affecté. */
-export function setJsonLd(document: Document, data: object): void {
-  document.getElementById(JSON_LD_ID)?.remove();
+export function setJsonLd(document: Document, data: object, key: string): void {
+  const id = `app-json-ld-${key}`;
+  document.getElementById(id)?.remove();
   const script = document.createElement('script');
   script.type = 'application/ld+json';
-  script.id = JSON_LD_ID;
+  script.id = id;
   script.text = JSON.stringify(data);
   document.head.appendChild(script);
 }

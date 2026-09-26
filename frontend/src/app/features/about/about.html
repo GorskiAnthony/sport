@@ -6,6 +6,16 @@
     subtitle="Matchday est né de la frustration d'organisateurs qui perdaient des heures à gérer des tournois sur des feuilles Excel."
   />
 
+  <section class="max-w-3xl mx-auto text-center mb-16" aria-labelledby="story-title">
+    <h2 id="story-title" class="sr-only">Notre histoire</h2>
+    <p class="text-slate-300 leading-relaxed">
+      Tout part d'un constat simple : sur la plupart des tournois amateurs, le classement vit dans une feuille Excel, le calendrier circule par SMS et les résultats se perdent au fil des coups de fil. Matchday a été construit pour remplacer ce bricolage par un outil unique, pensé pour tous les sports, du city stade au tournoi de club.
+    </p>
+    <p class="text-slate-300 leading-relaxed mt-4">
+      Depuis, chaque fonctionnalité part du même principe : ce que l'organisateur ferait à la main (mettre à jour un classement, générer un tableau, prévenir les équipes) doit se faire automatiquement, en temps réel, et rester lisible pour les spectateurs comme pour les arbitres.
+    </p>
+  </section>
+
   <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-labelledby="values-title">
     <h2 id="values-title" class="sr-only">Nos valeurs</h2>
     @for (value of values; track value.title) {
@@ -35,4 +45,9 @@
       }
     </div>
   </section>
+
+  <div class="text-center">
+    <app-button text="Créer mon premier tournoi" variant="primary" routerLink="/register" [arrow]="true" className="px-8 py-3 text-base" />
+    <p class="text-slate-400 text-sm mt-3">Gratuit, sans carte bancaire.</p>
+  </div>
 </div>

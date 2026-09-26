@@ -5,6 +5,10 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'about', renderMode: RenderMode.Prerender },
   { path: 'organizers', renderMode: RenderMode.Prerender },
   { path: 'pricing', renderMode: RenderMode.Prerender },
+  { path: 'faq', renderMode: RenderMode.Prerender },
+  { path: 'mentions-legales', renderMode: RenderMode.Prerender },
+  { path: 'cgu', renderMode: RenderMode.Prerender },
+  { path: 'confidentialite', renderMode: RenderMode.Prerender },
 
   // Contenu dynamique (tournois créés en continu) : rendu serveur à chaque requête, pas au build.
   // /sports affiche désormais un vrai décompte de tournois par sport (plus une table figée) :

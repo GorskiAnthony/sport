@@ -24,8 +24,10 @@ public class SitemapController {
     private final TournamentService tournamentService;
     private final CorsProperties corsProperties;
 
-    private static final List<String> STATIC_PATHS = List.of(
-            "", "tournaments", "sports", "pricing", "organizers", "about"
+    /** Package-visible : réutilisé par SeoTextController (robots.txt/llms.txt) pour ne pas
+     *  dupliquer la liste des pages marketing statiques dans deux fichiers à garder synchronisés. */
+    static final List<String> STATIC_PATHS = List.of(
+            "", "tournaments", "sports", "pricing", "organizers", "about", "faq"
     );
 
     public SitemapController(TournamentService tournamentService, CorsProperties corsProperties) {

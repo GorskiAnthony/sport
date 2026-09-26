@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
-import { setPageMeta } from '../../shared/utils/seo';
+import { setPageMeta, setCanonical } from '../../shared/utils/seo';
 import { TournamentService } from '../../core/services/tournament.service';
 
 @Component({
@@ -19,10 +20,17 @@ export class SportsPage implements OnInit {
   readonly sports = signal(SPORTS.map((sport) => ({ ...sport, count: 0 })));
 
   constructor() {
+    const document = inject(DOCUMENT);
+    const origin = document.location.origin;
+    const url = `${origin}/sports`;
+
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Sports',
       description: 'Football, basketball, tennis, volleyball, rugby, esport, handball, futsal : découvrez tous les sports gérables sur Matchday.',
+      url,
+      image: `${origin}/football-stadium-sunset.webp`,
     });
+    setCanonical(document, url);
   }
 
   ngOnInit(): void {

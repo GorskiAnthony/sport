@@ -20,6 +20,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home').then((m) => m.HomePage),
       },
       { path: 'about', loadComponent: () => import('./features/about/about').then((m) => m.AboutPage) },
+      { path: 'faq', loadComponent: () => import('./features/faq/faq').then((m) => m.FaqPage) },
+      {
+        path: 'mentions-legales',
+        loadComponent: () => import('./features/legal/mentions-legales/mentions-legales').then((m) => m.MentionsLegalesPage),
+      },
+      { path: 'cgu', loadComponent: () => import('./features/legal/cgu/cgu').then((m) => m.CguPage) },
+      {
+        path: 'confidentialite',
+        loadComponent: () => import('./features/legal/confidentialite/confidentialite').then((m) => m.ConfidentialitePage),
+      },
       { path: 'sports', loadComponent: () => import('./features/sports/sports').then((m) => m.SportsPage) },
       { path: 'organizers', loadComponent: () => import('./features/organizers/organizers').then((m) => m.OrganizersPage) },
       { path: 'pricing', loadComponent: () => import('./features/pricing/pricing').then((m) => m.PricingPage) },

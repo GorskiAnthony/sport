@@ -17,6 +17,12 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Matchday">
   <meta name="twitter:description" content="Créez, gérez et suivez vos tournois sportifs en temps réel, quel que soit votre sport.">
+  <!-- Umami (analytics auto-hébergé, voir deploy.md) : servi en same-origin sous /stats/ (proxy
+       nginx vers le conteneur "umami"), pas de cookie, pas de bannière de consentement nécessaire.
+       Même website-id sur tous les environnements (dev/staging/prod partagent la même image, voir
+       la contrainte multi-domaine documentée dans deploy.md) — Umami distingue les environnements
+       via le hostname de chaque événement, visible dans son rapport "Hostname". -->
+  <script defer src="/stats/script.js" data-website-id="392767dd-e2cc-41e4-8f95-b877b814ee66"></script>
 </head>
 <body>
   <app-root></app-root>

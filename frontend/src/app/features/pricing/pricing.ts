@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -9,7 +10,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
 import { BillingPeriod, BillingToggle } from './billing-toggle/billing-toggle';
-import { setPageMeta } from '../../shared/utils/seo';
+import { setPageMeta, setCanonical, setJsonLd } from '../../shared/utils/seo';
 
 type Pricing =
   | { kind: 'fixed'; price: string; period: string }
@@ -155,10 +156,26 @@ export class PricingPage {
   readonly billing = signal<BillingPeriod>('monthly');
 
   constructor() {
+    const document = inject(DOCUMENT);
+    const origin = document.location.origin;
+    const url = `${origin}/pricing`;
+
     setPageMeta(inject(Title), inject(Meta), {
       title: 'Tarifs',
       description: 'Classic, Pro ou Pass Événement : choisissez la formule adaptée à vos tournois, mensuelle ou annuelle.',
+      url,
+      image: `${origin}/football-trophy-celebration.webp`,
     });
+    setCanonical(document, url);
+    setJsonLd(document, {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQ.map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+      })),
+    }, 'faq');
   }
 
   planCtaState(plan: Plan): PlanCtaState {
