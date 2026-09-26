@@ -382,3 +382,13 @@ Repasse `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` (variables d'environnement du 
   (voir étape 1).
 - **Certificat SSL ne se génère pas** : le DNS ne pointe pas encore vers le serveur, ou le port 80/443 n'est pas
   accessible depuis l'extérieur (pare-feu/groupe de sécurité).
+- **401/404 aléatoires sur `/api/*` alors que le compte/les identifiants sont corrects** : si ce serveur héberge
+  plusieurs environnements de ce projet (ex. prod + staging), ils partagent le réseau Docker de Dokploy
+  (`dokploy-network`) pour que Traefik puisse les joindre — et Compose y alias chaque service par son simple
+  nom (`backend`), identique d'un environnement à l'autre. Le DNS interne peut alors renvoyer indifféremment
+  l'IP du backend de PROD ou celle du backend de STAGING à qui résout juste "backend" (bases de données et
+  `JWT_SECRET` différents). Corrige en surchargeant `BACKEND_UPSTREAM` dans l'onglet **Environment** de
+  *chaque* app Dokploy avec le nom du conteneur backend propre à cette app (visible via `docker ps`, ex.
+  `tournoicenter-app-wb22k3-backend-1:3000`) plutôt que le nom de service générique — voir
+  `frontend/nginx.conf`. Retirer `backend`/`mobile` du réseau partagé ne suffit pas : Dokploy les y rattache de
+  toute façon dès qu'un Domain leur est configuré (onglet Domains du service).

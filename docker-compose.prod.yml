@@ -60,14 +60,6 @@ services:
     # a plain redeploy/restart silently keeps running whatever image is already
     # cached locally on the server, even after a new release has been published.
     pull_policy: always
-    # Confiné au réseau privé du stack : Dokploy attache aussi tous les projets à un
-    # réseau partagé (`dokploy-network`) pour Traefik, où Compose alias chaque service
-    # par son simple nom ("backend"). Deux stacks (prod/dev) dessus donnent au DNS
-    # interne deux IP différentes pour "backend", et nginx (côté frontend) finit par
-    # router aléatoirement vers l'un ou l'autre — deux bases de données, deux
-    # JWT_SECRET différents. Seul `frontend` a besoin d'être joignable depuis Traefik.
-    networks:
-      - default
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-matchday}
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -98,6 +90,14 @@ services:
   frontend:
     image: ghcr.io/gorskianthony/sport-frontend:${FRONTEND_TAG:-latest}
     pull_policy: always
+    environment:
+      # backend:3000 marche tant qu'un seul projet Compose utilise ce nom de service sur le
+      # réseau Docker partagé par Dokploy (dokploy-network) — voir frontend/nginx.conf et le
+      # § "Dépannage" de deploy.md. Sur un serveur qui héberge plusieurs environnements
+      # (prod + staging) de ce même projet, surcharger BACKEND_UPSTREAM dans l'onglet
+      # Environment de CHAQUE app Dokploy avec le nom du conteneur backend de cette app
+      # précise (ex: tournoicenter-app-wb22k3-backend-1:3000).
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:3000}
     depends_on:
       - backend
     restart: unless-stopped
@@ -106,9 +106,10 @@ services:
   mobile:
     image: ghcr.io/gorskianthony/sport-mobile:${MOBILE_TAG:-latest}
     pull_policy: always
-    # Voir le commentaire sur `backend` ci-dessus — même collision d'alias possible.
-    networks:
-      - default
+    environment:
+      # Voir le commentaire sur `frontend` ci-dessus — même correctif, même besoin de
+      # surcharge par app Dokploy.
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:3000}
     depends_on:
       - backend
     restart: unless-stopped
