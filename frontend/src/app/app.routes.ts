@@ -24,10 +24,13 @@ export const routes: Routes = [
       { path: 'organizers', loadComponent: () => import('./features/organizers/organizers').then((m) => m.OrganizersPage) },
       { path: 'pricing', loadComponent: () => import('./features/pricing/pricing').then((m) => m.PricingPage) },
       { path: 'tournaments', loadComponent: () => import('./features/tournaments/tournaments').then((m) => m.TournamentsPage) },
-      { path: 'teams', loadComponent: () => import('./features/teams/teams').then((m) => m.TeamsPage) },
       {
         path: 't/:id',
         loadComponent: () => import('./features/public-tournament/public-tournament').then((m) => m.PublicTournamentPage),
+      },
+      {
+        path: 'checkin/tournaments/:id',
+        loadComponent: () => import('./features/team-checkin/team-checkin').then((m) => m.TeamCheckinPage),
       },
     ],
   },
@@ -70,7 +73,6 @@ export const routes: Routes = [
       },
       { path: 'tournaments', loadComponent: () => import('./features/tournaments/tournaments').then((m) => m.TournamentsPage) },
       { path: 'sports', loadComponent: () => import('./features/sports/sports').then((m) => m.SportsPage) },
-      { path: 'teams', loadComponent: () => import('./features/teams/teams').then((m) => m.TeamsPage) },
       {
         path: 'standings',
         loadComponent: () => import('./features/spectator/standings/standings').then((m) => m.SpectatorStandingsPage),
@@ -137,6 +139,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/standings/standings').then((m) => m.DashboardStandingsPage),
       },
       {
+        path: 'buvette',
+        loadComponent: () => import('./features/dashboard/buvette/buvette').then((m) => m.DashboardBuvettePage),
+      },
+      {
         path: 'messages',
         loadComponent: () => import('./features/dashboard/messages/messages').then((m) => m.DashboardMessagesPage),
       },
@@ -179,6 +185,24 @@ export const routes: Routes = [
   {
     path: 'print/tournaments/:id',
     loadComponent: () => import('./features/print-tournament/print-tournament').then((m) => m.PrintTournamentPage),
+  },
+  {
+    path: 'tv/tournaments/:id',
+    loadComponent: () => import('./features/tv-tournament/tv-tournament').then((m) => m.TvTournamentPage),
+  },
+  {
+    path: 'print/tournaments/:id/planning',
+    loadComponent: () => import('./features/print-planning/print-planning').then((m) => m.PrintPlanningPage),
+  },
+  {
+    path: 'checkout/success',
+    loadComponent: () =>
+      import('./features/checkout/checkout-success/checkout-success').then((m) => m.CheckoutSuccessPage),
+  },
+  {
+    path: 'checkout/cancel',
+    loadComponent: () =>
+      import('./features/checkout/checkout-cancel/checkout-cancel').then((m) => m.CheckoutCancelPage),
   },
   { path: '**', loadComponent: () => import('./features/not-found/not-found').then((m) => m.NotFoundPage) },
 ];

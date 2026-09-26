@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 interface FooterLink {
@@ -7,6 +7,7 @@ interface FooterLink {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-footer',
   standalone: true,
   imports: [RouterLink],
@@ -15,7 +16,6 @@ interface FooterLink {
 export class Footer {
   readonly plateforme: FooterLink[] = [
     { label: 'Tournois', href: '/tournaments' },
-    { label: 'Équipes', href: '/teams' },
     { label: 'Organisateurs', href: '/organizers' },
     { label: 'Tarifs', href: '/pricing' },
   ];

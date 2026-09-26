@@ -1,8 +1,8 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 import { TournamentService } from '../../../core/services/tournament.service';
-import { MatchService } from '../../../core/services/match.service';
 import { BracketService } from '../../../core/services/bracket.service';
 import { TournamentFormat } from '../../../core/models/bracket.model';
 import { TournamentDetail } from '../../../core/models/tournament.model';
@@ -12,6 +12,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { BracketTree } from '../../../shared/ui/bracket-tree/bracket-tree';
 import { GroupStandings, StandingsGroup } from '../../../shared/ui/group-standings/group-standings';
+import { RoundPlanning } from '../../../shared/ui/round-planning/round-planning';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { computeStandings, Standing } from '../../../shared/utils/standings';
 import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
@@ -19,23 +20,33 @@ import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LucideTrophy } from '@lucide/angular';
 import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
 import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
+import { RefereeCodeModal } from '../../../shared/ui/referee-code-modal/referee-code-modal';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
+/** Order-independent key so a match can be looked up by either (home, away) or (away, home). */
+function teamPairKey(a: number, b: number): string {
+  return a < b ? `${a}-${b}` : `${b}-${a}`;
+}
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-tournament-detail-page',
   standalone: true,
-  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal],
+  imports: [RouterLink, FormatPicker, BracketTree, GroupStandings, RoundPlanning, FormInput, StatusBadge, LucideTrophy, SportIcon, ShareModal, RefereeCodeModal],
   templateUrl: './tournament-detail.html',
 })
 export class DashboardTournamentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly tournamentService = inject(TournamentService);
-  private readonly matchService = inject(MatchService);
   private readonly bracketService = inject(BracketService);
   private readonly toast = inject(ToastService);
+  private readonly authService = inject(AuthService);
 
   private readonly tournamentId = Number(this.route.snapshot.paramMap.get('id'));
+
+  readonly isPro = computed(() => this.authService.currentUser()?.plan === 'PRO');
+  readonly isClassicOrPro = computed(() => (this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE');
 
   readonly tournament = signal<TournamentDetail | null>(null);
   readonly loading = signal(true);
@@ -47,14 +58,7 @@ export class DashboardTournamentDetailPage implements OnInit {
   readonly advancing = signal(false);
 
   readonly shareOpen = signal(false);
-
-  /** Identifies the exact grid cell (row team id, col team id) being edited — not just the
-   *  match id, since round robin shows each match twice (mirrored), and only the clicked
-   *  cell should switch to edit mode, not its mirror. */
-  readonly editingCell = signal<{ rowTeamId: number; colTeamId: number } | null>(null);
-  readonly homeInput = signal('');
-  readonly awayInput = signal('');
-  readonly savingScore = signal(false);
+  readonly refereeCodeOpen = signal(false);
 
   readonly standings = computed<Standing[]>(() => {
     const t = this.tournament();
@@ -86,6 +90,15 @@ export class DashboardTournamentDetailPage implements OnInit {
       const teams = t.teams.filter((team) => teamIds.has(team.id));
       return { label, teams, matches };
     });
+  });
+
+  /** Round-by-round planning for a pure round-robin pool ("who plays who, and who rests, each
+   *  round") — for GROUP_KNOCKOUT this reuses groupPhases() directly since each group is its own
+   *  pool already. */
+  readonly roundPlanningGroups = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t || t.format !== 'ROUND_ROBIN') return [];
+    return [{ label: 'Poule unique', teams: t.teams, matches: t.matches }];
   });
 
   /** Only teams that appear in a knockout-phase match — never the full tournament team list.
@@ -155,7 +168,7 @@ export class DashboardTournamentDetailPage implements OnInit {
       next: (result) => {
         this.advancing.set(false);
         if (result.tournamentComplete) {
-          this.toast.success(`🏆 Champion : ${result.champion?.name ?? '—'}`, 'Tournoi terminé');
+          this.toast.success(`🏆 Champion : ${result.champion?.name ?? '-'}`, 'Tournoi terminé');
         } else {
           this.toast.success('Le tour suivant a été généré.', 'Tour suivant');
         }
@@ -169,77 +182,23 @@ export class DashboardTournamentDetailPage implements OnInit {
     });
   }
 
-  cancelEdit(): void {
-    this.editingCell.set(null);
-  }
-
-  startMatch(match: Match): void {
-    this.matchService.start(match.id).subscribe({
-      next: () => {
-        this.toast.success(`${match.homeTeam.name} vs ${match.awayTeam.name} a commencé.`);
-        this.load();
-      },
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
-  addGoal(match: Match, team: Team): void {
-    this.matchService.addGoal(match.id, team.id).subscribe({
-      next: () => this.toast.success(`But de ${team.name} enregistré.`),
-      error: () => this.toast.error('Une erreur est survenue.'),
-    });
-  }
-
-  isEditingCell(rowTeam: Team, colTeam: Team): boolean {
-    const cell = this.editingCell();
-    return cell !== null && cell.rowTeamId === rowTeam.id && cell.colTeamId === colTeam.id;
-  }
+  /** Built once per tournament() change instead of scanned per grid cell — the round-robin
+   *  results grid calls matchBetween() for every (row, col) pair, which was an O(n²) linear
+   *  scan of all matches for an n×n team grid. */
+  private readonly matchByTeamPair = computed<Map<string, Match>>(() => {
+    const map = new Map<string, Match>();
+    for (const m of this.tournament()?.matches ?? []) {
+      map.set(teamPairKey(m.homeTeam.id, m.awayTeam.id), m);
+    }
+    return map;
+  });
 
   /** The match connecting two teams, regardless of which one is stored as home/away. */
   matchBetween(a: Team, b: Team): Match | undefined {
-    return this.tournament()?.matches.find(
-      (m) => (m.homeTeam.id === a.id && m.awayTeam.id === b.id) || (m.homeTeam.id === b.id && m.awayTeam.id === a.id),
-    );
+    return this.matchByTeamPair().get(teamPairKey(a.id, b.id));
   }
 
   scoreFor(match: Match, team: Team): number | null {
     return match.homeTeam.id === team.id ? match.homeScore : match.awayScore;
-  }
-
-  startGridEdit(match: Match, rowTeam: Team, colTeam: Team): void {
-    const rowIsHome = match.homeTeam.id === rowTeam.id;
-    this.editingCell.set({ rowTeamId: rowTeam.id, colTeamId: colTeam.id });
-    this.homeInput.set(this.scoreOrEmpty(rowIsHome ? match.homeScore : match.awayScore));
-    this.awayInput.set(this.scoreOrEmpty(rowIsHome ? match.awayScore : match.homeScore));
-  }
-
-  saveGridScore(match: Match, rowTeam: Team): void {
-    const rowScore = Number(this.homeInput());
-    const colScore = Number(this.awayInput());
-    if (Number.isNaN(rowScore) || Number.isNaN(colScore) || rowScore < 0 || colScore < 0) {
-      this.toast.error('Merci de saisir un score valide.');
-      return;
-    }
-
-    const rowIsHome = match.homeTeam.id === rowTeam.id;
-    const homeScore = rowIsHome ? rowScore : colScore;
-    const awayScore = rowIsHome ? colScore : rowScore;
-
-    this.savingScore.set(true);
-    this.matchService.updateScore(match.id, { homeScore, awayScore }).subscribe({
-      next: () => {
-        this.savingScore.set(false);
-        this.editingCell.set(null);
-        this.load();
-      },
-      error: () => {
-        this.savingScore.set(false);
-        this.toast.error('Une erreur est survenue.');
-      },
-    });
-  }
-
-  private scoreOrEmpty(score: number | null): string {
-    return score !== null ? String(score) : '';
   }
 }

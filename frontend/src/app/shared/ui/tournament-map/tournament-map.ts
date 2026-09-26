@@ -1,10 +1,16 @@
-import { Component, ElementRef, Injector, OnChanges, OnDestroy, ViewChild, afterNextRender, inject, input, signal } from '@angular/core';
-import * as L from 'leaflet';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, Injector, input, OnChanges, OnDestroy, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+// Import type-only : leaflet touche `window` dès le chargement du module (pas seulement à
+// l'exécution), donc même protégé par afterNextRender/isPlatformBrowser, un `import * as L`
+// statique fait planter le rendu SSR au simple chargement du chunk. La valeur runtime est
+// importée dynamiquement dans renderMap(), qui ne s'exécute jamais côté serveur.
+import type * as L from 'leaflet';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 
 type MapState = 'loading' | 'ready' | 'unavailable';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tournament-map',
   standalone: true,
   templateUrl: './tournament-map.html',
@@ -16,6 +22,7 @@ export class TournamentMap implements OnChanges, OnDestroy {
 
   private readonly geocoding = inject(GeocodingService);
   private readonly injector = inject(Injector);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly state = signal<MapState>('loading');
   readonly precise = signal(true);
@@ -24,6 +31,11 @@ export class TournamentMap implements OnChanges, OnDestroy {
   private lastQuery: string | null = null;
 
   ngOnChanges(): void {
+    // La carte (Leaflet, afterNextRender) ne s'affiche jamais côté SSR de toute façon — inutile
+    // d'interroger Nominatim depuis le serveur (latence + risque de dépasser son quota 1 req/s),
+    // le vrai lookup se refera côté navigateur après hydratation.
+    if (!this.isBrowser) return;
+
     const query = this.location()?.trim() ?? '';
     if (query === this.lastQuery) return;
     this.lastQuery = query;
@@ -49,8 +61,13 @@ export class TournamentMap implements OnChanges, OnDestroy {
     });
   }
 
-  private renderMap(lat: number, lon: number, precise: boolean): void {
+  private async renderMap(lat: number, lon: number, precise: boolean): Promise<void> {
     if (!this.mapEl) return;
+    // esbuild ne détecte pas les exports nommés du bundle UMD de leaflet (factory imbriquée non
+    // analysable statiquement) : le namespace dynamique ne contient donc que `default`, pas
+    // `.map`/`.tileLayer`/`.marker` directement.
+    const leafletModule = await import('leaflet');
+    const L = ((leafletModule as unknown as { default?: typeof leafletModule }).default ?? leafletModule);
 
     this.map = L.map(this.mapEl.nativeElement, {
       center: [lat, lon],

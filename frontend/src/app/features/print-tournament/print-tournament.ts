@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -8,6 +8,7 @@ import { formatDateFr } from '../../shared/utils/date';
 import { tournamentShareSlug } from '../../shared/utils/slug';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-print-tournament-page',
   standalone: true,
   templateUrl: './print-tournament.html',

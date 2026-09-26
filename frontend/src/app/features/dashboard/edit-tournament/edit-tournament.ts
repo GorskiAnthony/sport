@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
@@ -29,6 +30,7 @@ const CATEGORIES: FormSelectOption[] = [
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-edit-tournament-page',
   standalone: true,
   imports: [RouterLink, Button, FormInput, FormSelect],
@@ -39,6 +41,9 @@ export class DashboardEditTournamentPage implements OnInit {
   private readonly router = inject(Router);
   private readonly tournamentService = inject(TournamentService);
   private readonly toast = inject(ToastService);
+  private readonly authService = inject(AuthService);
+
+  readonly isPro = computed(() => this.authService.currentUser()?.plan === 'PRO');
 
   readonly sports = SPORTS;
   readonly categories = CATEGORIES;
@@ -57,10 +62,21 @@ export class DashboardEditTournamentPage implements OnInit {
   readonly endDate = signal('');
   readonly maxTeams = signal('');
   readonly description = signal('');
+  readonly rules = signal('');
+  readonly terrains = signal('');
+  readonly sponsorName = signal('');
+  readonly sponsorLogoUrl = signal('');
+  readonly sponsorClickUrl = signal('');
+  readonly sponsorClicks = signal(0);
 
   readonly errors = signal<FormErrors>({});
 
   ngOnInit(): void {
+    // The organizer's plan may have just changed (Stripe checkout, portal) without this browser
+    // tab knowing yet — checkout-success/settings already refresh it, but an organizer landing
+    // here directly (bookmark, direct nav) wouldn't otherwise see it until their next login.
+    this.authService.refreshUser().subscribe({ error: () => {} });
+
     if (!this.tournamentId) {
       this.notFound.set(true);
       this.loadingInitial.set(false);
@@ -77,6 +93,12 @@ export class DashboardEditTournamentPage implements OnInit {
         this.endDate.set(tournament.endDate);
         this.maxTeams.set(String(tournament.maxTeams));
         this.description.set(tournament.description ?? '');
+        this.rules.set(tournament.rules ?? '');
+        this.terrains.set(tournament.terrains ?? '');
+        this.sponsorName.set(tournament.sponsorName ?? '');
+        this.sponsorLogoUrl.set(tournament.sponsorLogoUrl ?? '');
+        this.sponsorClickUrl.set(tournament.sponsorClickUrl ?? '');
+        this.sponsorClicks.set(tournament.sponsorClicks);
         this.loadingInitial.set(false);
       },
       error: () => {
@@ -84,6 +106,14 @@ export class DashboardEditTournamentPage implements OnInit {
         this.loadingInitial.set(false);
       },
     });
+  }
+
+  onSponsorLogoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => this.sponsorLogoUrl.set((ev.target?.result as string) ?? '');
+    reader.readAsDataURL(file);
   }
 
   private validate(): FormErrors {
@@ -115,6 +145,11 @@ export class DashboardEditTournamentPage implements OnInit {
         endDate: this.endDate(),
         maxTeams: Number(this.maxTeams()) || 14,
         description: this.description() || undefined,
+        rules: this.isPro() ? this.rules() || undefined : undefined,
+        terrains: this.terrains() || undefined,
+        sponsorName: this.isPro() ? this.sponsorName() || undefined : undefined,
+        sponsorLogoUrl: this.isPro() ? this.sponsorLogoUrl() || undefined : undefined,
+        sponsorClickUrl: this.isPro() ? this.sponsorClickUrl() || undefined : undefined,
       })
       .subscribe({
         next: () => {

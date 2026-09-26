@@ -30,15 +30,12 @@ export class LiveUpdateService {
 
   /** Subscribes to a signed-in spectator's personal notification stream (team-follow events);
    *  call the returned function to unsubscribe. The backend only allows subscribing to your own
-   *  channel — the token authenticates the STOMP session so it can check that. */
-  subscribeToUserNotifications(
-    userId: number,
-    token: string,
-    onNotification: (notification: Notification) => void,
-  ): () => void {
+   *  channel — no token to attach here, the WS handshake (a normal HTTP request) carries the
+   *  httpOnly auth cookie automatically, and the backend resolves identity from it (see
+   *  JwtHandshakeCookieInterceptor). */
+  subscribeToUserNotifications(userId: number, onNotification: (notification: Notification) => void): () => void {
     const client = new Client({
       brokerURL: toWebSocketUrl(environment.apiUrl),
-      connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 3000,
     });
 

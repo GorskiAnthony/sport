@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  # Shared with release-frontend.yml: both write version-bump commits and tags
+  # Shared with release-frontend.yml/release-mobile.yml: all three write version-bump commits and tags
   # back to the same branch via @semantic-release/git, so they must not race.
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -81,3 +81,11 @@ jobs:
           export BACKEND_IMAGE=$(echo "$BACKEND_IMAGE" | tr '[:upper:]' '[:lower:]')
           docker build -t "$BACKEND_IMAGE:dev" .
           docker push "$BACKEND_IMAGE:dev"
+
+      # Dokploy's own "On Push" git trigger fires the moment this branch is pushed — long before
+      # this job finishes building and pushing the image above, so it always redeploys the
+      # *previous* :dev image. Triggering the redeploy here instead, once the new image is
+      # actually in the registry, is what makes autodeploy pull the right thing.
+      - name: Trigger Dokploy redeploy
+        if: github.ref_name == 'dev'
+        run: curl -fsS -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}"

@@ -1,0 +1,35 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../models/api-response.model';
+import { Team, TeamRequest } from '../models/team.model';
+
+/** Sous-ensemble de frontend/src/app/core/services/team.service.ts — pas de suivi d'équipe
+ *  (getFollowed, follow, unfollow), réservé aux spectateurs et hors périmètre mobile v1. */
+@Injectable({ providedIn: 'root' })
+export class TeamService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/teams`;
+
+  getByTournament(tournamentId: number): Observable<Team[]> {
+    return this.http
+      .get<ApiResponse<Team[]>>(`${this.baseUrl}/tournament/${tournamentId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  create(payload: TeamRequest): Observable<Team> {
+    return this.http.post<ApiResponse<Team>>(this.baseUrl, payload).pipe(map((res) => res.data));
+  }
+
+  update(id: number, payload: Partial<TeamRequest>): Observable<Team> {
+    return this.http.put<ApiResponse<Team>>(`${this.baseUrl}/${id}`, payload).pipe(map((res) => res.data));
+  }
+
+  delete(id: number): Observable<{ success: boolean }> {
+    return this.http
+      .delete<ApiResponse<{ success: boolean }>>(`${this.baseUrl}/${id}`)
+      .pipe(map((res) => res.data));
+  }
+}

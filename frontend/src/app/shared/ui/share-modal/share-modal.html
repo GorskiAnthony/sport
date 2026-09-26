@@ -63,15 +63,65 @@
         }
       </div>
 
-      <div class="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          (click)="print()"
-          class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-        >
-          <svg lucidePrinter class="w-4 h-4"></svg>
-          Imprimer l'affiche
-        </button>
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            (click)="print()"
+            class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <svg lucidePrinter class="w-4 h-4"></svg>
+            Imprimer l'affiche
+          </button>
+          @if (showPlanningPrint()) {
+            <button
+              type="button"
+              (click)="printPlanning()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <svg lucidePrinter class="w-4 h-4"></svg>
+              Imprimer le planning
+            </button>
+          }
+          @if (tvModeEnabled()) {
+            <button
+              type="button"
+              (click)="openTvMode()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <svg lucideTv class="w-4 h-4"></svg>
+              Mode écran/TV
+            </button>
+          } @else {
+            <a
+              routerLink="/pricing"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-500 bg-white/5 rounded-lg transition-colors hover:text-slate-300"
+            >
+              <svg lucideTv class="w-4 h-4"></svg>
+              Mode écran/TV
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400">Pro</span>
+            </a>
+          }
+          @if (checkInEnabled()) {
+            <button
+              type="button"
+              (click)="openCheckIn()"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <svg lucideUserCheck class="w-4 h-4"></svg>
+              Check-in équipes
+            </button>
+          } @else {
+            <a
+              routerLink="/pricing"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-500 bg-white/5 rounded-lg transition-colors hover:text-slate-300"
+            >
+              <svg lucideUserCheck class="w-4 h-4"></svg>
+              Check-in équipes
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">Classic</span>
+            </a>
+          }
+        </div>
         <button type="button" (click)="close()" class="px-4 py-2 text-sm text-slate-400 hover:text-white bg-white/5 rounded-lg transition-colors">
           Fermer
         </button>

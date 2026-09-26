@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeamService } from '../../core/services/team.service';
@@ -13,6 +13,7 @@ const CATEGORIES: FormSelectOption[] = ['U13', 'U15', 'U16', 'U17', 'U18', 'Seni
 }));
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-team-page',
   standalone: true,
   imports: [Button, FormInput, FormSelect],

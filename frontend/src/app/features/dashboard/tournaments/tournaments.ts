@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { TournamentSummary } from '../../../core/models/tournament.model';
@@ -10,6 +10,7 @@ import { SportIcon } from '../../../shared/ui/sport-icon/sport-icon';
 import { ShareModal } from '../../../shared/ui/share-modal/share-modal';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-tournaments-page',
   standalone: true,
   imports: [RouterLink, ConfirmModal, StatusBadge, SportIcon, ShareModal],

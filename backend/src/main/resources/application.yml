@@ -1,10 +1,10 @@
 spring:
   application:
-    name: TournoiCenter
+    name: Matchday
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tournoi_center}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/matchday}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:postgres}
     hikari:
@@ -61,8 +61,19 @@ management:
       show-details: when-authorized
 
 app:
+  cookie:
+    # Secure=false uniquement en dev (pas de HTTPS en local, voir application-dev.yml) — un
+    # cookie Secure ne serait alors jamais renvoyé par le navigateur.
+    secure: ${COOKIE_SECURE:true}
   cors:
     allowed-origin: ${CLIENT_URL:http://localhost:4200}
+    # CORS/WebSocket allowlist only (never used to build links) — covers the Ionic dev server
+    # and the Capacitor iOS/Android WebView origins so the mobile app can reach the API in dev.
+    additional-origins: ${CORS_ADDITIONAL_ORIGINS:http://localhost:8100,capacitor://localhost,http://localhost}
+  mobile:
+    # Base de l'app mobile (build web) — sert à construire le lien du QR code arbitre
+    # ({url}/join/{token}). Ionic dev server par défaut.
+    url: ${MOBILE_URL:http://localhost:8100}
   jwt:
     # No fallback default on purpose — a missing JWT_SECRET must fail the app at startup, not
     # silently boot with a secret that's public in this repo's history.
@@ -73,6 +84,9 @@ app:
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
     price-classic: ${STRIPE_PRICE_CLASSIC:}
     price-pro: ${STRIPE_PRICE_PRO:}
+    price-classic-annual: ${STRIPE_PRICE_CLASSIC_ANNUAL:}
+    price-pro-annual: ${STRIPE_PRICE_PRO_ANNUAL:}
+    price-event-pass: ${STRIPE_PRICE_EVENT_PASS:}
   emailjs:
     service-id: ${EMAILJS_SERVICE_ID:}
     template-id: ${EMAILJS_TEMPLATE_ID:}
@@ -81,4 +95,4 @@ app:
 
 logging:
   level:
-    com.tournoicenter: INFO
+    com.matchday: INFO

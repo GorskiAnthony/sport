@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.state-container {
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    max-width: 34ch;
+  }
+}
+
+.state-action {
+  width: 100%;
+  max-width: 280px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  color: var(--ion-color-primary);
+
+  &--warning {
+    color: var(--ion-color-warning);
+  }
+
+  &--danger {
+    color: var(--ion-color-danger);
+  }
+}

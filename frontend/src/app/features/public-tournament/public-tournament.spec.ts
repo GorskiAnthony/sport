@@ -20,14 +20,23 @@ const TOURNAMENT: TournamentDetail = {
   status: 'ONGOING',
   maxTeams: 8,
   description: null,
+  rules: null,
+  terrains: null,
+  sponsorName: null,
+  sponsorLogoUrl: null,
+  sponsorClickUrl: null,
+  sponsorClicks: 0,
   format: null,
   icon: null,
   splitEnabled: false,
+  eventPassExpiresAt: null,
   organizerId: 1,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
   teams: [],
   matches: [],
+  tvModeEnabled: false,
+  checkInEnabled: false,
 };
 
 /** Only tests the one piece of new conditional client logic this feature adds: recordView

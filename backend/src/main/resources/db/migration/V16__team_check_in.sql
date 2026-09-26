@@ -1,0 +1,1 @@
+ALTER TABLE teams ADD COLUMN checked_in_at TIMESTAMP;

@@ -12,6 +12,7 @@ export const MATCH_STATUS_LABELS: Record<MatchStatus, string> = {
   SCHEDULED: 'À venir',
   ONGOING: 'En cours',
   FINISHED: 'Terminé',
+  FORFEIT: 'Forfait',
 };
 
 export const SPORT_ICONS: Record<string, string> = Object.fromEntries(

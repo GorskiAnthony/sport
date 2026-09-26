@@ -32,6 +32,35 @@
       }
     </div>
 
+    @if (tournament()!.sponsorLogoUrl || tournament()!.sponsorName) {
+      <button
+        type="button"
+        (click)="sponsorClick()"
+        [disabled]="!tournament()!.sponsorClickUrl"
+        class="w-full bg-[#161B22] border border-white/10 rounded-2xl p-4 flex items-center gap-4 transition-colors"
+        [class]="tournament()!.sponsorClickUrl ? 'hover:border-green-500/30 cursor-pointer' : 'cursor-default'"
+      >
+        @if (tournament()!.sponsorLogoUrl) {
+          <img [src]="tournament()!.sponsorLogoUrl" alt="" class="h-12 w-auto rounded-lg object-contain bg-white/5 p-1 flex-shrink-0" />
+        }
+        <div class="text-left min-w-0">
+          <p class="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Partenaire du tournoi</p>
+          @if (tournament()!.sponsorName) {
+            <p class="text-white text-sm font-semibold truncate">{{ tournament()!.sponsorName }}</p>
+          }
+        </div>
+      </button>
+    }
+
+    @if (tournament()!.rules) {
+      <div class="bg-[#161B22] border border-white/10 rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/10">
+          <h2 class="text-white font-semibold">Règlement</h2>
+        </div>
+        <p class="px-6 py-4 text-slate-300 text-sm whitespace-pre-wrap">{{ tournament()!.rules }}</p>
+      </div>
+    }
+
     @if (!auth.isAuthenticated()) {
       <div class="bg-green-500/10 border border-green-500/30 rounded-2xl p-6 flex items-center justify-between gap-4 flex-wrap">
         <div>
@@ -76,7 +105,7 @@
           <table class="w-full text-sm" aria-label="Classement">
             <thead>
               <tr class="border-b border-white/10">
-                @for (h of ['#', 'Équipe', 'J', 'V', 'N', 'D', 'BP', 'BC', 'Pts']; track h) {
+                @for (h of ['#', 'Équipe', 'J', 'V', 'N', 'D', 'BP', 'BC', 'Pts', 'FP']; track h) {
                   <th scope="col" class="text-left px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider" [class.text-green-400]="h === 'Pts'">{{ h }}</th>
                 }
               </tr>
@@ -95,6 +124,7 @@
                   <td class="px-4 py-3 text-slate-400">{{ row.bp }}</td>
                   <td class="px-4 py-3 text-slate-400">{{ row.bc }}</td>
                   <td class="px-4 py-3 text-green-400 font-bold">{{ row.pts }}</td>
+                  <td class="px-4 py-3 text-slate-400">{{ row.fairPlay ?? '-' }}</td>
                 </tr>
               }
             </tbody>
@@ -107,7 +137,12 @@
       <app-group-standings [groups]="groupStandingsData()" />
     }
 
-    @if (phaseGroups().length > 0) {
+    @if (roundPlanningGroups().length > 0) {
+      <div>
+        <h2 class="text-white font-semibold mb-3">Planning</h2>
+        <app-round-planning [groups]="roundPlanningGroups()" />
+      </div>
+    } @else if (phaseGroups().length > 0) {
       <div class="bg-[#161B22] border border-white/10 rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-white/10">
           <h2 class="text-white font-semibold">Matchs</h2>
@@ -119,9 +154,11 @@
               <ul class="space-y-2">
                 @for (match of group.matches; track match.id) {
                   <li class="flex items-center justify-between gap-3 bg-[#0D1117] rounded-lg px-4 py-2.5 text-sm">
-                    <span class="text-slate-200 flex-1 text-right truncate">{{ match.homeTeam.name }}</span>
+                    <span class="flex-1 text-right truncate" [class]="isForfeited(match, match.homeTeam.id) ? 'text-slate-600 line-through' : 'text-slate-200'">{{ match.homeTeam.name }}</span>
                     <span class="font-mono text-white font-semibold px-3 whitespace-nowrap">
-                      @if (match.homeScore !== null && match.awayScore !== null) {
+                      @if (match.status === 'FORFEIT') {
+                        <span class="text-red-400 text-xs font-semibold">Forfait</span>
+                      } @else if (match.homeScore !== null && match.awayScore !== null) {
                         {{ match.homeScore }} – {{ match.awayScore }}
                       } @else if (match.status === 'ONGOING') {
                         <span class="inline-flex items-center gap-1.5 text-green-400">
@@ -135,7 +172,7 @@
                         <span class="text-slate-600">–</span>
                       }
                     </span>
-                    <span class="text-slate-200 flex-1 truncate">{{ match.awayTeam.name }}</span>
+                    <span class="flex-1 truncate" [class]="isForfeited(match, match.awayTeam.id) ? 'text-slate-600 line-through' : 'text-slate-200'">{{ match.awayTeam.name }}</span>
                   </li>
                 }
               </ul>

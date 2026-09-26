@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucidePlay, LucideFlag, LucideBell } from '@lucide/angular';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -8,10 +8,10 @@ import { Notification, NotificationType } from '../../../core/models/notificatio
 const TYPE_ICONS: Record<NotificationType, string> = {
   MATCH_STARTED: 'play',
   MATCH_FINISHED: 'flag',
-  GOAL_SCORED: 'goal',
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-spectator-notifications-page',
   standalone: true,
   imports: [RouterLink, DatePipe, LucidePlay, LucideFlag, LucideBell],

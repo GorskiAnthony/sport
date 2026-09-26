@@ -11,6 +11,7 @@ export interface Team {
   tournamentId: number;
   createdAt: string;
   updatedAt: string;
+  checkedInAt: string | null;
 }
 
 export interface TeamRequest {

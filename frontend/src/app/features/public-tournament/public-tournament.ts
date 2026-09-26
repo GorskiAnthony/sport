@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -11,10 +12,13 @@ import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
+import { RoundPlanning } from '../../shared/ui/round-planning/round-planning';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentMap } from '../../shared/ui/tournament-map/tournament-map';
 import { formatDateFr } from '../../shared/utils/date';
+import { setPageMeta, setJsonLd, setCanonical } from '../../shared/utils/seo';
 import { LucideStar } from '@lucide/angular';
+import { Meta, Title } from '@angular/platform-browser';
 
 interface PhaseGroup {
   label: string;
@@ -24,9 +28,10 @@ interface PhaseGroup {
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-public-tournament-page',
   standalone: true,
-  imports: [RouterLink, GroupStandings, SportIcon, TournamentMap, LucideStar],
+  imports: [RouterLink, GroupStandings, RoundPlanning, SportIcon, TournamentMap, LucideStar],
   templateUrl: './public-tournament.html',
 })
 export class PublicTournamentPage implements OnInit, OnDestroy {
@@ -36,7 +41,18 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
   private readonly teamService = inject(TeamService);
   private readonly toast = inject(ToastService);
   private readonly liveUpdate = inject(LiveUpdateService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly document = inject(DOCUMENT);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   readonly auth = inject(AuthService);
+
+  constructor() {
+    setPageMeta(this.titleService, this.metaService, {
+      title: 'Tournoi',
+      description: 'Suivez ce tournoi en direct sur Matchday : classement, matchs et équipes.',
+    });
+  }
 
   private tournamentId = 0;
   private unsubscribeLive: (() => void) | null = null;
@@ -75,6 +91,18 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     });
   });
 
+  /** Round-by-round planning ("who plays who, and who rests, each round") for the pool formats —
+   *  a plain "next match" list doesn't make the rotation obvious to a casual spectator/referee,
+   *  since round-robin/group phases all share one `phase` label for the whole pool. Not used for
+   *  SINGLE_ELIMINATION, where phaseGroups() below already reads as one round per knockout phase. */
+  readonly roundPlanningGroups = computed<StandingsGroup[]>(() => {
+    const t = this.tournament();
+    if (!t) return [];
+    if (t.format === 'GROUP_KNOCKOUT') return this.groupStandingsData();
+    if (t.format === 'ROUND_ROBIN') return [{ label: 'Poule unique', teams: t.teams, matches: t.matches }];
+    return [];
+  });
+
   readonly phaseGroups = computed<PhaseGroup[]>(() => {
     const t = this.tournament();
     if (!t) return [];
@@ -101,7 +129,11 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     }
     this.tournamentId = id;
     this.load(true);
-    this.unsubscribeLive = this.liveUpdate.subscribeToTournament(id, () => this.load(false));
+    // Connexion WebSocket réservée au navigateur : window.location n'existe pas côté SSR,
+    // et on ne veut de toute façon pas ouvrir une vraie connexion live depuis le rendu serveur.
+    if (this.isBrowser) {
+      this.unsubscribeLive = this.liveUpdate.subscribeToTournament(id, () => this.load(false));
+    }
   }
 
   ngOnDestroy(): void {
@@ -113,6 +145,32 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
       next: (tournament) => {
         this.tournament.set(tournament);
         this.loading.set(false);
+
+        const origin = this.document.location.origin;
+        const canonicalUrl = `${origin}/t/${tournament.id}`;
+        const description = `${tournament.name} (${tournament.sport}), ${tournament.location?.trim() || 'lieu à venir'}, du ${formatDateFr(tournament.startDate)} au ${formatDateFr(tournament.endDate)}. Suivez le classement et les scores en direct.`;
+
+        setPageMeta(this.titleService, this.metaService, {
+          title: tournament.name,
+          description,
+          url: canonicalUrl,
+          image: `${origin}/hero.png`,
+          type: 'article',
+        });
+        setCanonical(this.document, canonicalUrl);
+        setJsonLd(this.document, {
+          '@context': 'https://schema.org',
+          '@type': 'SportsEvent',
+          name: tournament.name,
+          startDate: tournament.startDate,
+          endDate: tournament.endDate,
+          eventStatus: 'https://schema.org/EventScheduled',
+          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+          location: tournament.location?.trim()
+            ? { '@type': 'Place', name: tournament.location }
+            : undefined,
+          url: canonicalUrl,
+        });
         if (initial && this.auth.isAuthenticated()) {
           this.loadFollowedState(tournament);
           this.tournamentService.recordView(this.tournamentId).subscribe({ error: () => {} });
@@ -136,6 +194,20 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
 
   statusLabel(status: string): string {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
+  }
+
+  isForfeited(match: Match, teamId: number): boolean {
+    return match.status === 'FORFEIT' && match.forfeitedTeamId === teamId;
+  }
+
+  /** Fires the click count before navigating away — window.open happens synchronously in the
+   *  same click handler so it isn't blocked as an unexpected popup by the browser, while the
+   *  tracking call itself doesn't need to be awaited. */
+  sponsorClick(): void {
+    const url = this.tournament()?.sponsorClickUrl;
+    if (!url) return;
+    this.tournamentService.recordSponsorClick(this.tournamentId).subscribe({ error: () => {} });
+    window.open(url, '_blank', 'noopener');
   }
 
   isFollowing(teamId: number): boolean {
@@ -172,7 +244,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
     const t = this.tournament();
     if (!t) return [];
     return [
-      { label: 'Lieu', value: t.location ?? '—' },
+      { label: 'Lieu', value: t.location ?? '-' },
       { label: 'Début', value: formatDateFr(t.startDate) },
       { label: 'Fin', value: formatDateFr(t.endDate) },
       { label: 'Équipes', value: String(t.teams.length) },

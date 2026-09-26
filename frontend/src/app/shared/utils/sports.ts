@@ -6,7 +6,7 @@ export interface SportOption {
 
 export const SPORTS: SportOption[] = [
   { id: 'football', label: 'Football', icon: '⚽' },
-  { id: 'futsal', label: 'Futsal', icon: '⚽' },
+  { id: 'futsal', label: 'Futsal', icon: '🥅' },
   { id: 'basketball', label: 'Basketball', icon: '🏀' },
   { id: 'handball', label: 'Handball', icon: '🤾' },
   { id: 'volleyball', label: 'Volleyball', icon: '🏐' },

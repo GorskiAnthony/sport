@@ -7,7 +7,19 @@
 } @else if (!match()) {
   <p class="text-slate-400">Match introuvable. <a routerLink="/dashboard/matches" class="text-green-400">← Retour aux matchs</a></p>
 } @else {
+  <app-confirm-modal
+    [open]="!!pendingForfeit()"
+    title="Déclarer forfait ?"
+    [description]="(pendingForfeit()?.name ?? '') + ' sera déclarée forfait sur ce match : la victoire est automatiquement attribuée à l\'adversaire, sans score.'"
+    confirmLabel="Déclarer forfait"
+    [danger]="true"
+    (confirmed)="confirmForfeit()"
+    (cancelled)="pendingForfeit.set(null)"
+  />
+
   <div class="max-w-3xl space-y-5">
+    <a [routerLink]="['/dashboard/tournaments', match()!.tournamentId]" class="inline-block text-slate-400 hover:text-white text-sm transition-colors">← Retour au tournoi</a>
+
     <div class="bg-[#161B22] border border-white/10 rounded-xl text-center py-8 px-5">
       <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-3">{{ match()!.phase }}</p>
       <p class="text-slate-400 text-xs mb-6">{{ match()!.date | date: 'dd/MM/yyyy HH:mm' }} @if (match()!.venue) { · {{ match()!.venue }} }</p>
@@ -16,12 +28,24 @@
           <p class="text-white text-sm font-semibold">{{ match()!.homeTeam.name }}</p>
         </div>
         <div class="text-center">
-          <div class="flex items-center gap-4">
-            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.homeScore ?? '–' }}</span>
-            <span class="text-slate-400 text-3xl">–</span>
-            <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.awayScore ?? '–' }}</span>
-          </div>
+          @if (match()!.status === 'FORFEIT') {
+            <p class="text-white text-xl font-bold">Forfait</p>
+            <p class="text-slate-400 text-xs mt-1">
+              {{ match()!.forfeitedTeamId === match()!.homeTeam.id ? match()!.homeTeam.name : match()!.awayTeam.name }}
+            </p>
+          } @else {
+            <div class="flex items-center gap-4">
+              <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.homeScore ?? '–' }}</span>
+              <span class="text-slate-400 text-3xl">–</span>
+              <span class="text-white text-5xl font-extrabold tabular-nums">{{ match()!.awayScore ?? '–' }}</span>
+            </div>
+          }
           <app-status-badge class="inline-block mt-2" [status]="match()!.status" [label]="statusLabel(match()!.status)" />
+          @if (match()!.status === 'SCHEDULED') {
+            <button type="button" (click)="startMatch()" [disabled]="startingMatch()" class="block mx-auto mt-2 text-xs text-green-400 hover:text-green-300 font-semibold disabled:opacity-50">
+              ▶ Démarrer le match
+            </button>
+          }
         </div>
         <div class="text-center w-28">
           <p class="text-white text-sm font-semibold">{{ match()!.awayTeam.name }}</p>
@@ -31,20 +55,58 @@
 
     <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
       <h2 class="text-white text-sm font-semibold mb-4">Modifier le score</h2>
-      <form (submit)="$event.preventDefault(); saveScore()" class="flex items-end gap-4">
-        <div class="flex flex-col gap-1.5">
-          <label for="home-score" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
-          <input id="home-score" type="number" min="0" [value]="homeScoreInput()" (input)="homeScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+      <form (submit)="$event.preventDefault(); saveScore()" class="space-y-5">
+        <div class="flex items-end gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="home-score" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
+            <input id="home-score" type="number" min="0" [value]="homeScoreInput()" (input)="homeScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <span class="text-slate-400 pb-2">–</span>
+          <div class="flex flex-col gap-1.5">
+            <label for="away-score" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
+            <input id="away-score" type="number" min="0" [value]="awayScoreInput()" (input)="awayScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
         </div>
-        <span class="text-slate-400 pb-2">–</span>
-        <div class="flex flex-col gap-1.5">
-          <label for="away-score" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
-          <input id="away-score" type="number" min="0" [value]="awayScoreInput()" (input)="awayScoreInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+
+        <div class="pt-5 border-t border-white/10">
+          <label class="text-slate-400 text-xs block mb-3">Note fair-play (sur 10)</label>
+          @if (isPro()) {
+            <div class="flex items-end gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label for="home-fair-play" class="text-slate-400 text-xs">{{ match()!.homeTeam.name }}</label>
+                <input id="home-fair-play" type="number" min="0" max="10" [value]="homeFairPlayInput()" (input)="homeFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+              <span class="text-slate-400 pb-2">–</span>
+              <div class="flex flex-col gap-1.5">
+                <label for="away-fair-play" class="text-slate-400 text-xs">{{ match()!.awayTeam.name }}</label>
+                <input id="away-fair-play" type="number" min="0" max="10" [value]="awayFairPlayInput()" (input)="awayFairPlayInput.set($any($event.target).value)" class="w-20 bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+            </div>
+          } @else {
+            <div class="flex items-center justify-between gap-3 bg-[#0D1117] border border-white/10 rounded-lg px-4 py-3">
+              <p class="text-slate-500 text-sm">Réservé au plan Pro : notez le comportement de chaque équipe et affichez un classement fair-play.</p>
+              <a routerLink="/pricing" class="text-green-400 hover:text-green-300 text-xs font-semibold whitespace-nowrap">Voir les plans →</a>
+            </div>
+          }
         </div>
+
         <button type="submit" [disabled]="saving()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50">
-          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer le score et le fair-play' }}
         </button>
       </form>
+    </div>
+
+    <div class="bg-[#161B22] border border-white/10 rounded-xl p-5">
+      <h2 class="text-white text-sm font-semibold mb-1">Forfait</h2>
+      <p class="text-slate-500 text-xs mb-4">Une équipe ne s'est pas présentée ? Déclarez-la forfait : la victoire est attribuée à l'adversaire, sans avoir à inventer un score.</p>
+      <div class="flex gap-3">
+        <button type="button" (click)="pendingForfeit.set(match()!.homeTeam)" class="px-4 py-2 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">
+          {{ match()!.homeTeam.name }} forfait
+        </button>
+        <button type="button" (click)="pendingForfeit.set(match()!.awayTeam)" class="px-4 py-2 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors">
+          {{ match()!.awayTeam.name }} forfait
+        </button>
+      </div>
     </div>
   </div>
 }

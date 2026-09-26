@@ -1,0 +1,42 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mes tournois</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/tournaments/new" aria-label="Nouveau tournoi">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (loading()) {
+    @for (i of skeletonRows; track i) {
+      <app-tournament-card-skeleton />
+    }
+  } @else if (error()) {
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger vos tournois.">
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </app-empty-state>
+  } @else if (tournaments().length === 0) {
+    <app-empty-state icon="trophy-outline" title="Aucun tournoi" message="Vous n'organisez aucun tournoi pour le moment.">
+      <ion-button routerLink="/tournaments/new">
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        Créer un tournoi
+      </ion-button>
+    </app-empty-state>
+  } @else {
+    @for (tournament of tournaments(); track tournament.id; let i = $index) {
+      <app-tournament-card
+        [tournament]="tournament"
+        [style.animation-delay.ms]="i * 60"
+        (open)="openTournament(tournament.id)"
+        (openRefereeCode)="openRefereeCode(tournament.id)"
+      />
+    }
+  }
+</ion-content>

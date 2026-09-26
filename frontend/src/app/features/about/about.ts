@@ -1,16 +1,26 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { LucideTarget, LucideZap, LucideShieldCheck } from '@lucide/angular';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type ValueIcon = 'target' | 'zap' | 'shield';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-about-page',
   standalone: true,
   imports: [PageHeader, LucideTarget, LucideZap, LucideShieldCheck],
   templateUrl: './about.html',
 })
 export class AboutPage {
+  constructor() {
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'À propos',
+      description: 'Matchday simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.',
+    });
+  }
+
   readonly values: { icon: ValueIcon; title: string; desc: string }[] = [
     {
       icon: 'target',
@@ -29,5 +39,5 @@ export class AboutPage {
     },
   ];
 
-  readonly team = [{ name: 'Anthony G.', role: 'Fondateur & CTO', initials: 'AG' }];
+  readonly team = [{ name: 'Anthony G.', role: 'Fondateur & CTO', avatar: '/anthony.jpeg' }];
 }

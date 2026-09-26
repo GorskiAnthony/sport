@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminUserSummary } from '../../../core/models/admin.model';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-clients-page',
   standalone: true,
   imports: [RouterLink, PageHeader],

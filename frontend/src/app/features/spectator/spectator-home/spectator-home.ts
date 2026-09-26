@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -9,6 +9,7 @@ import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LucideBell } from '@lucide/angular';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-spectator-home-page',
   standalone: true,
   imports: [RouterLink, StatusBadge, LucideBell],

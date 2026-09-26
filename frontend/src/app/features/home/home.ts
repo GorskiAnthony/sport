@@ -1,11 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { DOCUMENT, NgOptimizedImage } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin } from '@lucide/angular';
 import { Button } from '../../shared/ui/button/button';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
-import { SPORTS } from '../../shared/utils/sports';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type FeatureIcon = 'trophy' | 'shuffle' | 'chart' | 'link';
 
@@ -16,31 +18,49 @@ interface Stat {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-page',
   standalone: true,
-  imports: [Button, RouterLink, SportIcon, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin],
+  imports: [Button, RouterLink, SportIcon, NgOptimizedImage, LucideTrophy, LucideShuffle, LucideChartColumn, LucideLink2, LucideMapPin],
   templateUrl: './home.html',
 })
 export class HomePage implements OnInit {
   private readonly tournamentService = inject(TournamentService);
+  private readonly document = inject(DOCUMENT);
 
   readonly upcomingTournaments = signal<TournamentSummary[] | null>(null);
   readonly stats = signal<Stat[] | null>(null);
 
+  constructor() {
+    const origin = this.document.location.origin;
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Organisez vos tournois sportifs',
+      description: 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Matchday gère le tableau, les classements et le partage avec vos spectateurs.',
+      url: origin,
+      image: `${origin}/hero.png`,
+    });
+  }
+
   ngOnInit(): void {
     this.tournamentService.getAll().subscribe({
       next: (tournaments) => {
+        // status ne passe à FINISHED que quand les matchs sont réellement joués jusqu'au bout
+        // (voir BracketGenerationService/RoundRobinStatusSync côté backend) — un tournoi dont la
+        // date de fin est passée mais dont les scores n'ont jamais été saisis reste bloqué à
+        // UPCOMING indéfiniment, d'où le filtre sur endDate en plus du status.
+        const today = new Date().toISOString().slice(0, 10);
         const upcoming = tournaments
-          .filter((t) => t.status !== 'FINISHED')
+          .filter((t) => t.status !== 'FINISHED' && t.endDate >= today)
           .sort((a, b) => a.startDate.localeCompare(b.startDate))
           .slice(0, 3);
         this.upcomingTournaments.set(upcoming);
 
         const teamsCount = tournaments.reduce((sum, t) => sum + t.teamsCount, 0);
+        const sportsCount = new Set(tournaments.map((t) => t.sport)).size;
         this.stats.set([
           { value: tournaments.length, suffix: '', label: 'Tournois organisés' },
           { value: teamsCount, suffix: '', label: 'Équipes inscrites' },
-          { value: SPORTS.length, suffix: '', label: 'Sports couverts' },
+          { value: sportsCount, suffix: '', label: 'Sports couverts' },
         ]);
       },
       error: () => {

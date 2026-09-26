@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { Button } from '../../shared/ui/button/button';
@@ -12,12 +12,12 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Accueil', path: '/' },
   { label: 'Tournois', path: '/tournaments' },
   { label: 'Sports', path: '/sports' },
-  { label: 'Équipes', path: '/teams' },
   { label: 'Tarifs', path: '/pricing' },
   { label: 'À propos', path: '/about' },
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-navbar',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, Button],

@@ -1,24 +1,29 @@
-import { Component, OnChanges, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, OnChanges, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { toDataURL } from 'qrcode';
-import { LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2 } from '@lucide/angular';
+import { LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2, LucideTv, LucideUserCheck } from '@lucide/angular';
 import { tournamentShareSlug } from '../../utils/slug';
 import { formatDateFr } from '../../utils/date';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-share-modal',
   standalone: true,
-  imports: [LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2],
+  imports: [RouterLink, LucidePrinter, LucideMessageCircle, LucideMail, LucideShare2, LucideTv, LucideUserCheck],
   templateUrl: './share-modal.html',
 })
 export class ShareModal implements OnChanges {
   readonly open = input.required<boolean>();
   readonly tournamentId = input.required<number>();
   readonly name = input.required<string>();
+  readonly format = input<string | null>(null);
   readonly sport = input<string | null>(null);
   readonly location = input<string | null>(null);
   readonly startDate = input<string | null>(null);
   readonly endDate = input<string | null>(null);
   readonly teamsCount = input<number | null>(null);
+  readonly tvModeEnabled = input<boolean>(false);
+  readonly checkInEnabled = input<boolean>(false);
 
   readonly closed = output<void>();
 
@@ -32,6 +37,13 @@ export class ShareModal implements OnChanges {
   });
 
   readonly printUrl = computed(() => `/print/tournaments/${this.tournamentId()}`);
+  readonly tvModeUrl = computed(() => `/tv/tournaments/${this.tournamentId()}`);
+  readonly checkInUrl = computed(() => `/checkin/tournaments/${this.tournamentId()}`);
+
+  /** Only a pool format (round-robin / group-knockout) has a meaningful "round by round"
+   *  planning to print — a single-elimination bracket is already just one match per box. */
+  readonly showPlanningPrint = computed(() => this.format() === 'ROUND_ROBIN' || this.format() === 'GROUP_KNOCKOUT');
+  readonly planningPrintUrl = computed(() => `/print/tournaments/${this.tournamentId()}/planning`);
 
   readonly displayDates = computed(() => {
     const start = this.startDate();
@@ -87,5 +99,17 @@ export class ShareModal implements OnChanges {
 
   print(): void {
     window.open(this.printUrl(), '_blank', 'noopener');
+  }
+
+  printPlanning(): void {
+    window.open(this.planningPrintUrl(), '_blank', 'noopener');
+  }
+
+  openTvMode(): void {
+    window.open(this.tvModeUrl(), '_blank', 'noopener');
+  }
+
+  openCheckIn(): void {
+    window.open(this.checkInUrl(), '_blank', 'noopener');
   }
 }

@@ -15,7 +15,7 @@
       </div>
       <p class="text-white font-semibold mb-2">Tout est calme ici</p>
       <p class="text-slate-400 text-sm">
-        Suivez une <a routerLink="/home/favorites" class="text-green-400 hover:text-green-300">équipe favorite</a> pour être alerté à chaque coup d'envoi, chaque but, chaque fin de match.
+        Suivez une <a routerLink="/home/favorites" class="text-green-400 hover:text-green-300">équipe favorite</a> pour être alerté à chaque coup d'envoi et chaque fin de match.
       </p>
     </div>
   } @else {
@@ -31,7 +31,6 @@
               @switch (icon(notification.type)) {
                 @case ('play') { <svg lucidePlay class="w-4 h-4"></svg> }
                 @case ('flag') { <svg lucideFlag class="w-4 h-4"></svg> }
-                @case ('goal') { <span class="text-base">⚽</span> }
                 @default { <svg lucideBell class="w-4 h-4"></svg> }
               }
             </span>

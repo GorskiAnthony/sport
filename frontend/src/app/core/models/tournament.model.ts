@@ -17,6 +17,7 @@ export interface TournamentSummary {
   format: string | null;
   icon: string | null;
   splitEnabled: boolean;
+  eventPassExpiresAt: string | null;
   organizerId: number;
   teamsCount: number;
   createdAt: string;
@@ -25,14 +26,32 @@ export interface TournamentSummary {
 
 export interface TournamentDetail
   extends Omit<TournamentSummary, 'teamsCount'> {
+  rules: string | null;
+  terrains: string | null;
+  sponsorName: string | null;
+  sponsorLogoUrl: string | null;
+  sponsorClickUrl: string | null;
+  sponsorClicks: number;
   teams: Team[];
   matches: Match[];
+  tvModeEnabled: boolean;
+  checkInEnabled: boolean;
+}
+
+export interface TournamentPage {
+  items: TournamentSummary[];
+  totalCount: number;
 }
 
 export interface RecentTournament {
   tournament: TournamentSummary;
   firstViewedAt: string;
   lastViewedAt: string;
+}
+
+export interface RefereeJoinInfo {
+  token: string;
+  joinUrl: string;
 }
 
 export interface TournamentRequest {
@@ -44,6 +63,12 @@ export interface TournamentRequest {
   endDate: string;
   maxTeams: number;
   description?: string;
+  rules?: string;
+  terrains?: string;
+  sponsorName?: string;
+  sponsorLogoUrl?: string;
+  sponsorClickUrl?: string;
   format?: string;
   splitEnabled?: boolean;
+  useEventPass?: boolean;
 }

@@ -2,6 +2,29 @@
   <h1 class="text-white text-2xl font-extrabold">Paramètres</h1>
   <div class="bg-[#161B22] border border-white/10 rounded-xl p-5 space-y-4">
     <h2 class="text-white font-semibold">Profil</h2>
+
+    <div class="flex items-center gap-4">
+      <label
+        for="sp-avatar-input"
+        class="w-16 h-16 rounded-full bg-[#0D1117] border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer hover:border-green-500/40 transition-colors overflow-hidden shrink-0"
+      >
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Photo de profil" class="w-full h-full object-cover" />
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-600" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+          </svg>
+        }
+      </label>
+      <div>
+        <label for="sp-avatar-input" class="text-xs text-green-400 hover:text-green-300 font-medium transition-colors cursor-pointer">
+          {{ avatarUrl() ? 'Changer la photo' : 'Choisir une photo' }}
+        </label>
+        <p class="text-slate-600 text-[10px] mt-0.5">PNG, JPG · max 2 Mo</p>
+      </div>
+      <input id="sp-avatar-input" type="file" accept="image/*" class="sr-only" (change)="onAvatarSelected($event)" />
+    </div>
+
     <div class="flex flex-col gap-1.5">
       <label for="sp-name" class="text-slate-400 text-xs">Nom</label>
       <input id="sp-name" [value]="name()" (input)="name.set($any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" />
@@ -10,8 +33,8 @@
       <label for="sp-email" class="text-slate-400 text-xs">Email</label>
       <input id="sp-email" [value]="user()?.email ?? ''" disabled class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed" />
     </div>
-    <button type="button" (click)="save()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors">
-      Enregistrer
+    <button type="button" (click)="save()" [disabled]="saving()" class="px-4 py-2 text-sm font-semibold bg-green-500 hover:bg-green-400 text-black rounded-lg transition-colors disabled:opacity-50">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
     </button>
   </div>
 </div>

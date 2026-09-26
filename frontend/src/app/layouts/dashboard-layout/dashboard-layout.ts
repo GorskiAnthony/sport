@@ -1,12 +1,18 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Title } from '@angular/platform-browser';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastContainer } from '../../shared/ui/toast-container/toast-container';
+import { DashboardRightPanel } from './right-panel/right-panel';
+
+const COLLAPSE_KEY = 'dashboardSidebarCollapsed';
 
 interface DashboardNavItem {
   path: string;
   label: string;
-  icon: 'dashboard' | 'tournament' | 'teams' | 'matches' | 'standings' | 'messages' | 'settings';
+  icon: 'dashboard' | 'tournament' | 'teams' | 'matches' | 'standings' | 'buvette' | 'messages' | 'settings';
   end: boolean;
 }
 
@@ -16,27 +22,46 @@ const NAV: DashboardNavItem[] = [
   { path: '/dashboard/teams', label: 'Équipes', icon: 'teams', end: false },
   { path: '/dashboard/matches', label: 'Matchs', icon: 'matches', end: false },
   { path: '/dashboard/standings', label: 'Classements', icon: 'standings', end: false },
+  { path: '/dashboard/buvette', label: 'Buvette', icon: 'buvette', end: false },
   { path: '/dashboard/messages', label: 'Messages', icon: 'messages', end: false },
   { path: '/dashboard/settings', label: 'Paramètres', icon: 'settings', end: false },
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainer],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainer, DashboardRightPanel],
   templateUrl: './dashboard-layout.html',
 })
 export class DashboardLayout {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly title = inject(Title);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly nav = NAV;
   readonly user = this.authService.currentUser;
   readonly sidebarOpen = signal(false);
+  readonly collapsed = signal(this.isBrowser && localStorage.getItem(COLLAPSE_KEY) === 'true');
   readonly initials = computed(() => {
     const name = this.user()?.name ?? '';
     return name.split(' ').map((part) => part[0]).join('').toUpperCase().slice(0, 2);
   });
+
+  constructor() {
+    // Les pages de l'espace connecté n'appellent pas setPageMeta (voir index.html) : sans ça,
+    // l'onglet garde le dernier titre posé par une page publique (ex. "Tarifs | Matchday")
+    // indéfiniment, y compris en changeant de page ici, puisque ce layout reste monté tant qu'on
+    // navigue dans /dashboard/**.
+    this.syncTitle();
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => this.syncTitle());
+  }
+
+  private syncTitle(): void {
+    const active = this.nav.find((item) => this.router.isActive(item.path, item.end));
+    this.title.setTitle(`${active?.label ?? 'Tableau de bord'} | Matchday`);
+  }
 
   openSidebar(): void {
     this.sidebarOpen.set(true);
@@ -44,6 +69,12 @@ export class DashboardLayout {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  toggleCollapsed(): void {
+    const next = !this.collapsed();
+    this.collapsed.set(next);
+    if (this.isBrowser) localStorage.setItem(COLLAPSE_KEY, String(next));
   }
 
   logout(): void {

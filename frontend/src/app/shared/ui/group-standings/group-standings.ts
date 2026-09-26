@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Match } from '../../../core/models/match.model';
 import { Team } from '../../../core/models/team.model';
 import { computeStandings, Standing } from '../../utils/standings';
@@ -10,6 +10,7 @@ export interface StandingsGroup {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group-standings',
   standalone: true,
   templateUrl: './group-standings.html',

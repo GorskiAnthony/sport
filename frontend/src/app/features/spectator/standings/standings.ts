@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { TournamentService } from '../../../core/services/tournament.service';
@@ -7,6 +7,7 @@ import { Standing, computeStandings } from '../../../shared/utils/standings';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-spectator-standings-page',
   standalone: true,
   imports: [StatusBadge],

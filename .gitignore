@@ -10,3 +10,9 @@ node_modules/
 
 # macOS
 .DS_Store
+
+# Aide-mémoire perso, non lié à ce projet spécifique
+/bucket.md
+/back.md
+/front.md
+/pair-programming.md

@@ -1,4 +1,4 @@
-export type NotificationType = 'MATCH_STARTED' | 'MATCH_FINISHED' | 'GOAL_SCORED';
+export type NotificationType = 'MATCH_STARTED' | 'MATCH_FINISHED';
 
 export interface Notification {
   id: number;

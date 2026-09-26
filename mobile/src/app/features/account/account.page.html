@@ -1,0 +1,50 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Compte</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (user(); as u) {
+    @if (isOrganizer()) {
+      <label for="banner-input" class="banner">
+        @if (bannerUrl()) {
+          <img [src]="bannerUrl()" alt="Bannière" />
+        } @else {
+          <div class="banner-placeholder">Choisir une bannière</div>
+        }
+      </label>
+      <input id="banner-input" type="file" accept="image/*" class="sr-only" (change)="onBannerSelected($event)" />
+    }
+
+    <div class="profile-card">
+      <label for="avatar-input" class="avatar">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Photo de profil" />
+        } @else {
+          {{ initials() }}
+        }
+      </label>
+      <input id="avatar-input" type="file" accept="image/*" class="sr-only" (change)="onAvatarSelected($event)" />
+
+      <ion-item fill="outline" class="name-item">
+        <ion-label position="stacked">Nom</ion-label>
+        <ion-input type="text" [value]="name()" (ionInput)="onNameInput($any($event.detail).value)"></ion-input>
+      </ion-item>
+
+      <p class="email">{{ u.email }}</p>
+      <span class="plan-chip" [style.color]="planMeta().textColor" [style.background]="planMeta().bgColor">
+        Offre {{ planMeta().label }}
+      </span>
+    </div>
+
+    <ion-button expand="block" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="danger" (click)="logout()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      Se déconnecter
+    </ion-button>
+  }
+</ion-content>

@@ -35,9 +35,9 @@ export class MatchService {
     return this.http.patch<ApiResponse<Match>>(`${this.baseUrl}/${id}/start`, {}).pipe(map((res) => res.data));
   }
 
-  addGoal(id: number, teamId: number): Observable<Match> {
+  recordForfeit(id: number, teamId: number): Observable<Match> {
     return this.http
-      .post<ApiResponse<Match>>(`${this.baseUrl}/${id}/goals`, { teamId })
+      .patch<ApiResponse<Match>>(`${this.baseUrl}/${id}/forfeit`, { teamId })
       .pipe(map((res) => res.data));
   }
 

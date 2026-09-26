@@ -1,19 +1,29 @@
 # Déploiement en production avec Dokploy
 
-Ce guide déploie les 3 services (Postgres, backend, frontend) sur une instance [Dokploy](https://dokploy.com/)
-en utilisant les images Docker déjà construites et versionnées par la CI/CD (`ghcr.io/gorskianthony/sport-backend`
-et `sport-frontend`), via `docker-compose.prod.yml`.
+Ce guide déploie les 4 services (Postgres, backend, frontend, mobile) sur une instance [Dokploy](https://dokploy.com/)
+en utilisant les images Docker déjà construites et versionnées par la CI/CD (`ghcr.io/gorskianthony/sport-backend`,
+`sport-frontend` et `sport-mobile`), via `docker-compose.prod.yml`.
 
 ## Vue d'ensemble
 
 ```
-Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─┬─▶ /api/*  → backend:3000 (réseau interne)
-                                                                       └─▶ le reste → SPA Angular
+Internet ─▶ Dokploy (Traefik, SSL auto) ─▶ frontend (nginx, port 80) ─┬─▶ /api/*        → backend:3000 (réseau interne)
+                                                                       └─▶ pages HTML   → serveur Node Angular SSR
+                                                                              (127.0.0.1:4000, même conteneur)
                                                                               backend ─▶ postgres (5432)
 ```
 
-- **frontend** et **backend** : images publiées automatiquement par `.github/workflows/release-*.yml` à chaque
-  release (voir README.md pour la stratégie de branches `dev`/`main`).
+- Le conteneur **frontend** fait tourner nginx **et** un serveur Node (Angular SSR) côte à côte (voir
+  `docker-entrypoint-ssr.sh`) : nginx sert les assets statiques et les pages prérendues au build, proxie `/api/*`
+  vers le backend comme avant, et proxie tout le reste vers le serveur Node qui rend les pages à la demande
+  (classement/organisateur/tournoi public — voir `frontend/src/app/app.routes.server.ts`). Limite connue : si le
+  process Node plante, nginx reste up mais ces pages répondent en 502 (pas de superviseur de process).
+
+- **frontend**, **backend** et **mobile** : images publiées automatiquement par `.github/workflows/release-*.yml`
+  à chaque release (voir README.md pour la stratégie de branches `dev`/`main`). Le conteneur **mobile** sert le
+  build web (SPA, pas de SSR) de l'app Ionic sur son propre domaine (`MOBILE_URL`) : c'est lui qui répond à
+  `/join/:token`, le lien du QR code d'invitation arbitre (voir `mobile/nginx.conf`, même logique de reverse
+  proxy `/api/*` que le frontend).
 - **postgres** : conteneur géré directement dans le compose (pas besoin du service "Database" natif de Dokploy).
 - Rien n'est buildé sur le serveur de prod — Dokploy ne fait que `docker pull` + `docker compose up`.
 - Le frontend appelle l'API en chemin relatif (`/api/...`) — nginx la relaie en interne vers le conteneur
@@ -37,7 +47,7 @@ Par défaut, les packages GHCR créés par une Action GitHub sont **privés**. D
 
 **Option A — rendre les packages publics (le plus simple)**
 Sur GitHub : `github.com/GorskiAnthony?tab=packages` → `sport-backend` → *Package settings* → *Change visibility*
-→ **Public**. Répéter pour `sport-frontend`.
+→ **Public**. Répéter pour `sport-frontend` et `sport-mobile`.
 
 **Option B — garder privé et donner l'accès à Dokploy**
 Dans Dokploy, section *Registry* (ou *Docker* selon la version) : ajouter un registry privé avec :
@@ -53,19 +63,20 @@ Dans Dokploy, section *Registry* (ou *Docker* selon la version) : ajouter un reg
 4. **Compose Path** : `docker-compose.prod.yml` (pas `docker-compose.yml`, qui est pour le dev local).
 5. **Compose Type** : `docker-compose` (pas Stack/Swarm).
 
-⚠️ **La branche choisie ici et les tags d'image (`BACKEND_TAG`/`FRONTEND_TAG`, section suivante) doivent
-correspondre**, sinon un déploiement peut sembler réussir (bon commit affiché dans l'onglet Deployments) tout
-en tournant avec l'ancienne image : la branche ne détermine que le contenu du repo (donc de
+⚠️ **La branche choisie ici et les tags d'image (`BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG`, section suivante)
+doivent correspondre**, sinon un déploiement peut sembler réussir (bon commit affiché dans l'onglet Deployments)
+tout en tournant avec l'ancienne image : la branche ne détermine que le contenu du repo (donc de
 `docker-compose.prod.yml`) que Dokploy lit, **pas** l'image Docker réellement tirée — ça, c'est uniquement les
-variables d'environnement `BACKEND_TAG`/`FRONTEND_TAG` qui le décident, indépendamment de la branche source.
-Concrètement :
-- Service sur branche `main` → `BACKEND_TAG=latest` / `FRONTEND_TAG=latest` (le tag stable, mis à jour par une
-  release sur `main`).
-- Service sur branche `dev` → `BACKEND_TAG=dev` / `FRONTEND_TAG=dev` (le tag pre-release, mis à jour par
-  *chaque* push sur `dev` — pas besoin de merger vers `main` pour tester).
+variables d'environnement `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` qui le décident, indépendamment de la
+branche source. Concrètement :
+- Service sur branche `main` → `BACKEND_TAG=latest` / `FRONTEND_TAG=latest` / `MOBILE_TAG=latest` (le tag
+  stable, mis à jour par une release sur `main`).
+- Service sur branche `dev` → `BACKEND_TAG=dev` / `FRONTEND_TAG=dev` / `MOBILE_TAG=dev` (le tag pre-release,
+  mis à jour par *chaque* push sur `dev` — pas besoin de merger vers `main` pour tester).
 
-Si un environnement de préprod pointe sur `dev` mais garde `BACKEND_TAG`/`FRONTEND_TAG` à leur valeur par défaut
-(`latest`), il restera bloqué sur le dernier `main` publié, même après un redeploy — voir "Dépannage" plus bas.
+Si un environnement de préprod pointe sur `dev` mais garde `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` à leur
+valeur par défaut (`latest`), il restera bloqué sur le dernier `main` publié, même après un redeploy — voir
+"Dépannage" plus bas.
 
 ## 3. Variables d'environnement
 
@@ -73,13 +84,15 @@ Dans l'onglet **Environment** du service Compose, colle et complète (voir `.env
 la liste commentée) :
 
 ```env
-POSTGRES_DB=tournoi_center
+POSTGRES_DB=matchday
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<généré avec: openssl rand -base64 24>
 
 JWT_SECRET=<généré avec: openssl rand -base64 32>
 JWT_EXPIRATION_DAYS=7
 CLIENT_URL=https://sport.example.com
+MOBILE_URL=https://m.sport.example.com
+CORS_ADDITIONAL_ORIGINS=https://m.sport.example.com
 
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -88,12 +101,24 @@ STRIPE_PRICE_PRO=
 
 BACKEND_TAG=latest    # dev si ce service suit la branche dev — voir l'avertissement de l'étape 2
 FRONTEND_TAG=latest   # idem
+MOBILE_TAG=latest     # idem
 ```
 
-**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le navigateur ne
-l'utilise plus pour CORS sur le parcours principal (proxifié par nginx), mais le backend s'en sert pour
-construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse ces
-redirections.
+**Important** : `CLIENT_URL` doit être l'URL exacte (avec `https://`) du domaine du frontend. Le backend s'en
+sert pour construire les URLs de redirection Stripe (checkout success/cancel) — une valeur incorrecte casse
+ces redirections. C'est aussi la seule origine autorisée par défaut en CORS : même si l'appel `/api/*` d'un
+domaine donné (frontend ou mobile) passe par un reverse proxy nginx sur le *même* domaine que la page, Traefik
+termine le TLS en amont — le backend voit donc un hop interne en HTTP, perd la trace du HTTPS d'origine, et
+traite l'appel comme cross-origin. Sans l'origine exacte du domaine appelant dans `CLIENT_URL` (déjà couvert
+pour le frontend) ou `CORS_ADDITIONAL_ORIGINS`, ces appels échouent en `403 Forbidden`.
+
+`MOBILE_URL` est requis en profil `prod` (pas de valeur par défaut, le backend refuse de démarrer sans elle) :
+c'est le domaine du build web de l'app mobile, utilisé pour construire le lien du QR code d'invitation arbitre
+(`{MOBILE_URL}/join/{token}`).
+
+`CORS_ADDITIONAL_ORIGINS` doit inclure `MOBILE_URL` (même valeur), sans quoi les appels `/api/*` faits depuis
+l'app mobile web échouent en 403 — voir "Dépannage" plus bas. Plusieurs origines séparées par des virgules si
+besoin.
 
 Ne jamais committer ce fichier rempli — `.env.prod.example` (le template vide) est le seul versionné.
 
@@ -105,20 +130,22 @@ Toujours dans le service Compose, onglet **Domains** :
 |---|---|---|
 | `frontend` | 80 | `sport.example.com` |
 | `backend` | 3000 | `api.sport.example.com` |
+| `mobile` | 80 | `m.sport.example.com` (doit correspondre à `MOBILE_URL`) |
 
-Active **HTTPS** sur les deux — Dokploy provisionne et renouvelle les certificats Let's Encrypt automatiquement
+Active **HTTPS** sur les trois — Dokploy provisionne et renouvelle les certificats Let's Encrypt automatiquement
 via Traefik, aucune config manuelle nécessaire. Assure-toi juste que le DNS pointe déjà vers le serveur avant
 d'activer HTTPS (sinon la validation Let's Encrypt échoue).
 
 ## 5. Premier déploiement
 
 Clique **Deploy**. Dokploy va :
-1. Pull `postgres:16-alpine`, `ghcr.io/gorskianthony/sport-backend:latest`, `sport-frontend:latest`.
+1. Pull `postgres:16-alpine`, `ghcr.io/gorskianthony/sport-backend:latest`, `sport-frontend:latest`,
+   `sport-mobile:latest`.
 2. Démarrer `postgres`, attendre son healthcheck.
 3. Démarrer `backend` (qui applique automatiquement les migrations Flyway au démarrage).
-4. Démarrer `frontend`.
+4. Démarrer `frontend` et `mobile`.
 
-Suis les logs dans l'onglet **Logs** du service. Le backend est prêt quand tu vois `Started TournoiCenterApplication`.
+Suis les logs dans l'onglet **Logs** du service. Le backend est prêt quand tu vois `Started MatchdayApplication`.
 
 ## 6. Vérification post-déploiement
 
@@ -144,7 +171,7 @@ en prod : crée un compte normal via `/register`, puis promeus-le directement en
 serveur :
 
 ```bash
-docker exec -it <conteneur_postgres> psql -U postgres -d tournoi_center \
+docker exec -it <conteneur_postgres> psql -U postgres -d matchday \
   -c "UPDATE users SET role = 'ADMIN' WHERE email = 'ton-email@exemple.com';"
 ```
 
@@ -208,6 +235,79 @@ sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au 
    instance a aujourd'hui son propre état ; un vrai chantier, à ne lancer que si le trafic doit rester élevé
    durablement, pas pour un pic ponctuel.
 
+## Rotation des logs
+
+`docker-compose.prod.yml` plafonne les logs des 3 services (ancre YAML `x-default-logging`,
+driver `json-file`, `max-size: 10m` / `max-file: 5`, soit 50 Mo max par service). Sans ça, le
+driver `json-file` par défaut de Docker n'a **aucune limite** — sur un serveur qui tourne des
+mois sans interruption, les logs (nginx access logs côté `frontend`, logs Spring Boot côté
+`backend`) grossissent indéfiniment et peuvent finir par saturer le disque (même symptôme qu'un
+disque plein en local, mais côté serveur).
+
+Rien à faire côté Dokploy pour ça, c'est géré directement par le compose. Pour consulter les
+anciens logs déjà tournés manuellement (debug) :
+```bash
+docker inspect --format='{{.LogPath}}' <conteneur>
+```
+
+## Sauvegardes
+
+Le backup natif de Dokploy (onglet *Backups* d'une ressource **Database**) ne s'applique **pas**
+ici : Postgres tourne comme un service classique du compose, pas comme une ressource "Database"
+gérée par Dokploy. Le mécanisme natif ne sauvegarde que la base interne de Dokploy lui-même
+(`/etc/dokploy` + sa propre DB), jamais les services d'un compose applicatif — confirmé par le
+mainteneur du projet ([discussion #1772](https://github.com/Dokploy/dokploy/discussions/1772)).
+Le "Volume Backups" (aussi natif à Dokploy) fonctionnerait techniquement sur le volume
+`postgres-data`, mais nécessite de couper le conteneur pendant le backup pour garantir la
+cohérence (sinon risque d'incohérence sur un fichier en cours d'écriture) — pas adapté à un
+service qui doit rester up.
+
+À la place, `docker-compose.prod.yml` déclare un service `postgres-backup`
+([`eeshugerman/postgres-backup-s3`](https://github.com/eeshugerman/postgres-backup-s3), tag `16`
+pour matcher la version de `postgres:16-alpine`) qui fait un `pg_dump` planifié (cron) et
+l'envoie directement vers un stockage S3-compatible, sans jamais toucher au conteneur `postgres`
+ni exiger de coupure.
+
+### Configuration
+
+Variables à renseigner dans Dokploy (voir `.env.prod.example`, section *Sauvegarde Postgres*) :
+
+| Variable | Rôle |
+|---|---|
+| `BACKUP_S3_REGION` | Région du bucket (requis même chez un provider non-AWS, ex. `us-east-1` par convention chez certains) |
+| `BACKUP_S3_ENDPOINT` | Vide pour AWS S3 ; sinon l'URL de l'API S3 du provider (Backblaze B2, Scaleway Object Storage, OVH, MinIO auto-hébergé...) |
+| `BACKUP_S3_BUCKET` | Bucket dédié aux backups (à créer chez le provider avant le premier déploiement) |
+| `BACKUP_S3_PREFIX` | Sous-dossier dans le bucket (`tournoi-center` par défaut) |
+| `BACKUP_S3_ACCESS_KEY_ID` / `BACKUP_S3_SECRET_ACCESS_KEY` | Identifiants S3, à générer chez le provider avec un accès limité à ce bucket |
+| `BACKUP_SCHEDULE` | Syntaxe go-cron, ex. `@daily` (par défaut, ~minuit UTC) ou `0 3 * * *` pour 3h du matin |
+| `BACKUP_KEEP_DAYS` | Rétention en jours (14 par défaut) — les backups plus anciens sont supprimés automatiquement par le conteneur |
+
+Choix du provider S3 : n'importe lequel fait l'affaire (Backblaze B2 et Scaleway sont bon marché
+pour ce volume de données). Prends un bucket séparé de tout autre usage S3 du projet, avec des
+clés d'accès dédiées et limitées à ce seul bucket.
+
+### Vérifier qu'un backup a bien lieu
+
+```bash
+docker logs <conteneur_postgres-backup>   # doit montrer un "Backup complete" après chaque run planifié
+```
+Vérifie aussi côté provider que des fichiers `.sql.gz` apparaissent bien sous
+`<bucket>/<BACKUP_S3_PREFIX>/`.
+
+### Restauration
+
+⚠️ Écrase la base actuelle — à ne faire que sur un incident confirmé ou un test en environnement
+séparé, jamais en aveugle sur la prod :
+```bash
+# Dernier backup disponible :
+docker exec -it <conteneur_postgres-backup> sh restore.sh
+
+# Un backup précis (timestamp visible dans le nom de fichier sur le bucket) :
+docker exec -it <conteneur_postgres-backup> sh restore.sh <timestamp>
+```
+Recommandé : tester une restauration au moins une fois avant d'en avoir besoin en urgence (ex.
+sur un service Dokploy de staging séparé, pointé vers un bucket/backup de test).
+
 ## Mises à jour
 
 - Un push sur `dev` publie une pre-release (`:dev`) — utile pour tester en staging avant de promouvoir.
@@ -220,24 +320,28 @@ sans ça, les métriques et l'état interne de l'appli ne sont pas destinés au 
 - Dans Dokploy, active **Auto Deploy** (webhook) sur le service si tu veux qu'un nouveau `:latest` redéploie
   automatiquement, ou clique **Redeploy** manuellement après une release (grâce au point ci-dessus, les deux
   approches repartent bien de l'image la plus récente).
-- Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG` à un numéro de
-  version exact (ex. `1.2.0`) dans les variables d'environnement du service.
+- Pour figer une version précise plutôt que suivre `:latest`, mets `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` à
+  un numéro de version exact (ex. `1.2.0`) dans les variables d'environnement du service.
 
 ## Rollback
 
-Repasse `BACKEND_TAG` et/ou `FRONTEND_TAG` (variables d'environnement du service) à la version précédente
-(visible dans les tags Git `backend-vX.Y.Z` / GitHub Releases), puis **Redeploy**. Aucune image à reconstruire,
-c'est juste un changement de tag suivi d'un `docker compose up`.
+Repasse `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG` (variables d'environnement du service) à la version précédente
+(visible dans les tags Git `backend-vX.Y.Z`/`frontend-vX.Y.Z`/`mobile-vX.Y.Z` / GitHub Releases), puis
+**Redeploy**. Aucune image à reconstruire, c'est juste un changement de tag suivi d'un `docker compose up`.
 
 ## Dépannage
 
+- **Un appel `/api/*` échoue en 403 Forbidden depuis le frontend ou l'app mobile web** (visible dans l'onglet
+  Réseau du navigateur) : l'origine du domaine appelant n'est pas dans `CLIENT_URL`/`CORS_ADDITIONAL_ORIGINS` —
+  voir l'encadré CORS de l'étape 3. Fréquent après avoir ajouté un nouveau domaine (ex. celui de l'app mobile)
+  sans mettre à jour `CORS_ADDITIONAL_ORIGINS` en conséquence.
 - **Je viens de redeployer mais je ne vois pas les derniers changements** : vérifie d'abord que la release
   a bien réussi (onglet Actions du repo GitHub), puis compare la date de build réellement servie —
   `curl -sI https://sport.example.com/main-*.js | grep -i last-modified` (le nom exact du fichier `main-*.js`
   est visible dans le `<script>` de `curl -s https://sport.example.com/ | grep main-`) — à l'heure de la
   dernière release. Deux causes possibles, à vérifier dans cet ordre :
-  1. **Mauvais tag suivi** : le service est sur la branche `dev` mais `BACKEND_TAG`/`FRONTEND_TAG` valent encore
-     `latest` (ou l'inverse) — voir l'avertissement de l'étape 2. C'est la cause la plus probable si le *bon*
+  1. **Mauvais tag suivi** : le service est sur la branche `dev` mais `BACKEND_TAG`/`FRONTEND_TAG`/`MOBILE_TAG`
+     valent encore `latest` (ou l'inverse) — voir l'avertissement de l'étape 2. C'est la cause la plus probable si le *bon*
      commit apparaît dans l'onglet **Deployments** mais que le site ne change pas : le commit affiché reflète la
      branche source, pas l'image réellement tirée. Corrige les tags pour qu'ils correspondent à la branche, puis
      redeploy.

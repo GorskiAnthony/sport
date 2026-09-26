@@ -64,4 +64,16 @@ export class TeamService {
       .delete<ApiResponse<{ following: boolean }>>(`${this.baseUrl}/${id}/follow`)
       .pipe(map((res) => res.data));
   }
+
+  checkIn(id: number): Observable<Team> {
+    return this.http
+      .patch<ApiResponse<Team>>(`${this.baseUrl}/${id}/check-in`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  undoCheckIn(id: number): Observable<Team> {
+    return this.http
+      .delete<ApiResponse<Team>>(`${this.baseUrl}/${id}/check-in`)
+      .pipe(map((res) => res.data));
+  }
 }

@@ -1,12 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { EventPassService } from '../../core/services/event-pass.service';
 import { PlanTier, SubscriptionService } from '../../core/services/subscription.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { Button } from '../../shared/ui/button/button';
 import { BillingPeriod, BillingToggle } from './billing-toggle/billing-toggle';
+import { setPageMeta } from '../../shared/utils/seo';
 
 type Pricing =
   | { kind: 'fixed'; price: string; period: string }
@@ -22,6 +25,8 @@ interface Plan {
   features: string[];
   pricing: Pricing;
 }
+
+type PlanCtaState = 'current' | 'manage' | 'switch' | 'default';
 
 interface EventPass {
   name: string;
@@ -60,9 +65,8 @@ const PLANS: Plan[] = [
       'Tournois illimités',
       'Équipes illimitées',
       'Résultats en temps réel',
+      'Planning multi-terrains',
       'Export PDF des classements',
-      // TODO: confirmer que cette feature existe ; elle sert à différencier de Pass Événement
-      'Historique de vos tournois',
       'Support par email',
     ],
   },
@@ -76,12 +80,12 @@ const PLANS: Plan[] = [
     pricing: { kind: 'recurring', monthly: 49, annual: 490 },
     features: [
       'Tout le plan Classic',
-      '2 000 – 3 000 connexions simultanées',
-      'Infra dédiée + SLA 99.9%',
       'Support prioritaire 24/7',
-      // TODO: confirmer la limite technique réelle du bracket unique avant split automatique
-      "Tournois scindables (split) jusqu'à 48 équipes dans un même bracket",
-      'Règles personnalisées',
+      "Tournois jusqu'à 128 équipes dans un même bracket",
+      'Règlement personnalisé affiché aux équipes',
+      'Bannière sponsor avec suivi des clics',
+      'Buvette (caisse mobile + suivi des ventes)',
+      'Note fair-play par équipe',
     ],
   },
 ];
@@ -116,8 +120,8 @@ const FAQ = [
     a: "Oui, sans carte bancaire requise. Vous pouvez l'utiliser indéfiniment.",
   },
   {
-    q: "Qu'est-ce qu'un tournoi scindable (Pro) ?",
-    a: 'Un gros tournoi peut être automatiquement divisé en deux sous-tournois parallèles avec classements fusionnés.',
+    q: 'Y a-t-il une limite au nombre d\'équipes (Pro) ?',
+    a: "Les plans Classic et Pro n'ont pas de limite d'équipes au global, mais un même bracket (poule ou tableau à élimination directe) est plafonné à 128 équipes pour rester lisible et performant.",
   },
   {
     q: 'Quelle différence entre le Pass Événement et un abonnement ?',
@@ -130,6 +134,7 @@ const FAQ = [
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pricing-page',
   standalone: true,
   imports: [PageHeader, Button, BillingToggle],
@@ -138,6 +143,7 @@ const FAQ = [
 export class PricingPage {
   private readonly authService = inject(AuthService);
   private readonly subscriptionService = inject(SubscriptionService);
+  private readonly eventPassService = inject(EventPassService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
@@ -145,7 +151,29 @@ export class PricingPage {
   readonly eventPass = EVENT_PASS;
   readonly faq = FAQ;
   readonly loadingPlan = signal<string | null>(null);
+  readonly loadingEventPass = signal(false);
   readonly billing = signal<BillingPeriod>('monthly');
+
+  constructor() {
+    setPageMeta(inject(Title), inject(Meta), {
+      title: 'Tarifs',
+      description: 'Classic, Pro ou Pass Événement : choisissez la formule adaptée à vos tournois, mensuelle ou annuelle.',
+    });
+  }
+
+  planCtaState(plan: Plan): PlanCtaState {
+    if (!this.authService.isAuthenticated()) {
+      return 'default';
+    }
+
+    const currentPlan = this.authService.currentUser()?.plan ?? 'FREE';
+    if (plan.id.toUpperCase() === currentPlan) {
+      return 'current';
+    }
+
+    // Repasser au gratuit revient à résilier l'abonnement en cours, pas à en créer un nouveau.
+    return plan.id === 'free' ? 'manage' : 'switch';
+  }
 
   priceInfo(plan: Plan): { amount: string; period: string; note?: string } {
     if (plan.pricing.kind === 'fixed') {
@@ -176,10 +204,15 @@ export class PricingPage {
       return;
     }
 
-    // TODO: brancher Stripe avec la période sélectionnée (mensuel/annuel) —
-    // le endpoint /subscriptions/checkout ne prend actuellement que le plan.
+    // Déjà un abonnement payant en cours : on modifie l'abonnement Stripe existant
+    // (proratisé) plutôt que d'en ouvrir un second par-dessus.
+    if ((this.authService.currentUser()?.plan ?? 'FREE') !== 'FREE') {
+      this.changePlan(plan);
+      return;
+    }
+
     this.loadingPlan.set(plan.id);
-    this.subscriptionService.checkout(plan.id as PlanTier).subscribe({
+    this.subscriptionService.checkout(plan.id as PlanTier, this.billing()).subscribe({
       next: (res) => {
         window.location.href = res.url;
       },
@@ -193,8 +226,39 @@ export class PricingPage {
     });
   }
 
+  private changePlan(plan: Plan): void {
+    this.loadingPlan.set(plan.id);
+    this.subscriptionService.changePlan(plan.id as PlanTier, this.billing()).subscribe({
+      next: (res) => {
+        this.loadingPlan.set(null);
+        this.authService.updatePlan(res.plan);
+        this.router.navigate(['/checkout/success'], { queryParams: { plan: plan.id } });
+      },
+      error: () => {
+        this.loadingPlan.set(null);
+        this.toast.error('Une erreur est survenue lors du changement de plan.', 'Erreur');
+      },
+    });
+  }
+
   selectEventPass(): void {
-    // TODO: brancher Stripe (paiement unique de 12€, hors abonnement) — endpoint backend à créer
-    this.toast.info("Le paiement à l'unité arrive bientôt.", 'Bientôt disponible');
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/register']);
+      return;
+    }
+
+    this.loadingEventPass.set(true);
+    this.eventPassService.checkout().subscribe({
+      next: (res) => {
+        window.location.href = res.url;
+      },
+      error: () => {
+        this.loadingEventPass.set(false);
+        this.toast.error(
+          'Une erreur est survenue lors de la création de la session de paiement.',
+          'Erreur',
+        );
+      },
+    });
   }
 }

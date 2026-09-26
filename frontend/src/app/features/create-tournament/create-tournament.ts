@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -38,6 +38,7 @@ const FORMATS: FormSelectOption[] = [
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-create-tournament-page',
   standalone: true,
   imports: [Button, FormInput, FormSelect],

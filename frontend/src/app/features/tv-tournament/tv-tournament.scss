@@ -1,0 +1,12 @@
+.tv-screen {
+  position: fixed;
+  inset: 0;
+  background: #0d1117;
+  color: #fff;
+  font-family: inherit;
+}
+
+.tv-scale {
+  transform: scale(1.15);
+  transform-origin: top center;
+}

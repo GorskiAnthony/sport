@@ -1,4 +1,4 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { GrowthPoint } from '../../../core/models/admin.model';
 
 const WIDTH = 600;
@@ -29,6 +29,7 @@ function toDayKey(date: Date | string): string {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-growth-chart',
   standalone: true,
   templateUrl: './growth-chart.html',

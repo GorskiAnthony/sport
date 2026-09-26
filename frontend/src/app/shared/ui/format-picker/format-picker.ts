@@ -1,4 +1,4 @@
-import { Component, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, model } from '@angular/core';
 import { TournamentFormat } from '../../../core/models/bracket.model';
 
 interface FormatOption {
@@ -26,6 +26,7 @@ const OPTIONS: FormatOption[] = [
 ];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-format-picker',
   standalone: true,
   templateUrl: './format-picker.html',

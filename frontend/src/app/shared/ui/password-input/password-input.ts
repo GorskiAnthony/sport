@@ -1,7 +1,8 @@
-import { Component, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, signal } from '@angular/core';
 import { FormInput } from '../form-input/form-input';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-password-input',
   standalone: true,
   imports: [FormInput],

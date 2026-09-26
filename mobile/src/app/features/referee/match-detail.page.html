@@ -1,0 +1,97 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="backHref()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <app-breadcrumb [segments]="breadcrumbSegments()" />
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (loading()) {
+    <div class="state-container">
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  } @else if (error() || !match()) {
+    <app-empty-state icon="alert-circle-outline" tone="danger" message="Impossible de charger ce match.">
+      <ion-button fill="outline" size="small" (click)="load()">Réessayer</ion-button>
+    </app-empty-state>
+  } @else if (match(); as m) {
+    <div class="match-header">
+      <p class="meta">
+        {{ m.phase }}
+        @if (m.venue) { · {{ m.venue }} }
+      </p>
+      @if (m.date) {
+        <p class="meta">{{ m.date | date: 'dd/MM/yy HH:mm' }}</p>
+      }
+      <app-status-badge [color]="statusColor(m.status)" [label]="statusLabel(m.status)" />
+    </div>
+
+    @switch (m.status) {
+      @case ('SCHEDULED') {
+        <div class="teams-preview">
+          <span class="team-name">{{ m.homeTeam.name }}</span>
+          <span class="vs">vs</span>
+          <span class="team-name">{{ m.awayTeam.name }}</span>
+        </div>
+        <ion-button expand="block" class="primary-action" [disabled]="starting()" (click)="start()">
+          @if (starting()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else {
+            Démarrer le match
+          }
+        </ion-button>
+      }
+      @case ('ONGOING') {
+        <div class="score-entry">
+          <div class="team-score">
+            <span class="team-name">{{ m.homeTeam.name }}</span>
+            <div class="stepper">
+              <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="decrementHome()" aria-label="Diminuer le score de {{ m.homeTeam.name }}">−</button>
+              <span class="score-value font-mono" [class.pulse]="homePulse()">{{ homeScore() }}</span>
+              <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="incrementHome()" aria-label="Augmenter le score de {{ m.homeTeam.name }}">+</button>
+            </div>
+          </div>
+          <div class="team-score">
+            <span class="team-name">{{ m.awayTeam.name }}</span>
+            <div class="stepper">
+              <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="decrementAway()" aria-label="Diminuer le score de {{ m.awayTeam.name }}">−</button>
+              <span class="score-value font-mono" [class.pulse]="awayPulse()">{{ awayScore() }}</span>
+              <button class="stepper-btn" type="button" [disabled]="submitting()" (click)="incrementAway()" aria-label="Augmenter le score de {{ m.awayTeam.name }}">+</button>
+            </div>
+          </div>
+        </div>
+        @if (scoreQueue.pendingCount() > 0) {
+          <p class="offline-banner">
+            <ion-icon name="cloud-offline-outline"></ion-icon>
+            {{ scoreQueue.pendingCount() }} changement{{ scoreQueue.pendingCount() > 1 ? 's' : '' }} en attente de connexion
+          </p>
+        }
+        <ion-button expand="block" class="primary-action" [disabled]="submitting() || !connectivity.online()" (click)="confirmFinish()">
+          @if (submitting()) {
+            <ion-spinner name="dots"></ion-spinner>
+          } @else if (!connectivity.online()) {
+            Connexion requise
+          } @else {
+            Terminer le match
+          }
+        </ion-button>
+      }
+      @case ('FORFEIT') {
+        <div class="state-container">
+          <ion-text color="danger">Match terminé sur forfait.</ion-text>
+        </div>
+      }
+      @default {
+        <div class="final-score">
+          <span class="team-name">{{ m.homeTeam.name }}</span>
+          <span class="score-value font-mono">{{ m.homeScore ?? '–' }} : {{ m.awayScore ?? '–' }}</span>
+          <span class="team-name">{{ m.awayTeam.name }}</span>
+        </div>
+      }
+    }
+  }
+</ion-content>
