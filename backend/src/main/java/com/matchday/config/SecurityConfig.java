@@ -115,6 +115,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/share/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sitemap.xml").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/robots.txt").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/llms.txt").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/webhook").permitAll()
