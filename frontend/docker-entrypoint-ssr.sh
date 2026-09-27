@@ -9,4 +9,10 @@ set -e
 
 node /app/dist/frontend/server/server.mjs &
 
-exec nginx -g 'daemon off;'
+# L'image nginx officielle ne déclenche son /docker-entrypoint.d/ (dont l'envsubst des templates
+# de /etc/nginx/templates/ — voir nginx.conf/${BACKEND_UPSTREAM}) que si le process lancé s'appelle
+# littéralement "nginx" (argv[0]) ; un exec "nginx ..." direct ici la contournerait entièrement,
+# laissant nginx démarrer sur le default.conf statique de l'image de base. En repassant par
+# /docker-entrypoint.sh (l'ENTRYPOINT du Dockerfile, qui a déjà tourné une première fois pour nous
+# amener jusqu'ici sans exécuter ces scripts faute d'argv[0] "nginx"), on les déclenche cette fois.
+exec /docker-entrypoint.sh nginx -g 'daemon off;'
