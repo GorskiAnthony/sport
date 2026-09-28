@@ -25,7 +25,14 @@ function lastNDates(n: number): Date[] {
 }
 
 function toDayKey(date: Date | string): string {
-  return typeof date === 'string' ? date.slice(0, 10) : date.toISOString().slice(0, 10);
+  if (typeof date === 'string') return date.slice(0, 10);
+  // toISOString() convertit en UTC : pour un fuseau en avance sur UTC (ex. Europe/Paris), le
+  // minuit local d'aujourd'hui tombe la veille en UTC, ce qui décale toute la courbe d'un jour
+  // (le point du jour même n'affichait jamais les inscriptions/tournois créés le jour même).
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 @Component({
