@@ -1,5 +1,5 @@
 @if (routerLink()) {
-  <a [routerLink]="routerLink()" [class]="classes()">
+  <a [routerLink]="routerLink()" [queryParams]="queryParams()" [class]="classes()">
     {{ text() }}
     @if (arrow()) {
       <span aria-hidden="true">→</span>

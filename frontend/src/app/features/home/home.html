@@ -19,7 +19,13 @@
           Foot, basket, pétanque, esport, tennis... Oubliez les feuilles Excel : créez votre tournoi, ajoutez vos équipes, et laissez Matchday gérer classement, calendrier et partage en temps réel.
         </p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
-          <app-button text="Créer un compte" variant="primary" routerLink="/register" [arrow]="true" />
+          <app-button
+            text="Créer un compte"
+            variant="primary"
+            routerLink="/register"
+            [queryParams]="{ role: 'ORGANIZER', returnUrl: '/dashboard/tournaments/new' }"
+            [arrow]="true"
+          />
           <app-button text="Voir les tournois" variant="ghost" routerLink="/tournaments" />
         </div>
       </div>
@@ -93,7 +99,13 @@
           Créez votre compte gratuitement et accédez à tous les tournois disponibles, ou lancez le vôtre en quelques minutes.
         </p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
-          <app-button text="Créer un compte" variant="primary" routerLink="/register" [arrow]="true" />
+          <app-button
+            text="Créer un compte"
+            variant="primary"
+            routerLink="/register"
+            [queryParams]="{ role: 'ORGANIZER', returnUrl: '/dashboard/tournaments/new' }"
+            [arrow]="true"
+          />
           <app-button text="En savoir plus" variant="outline" routerLink="/organizers" />
         </div>
       </div>
