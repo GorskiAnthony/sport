@@ -71,7 +71,7 @@
             <div class="flex items-center gap-3 mt-3 text-xs text-slate-400">
               <span>{{ t.category }}</span>
               <span>·</span>
-              <span>{{ t.teamsCount }} équipes</span>
+              <span>{{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }}</span>
             </div>
           </a>
         </li>
@@ -80,7 +80,7 @@
 
     @if (totalPages() > 1) {
       <nav class="flex items-center justify-between mt-8" aria-label="Pagination">
-        <p class="text-slate-400 text-xs">{{ totalCount() }} tournois · page {{ page() + 1 }} / {{ totalPages() }}</p>
+        <p class="text-slate-400 text-xs">{{ totalCount() }} tournoi{{ totalCount() > 1 ? 's' : '' }} · page {{ page() + 1 }} / {{ totalPages() }}</p>
         <div class="flex items-center gap-2">
           <button
             type="button"

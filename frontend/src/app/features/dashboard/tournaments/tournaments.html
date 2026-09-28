@@ -46,7 +46,7 @@
           <app-sport-icon [sport]="t.sport" size="sm" />
           <div class="flex-1 min-w-0">
             <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
-            <p class="text-slate-400 text-xs">{{ dates(t) }} · {{ t.location }} · {{ t.teamsCount }}/{{ t.maxTeams }} équipes</p>
+            <p class="text-slate-400 text-xs">{{ dates(t) }} · {{ t.location }} · {{ t.teamsCount }}/{{ t.maxTeams }} équipe{{ t.maxTeams > 1 ? 's' : '' }}</p>
           </div>
           <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
 

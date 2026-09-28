@@ -43,7 +43,7 @@
               <p class="text-white font-semibold text-sm">{{ t.name }}</p>
               <app-status-badge status="ONGOING" [label]="statusLabel(t.status)" />
             </div>
-            <p class="text-slate-400 text-xs text-center py-2">{{ t.teamsCount }} équipes inscrites</p>
+            <p class="text-slate-400 text-xs text-center py-2">{{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }} inscrite{{ t.teamsCount > 1 ? 's' : '' }}</p>
             <p class="text-slate-400 text-xs text-center mt-1">{{ t.category }} · {{ t.location }}</p>
           </a>
         }
@@ -78,7 +78,7 @@
                 <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
               </div>
               <p class="text-slate-400 text-xs">{{ icon(t.sport) }} {{ t.sport }} · {{ t.category }}</p>
-              <p class="text-slate-400 text-xs mt-1">{{ t.startDate }} – {{ t.endDate }} · {{ t.teamsCount }} équipes</p>
+              <p class="text-slate-400 text-xs mt-1">{{ t.startDate }} – {{ t.endDate }} · {{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }}</p>
             </a>
           </li>
         }

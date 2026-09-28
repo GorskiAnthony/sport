@@ -43,7 +43,7 @@
         <h1 class="text-white font-extrabold text-xl truncate">{{ tournament()!.name }}</h1>
         <p class="text-slate-400 text-xs">
           {{ tournament()!.startDate }} – {{ tournament()!.endDate }} · {{ tournament()!.location }} ·
-          {{ tournament()!.teams.length }}/{{ tournament()!.maxTeams }} équipes
+          {{ tournament()!.teams.length }}/{{ tournament()!.maxTeams }} équipe{{ tournament()!.maxTeams > 1 ? 's' : '' }}
         </p>
       </div>
       <app-status-badge [status]="tournament()!.status" [label]="statusLabel(tournament()!.status)" />

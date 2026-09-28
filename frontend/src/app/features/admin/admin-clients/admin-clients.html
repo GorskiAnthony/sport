@@ -34,7 +34,7 @@
           </div>
           <span class="px-2 py-0.5 rounded-full bg-white/5 text-slate-300 text-xs flex-shrink-0">{{ client.role }}</span>
           <span class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-xs flex-shrink-0">{{ client.plan }}</span>
-          <span class="text-slate-400 text-xs flex-shrink-0 hidden sm:inline">{{ client.tournamentsCount }} tournoi(s)</span>
+          <span class="text-slate-400 text-xs flex-shrink-0 hidden sm:inline">{{ client.tournamentsCount }} tournoi{{ client.tournamentsCount > 1 ? 's' : '' }}</span>
         </a>
       }
     }

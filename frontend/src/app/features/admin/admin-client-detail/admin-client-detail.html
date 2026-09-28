@@ -46,7 +46,7 @@
             @for (t of c.tournaments; track t.id) {
               <li class="px-5 py-3 flex items-center justify-between gap-3">
                 <a [routerLink]="['/t', t.id]" target="_blank" class="text-white text-sm font-medium truncate hover:text-green-400">{{ t.name }}</a>
-                <span class="text-slate-400 text-xs flex-shrink-0">{{ t.location }} · {{ t.teamsCount }} équipe(s) · {{ t.matchesCount }} match(s)</span>
+                <span class="text-slate-400 text-xs flex-shrink-0">{{ t.location }} · {{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }} · {{ t.matchesCount }} match{{ t.matchesCount > 1 ? 's' : '' }}</span>
                 <app-status-badge [status]="t.status" [label]="statusLabel(t.status)" />
               </li>
             }

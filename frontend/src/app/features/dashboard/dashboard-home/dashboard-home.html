@@ -51,7 +51,7 @@
       @if (planPercent() === null) {
         <span class="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">Illimité</span>
       } @else {
-        <span class="text-xs text-slate-400">{{ s.plan.usedTournaments }} / {{ s.plan.maxTournaments }} tournois</span>
+        <span class="text-xs text-slate-400">{{ s.plan.usedTournaments }} / {{ s.plan.maxTournaments }} tournoi{{ s.plan.maxTournaments > 1 ? 's' : '' }}</span>
       }
     </div>
     @if (planPercent() !== null) {
@@ -61,7 +61,7 @@
     }
     <div class="flex items-center justify-between gap-3 mt-3">
       @if (!unlimitedTeamsPerTournament()) {
-        <p class="text-slate-400 text-xs">Jusqu'à {{ s.plan.maxTeamsPerTournament }} équipes par tournoi.</p>
+        <p class="text-slate-400 text-xs">Jusqu'à {{ s.plan.maxTeamsPerTournament }} équipe{{ s.plan.maxTeamsPerTournament > 1 ? 's' : '' }} par tournoi.</p>
       } @else {
         <span></span>
       }

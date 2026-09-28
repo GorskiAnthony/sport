@@ -201,7 +201,7 @@
               <ion-item lines="full">
                 <ion-label>
                   <h3>{{ row.productName }}</h3>
-                  <p>{{ row.quantitySold }} vendu(s)</p>
+                  <p>{{ row.quantitySold }} vendu{{ row.quantitySold > 1 ? 's' : '' }}</p>
                 </ion-label>
                 <ion-text slot="end" class="font-mono">{{ formatPrice(row.revenue) }}</ion-text>
               </ion-item>

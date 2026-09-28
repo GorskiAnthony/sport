@@ -214,12 +214,13 @@ export class DashboardTeamsPage implements OnInit {
       if (created.length > 0) {
         this.teams.update((list) => [...list, ...created]);
       }
+      const s = created.length > 1 ? 's' : '';
       if (failedCount === 0) {
-        this.toast.success(`${created.length} équipe(s) importée(s).`, 'Import réussi');
+        this.toast.success(`${created.length} équipe${s} importée${s}.`, 'Import réussi');
       } else if (created.length === 0) {
         this.toast.error("Aucune équipe n'a pu être importée (limite de votre plan atteinte ?).");
       } else {
-        this.toast.info(`${created.length} équipe(s) importée(s), ${failedCount} en échec (limite de votre plan ?).`, 'Import partiel');
+        this.toast.info(`${created.length} équipe${s} importée${s}, ${failedCount} en échec (limite de votre plan ?).`, 'Import partiel');
       }
     });
   }
