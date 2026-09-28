@@ -14,6 +14,7 @@ type MapState = 'loading' | 'ready' | 'unavailable';
   selector: 'app-tournament-map',
   standalone: true,
   templateUrl: './tournament-map.html',
+  styleUrl: './tournament-map.scss',
 })
 export class TournamentMap implements OnChanges, OnDestroy {
   readonly location = input.required<string | null>();
@@ -75,9 +76,11 @@ export class TournamentMap implements OnChanges, OnDestroy {
       scrollWheelZoom: false,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    // Tuiles OSM standard : gratuites et sans clé, contrairement aux tuiles CARTO (dark_all)
+    // qui exigent désormais une clé API même en usage raisonnable. Le rendu sombre est recréé
+    // en CSS (voir tournament-map.scss) plutôt que via un fournisseur de tuiles payant.
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(this.map);
 
