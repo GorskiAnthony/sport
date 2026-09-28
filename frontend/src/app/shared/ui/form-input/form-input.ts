@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-form-input',
   standalone: true,
+  host: { class: 'block' },
   templateUrl: './form-input.html',
 })
 export class FormInput {
