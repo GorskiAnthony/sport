@@ -20,7 +20,7 @@
       <p class="text-slate-400 text-sm mt-1">
         Touchez le nom de votre équipe pour signaler votre arrivée.
       </p>
-      <p class="text-slate-500 text-xs mt-1">{{ checkedInCount() }} / {{ teams().length }} équipes arrivées</p>
+      <p class="text-slate-500 text-xs mt-1">{{ checkedInCount() }} / {{ teams().length }} équipe{{ teams().length > 1 ? 's' : '' }} arrivée{{ teams().length > 1 ? 's' : '' }}</p>
     </div>
 
     <div class="space-y-2">

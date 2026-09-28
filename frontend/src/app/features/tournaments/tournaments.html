@@ -21,25 +21,23 @@
     </div>
 
     <select
-      [value]="sport()"
       (change)="onSportChange($event)"
       aria-label="Filtrer par sport"
       class="bg-[#161B22] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50"
     >
-      <option value="">Tous les sports</option>
+      <option value="" [selected]="!sport()">Tous les sports</option>
       @for (s of sports; track s.id) {
-        <option [value]="s.id">{{ s.label }}</option>
+        <option [value]="s.id" [selected]="s.id === sport()">{{ s.label }}</option>
       }
     </select>
 
     <select
-      [value]="pageSize()"
       (change)="onPageSizeChange($event)"
       aria-label="Résultats par page"
       class="bg-[#161B22] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50"
     >
       @for (size of pageSizes; track size) {
-        <option [value]="size">{{ size }} / page</option>
+        <option [value]="size" [selected]="size === pageSize()">{{ size }} / page</option>
       }
     </select>
   </div>
@@ -69,9 +67,9 @@
             <h3 class="text-white font-semibold group-hover:text-green-400 transition-colors">{{ t.name }}</h3>
             <p class="text-slate-400 text-xs mt-1">{{ dates(t) }} · {{ t.location }}</p>
             <div class="flex items-center gap-3 mt-3 text-xs text-slate-400">
-              <span>{{ t.category }}</span>
+              <span>{{ categoryLabel(t.category) }}</span>
               <span>·</span>
-              <span>{{ t.teamsCount }} équipes</span>
+              <span>{{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }}</span>
             </div>
           </a>
         </li>
@@ -80,7 +78,7 @@
 
     @if (totalPages() > 1) {
       <nav class="flex items-center justify-between mt-8" aria-label="Pagination">
-        <p class="text-slate-400 text-xs">{{ totalCount() }} tournois · page {{ page() + 1 }} / {{ totalPages() }}</p>
+        <p class="text-slate-400 text-xs">{{ totalCount() }} tournoi{{ totalCount() > 1 ? 's' : '' }} · page {{ page() + 1 }} / {{ totalPages() }}</p>
         <div class="flex items-center gap-2">
           <button
             type="button"

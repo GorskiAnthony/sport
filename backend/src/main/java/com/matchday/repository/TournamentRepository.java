@@ -29,9 +29,14 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     @Query("SELECT t.organizer.id AS organizerId, COUNT(t) AS count FROM Tournament t WHERE t.organizer.id IN :organizerIds GROUP BY t.organizer.id")
     List<OrganizerCount> countGroupedByOrganizerIdIn(@Param("organizerIds") List<Long> organizerIds);
 
+    // query compare à '' plutôt qu'un IS NULL, pour la même raison que searchPublicPaged
+    // ci-dessous : un bind NULL utilisé seulement dans LOWER(CONCAT(...)) ne permet pas à
+    // Hibernate/Postgres d'inférer son type, et retombe sur bytea ("function lower(bytea) does
+    // not exist") dès que la recherche admin est appelée sans texte (cas le plus courant : liste
+    // par défaut, ou filtre par statut seul).
     @Query("""
             SELECT t FROM Tournament t
-            WHERE (:query IS NULL
+            WHERE (:query = ''
                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.location) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.organizer.email) LIKE LOWER(CONCAT('%', :query, '%')))

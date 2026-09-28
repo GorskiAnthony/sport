@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Params, RouterLink } from '@angular/router';
 
 export type ButtonVariant = 'primary' | 'outline' | 'ghost';
 
@@ -15,6 +15,7 @@ export class Button {
   readonly variant = input<ButtonVariant>('outline');
   readonly href = input<string | undefined>(undefined);
   readonly routerLink = input<string | undefined>(undefined);
+  readonly queryParams = input<Params | undefined>(undefined);
   readonly type = input<'button' | 'submit'>('button');
   readonly className = input<string>('');
   readonly arrow = input(false);

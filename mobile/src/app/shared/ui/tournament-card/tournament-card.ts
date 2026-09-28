@@ -5,6 +5,7 @@ import { qrCodeOutline, chevronForwardOutline } from 'ionicons/icons';
 import { TournamentSummary } from '../../../core/models/tournament.model';
 import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../utils/tournament-status';
 import { SPORTS } from '../../utils/sports';
+import { TOURNAMENT_CATEGORY_LABELS } from '../../utils/tournament-category';
 import { hapticTap } from '../../utils/haptics';
 import { StatusBadgeComponent } from '../status-badge/status-badge';
 
@@ -27,6 +28,8 @@ export class TournamentCardComponent {
   @Output() readonly openRefereeCode = new EventEmitter<void>();
 
   readonly sportIcon = computed(() => SPORTS.find((s) => s.id === this.tournament().sport)?.icon ?? '🏆');
+  readonly sportLabel = computed(() => SPORTS.find((s) => s.id === this.tournament().sport)?.label ?? this.tournament().sport);
+  readonly categoryLabel = computed(() => TOURNAMENT_CATEGORY_LABELS[this.tournament().category] ?? this.tournament().category);
   readonly statusLabel = computed(() => TOURNAMENT_STATUS_LABELS[this.tournament().status]);
   readonly statusColor = computed(() => TOURNAMENT_STATUS_COLORS[this.tournament().status]);
 

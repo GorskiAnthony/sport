@@ -12,6 +12,7 @@ import { tournamentShareSlug } from '../../shared/utils/slug';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
 import { BracketTree } from '../../shared/ui/bracket-tree/bracket-tree';
+import { SPORT_LABELS, TOURNAMENT_CATEGORY_LABELS } from '../../shared/utils/labels';
 
 type Slide = 'live' | 'standings' | 'bracket';
 
@@ -182,6 +183,14 @@ export class TvTournamentPage implements OnInit, OnDestroy {
         this.notFound.set(true);
       },
     });
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   winnerTeamId(match: Match): number | null {

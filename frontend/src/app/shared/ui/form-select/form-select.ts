@@ -9,6 +9,7 @@ export interface FormSelectOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-form-select',
   standalone: true,
+  host: { class: 'block' },
   templateUrl: './form-select.html',
 })
 export class FormSelect {

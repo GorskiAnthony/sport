@@ -124,7 +124,7 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public List<TournamentSummaryResponse> searchTournaments(String search, TournamentStatus status) {
-        String query = (search == null || search.isBlank()) ? null : search.trim();
+        String query = (search == null || search.isBlank()) ? "" : search.trim();
         List<Tournament> found = tournamentRepository.search(query, status, PageRequest.of(0, LIST_CAP));
         return toTournamentSummaries(found);
     }

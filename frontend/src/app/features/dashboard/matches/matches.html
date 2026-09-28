@@ -25,12 +25,11 @@
       <label for="match-tournament-select" class="text-slate-400 text-xs">Tournoi</label>
       <select
         id="match-tournament-select"
-        [value]="selectedTournamentId()"
         (change)="onTournamentChange($event)"
         class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
       >
         @for (t of tournaments(); track t.id) {
-          <option [value]="t.id">{{ t.name }}</option>
+          <option [value]="t.id" [selected]="t.id === selectedTournamentId()">{{ t.name }}</option>
         }
       </select>
     </div>
@@ -41,19 +40,19 @@
         <form (submit)="$event.preventDefault(); save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label for="m-home" class="text-slate-400 text-xs">Équipe à domicile *</label>
-            <select id="m-home" [value]="form().homeTeamId" (change)="updateField('homeTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-              <option value="">Choisir…</option>
+            <select id="m-home" (change)="updateField('homeTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="" [selected]="!form().homeTeamId">Choisir…</option>
               @for (team of teams(); track team.id) {
-                <option [value]="team.id">{{ team.name }}</option>
+                <option [value]="team.id" [selected]="(team.id + '') === form().homeTeamId">{{ team.name }}</option>
               }
             </select>
           </div>
           <div class="flex flex-col gap-1.5">
             <label for="m-away" class="text-slate-400 text-xs">Équipe à l'extérieur *</label>
-            <select id="m-away" [value]="form().awayTeamId" (change)="updateField('awayTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-              <option value="">Choisir…</option>
+            <select id="m-away" (change)="updateField('awayTeamId', $any($event.target).value)" class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              <option value="" [selected]="!form().awayTeamId">Choisir…</option>
               @for (team of teams(); track team.id) {
-                <option [value]="team.id">{{ team.name }}</option>
+                <option [value]="team.id" [selected]="(team.id + '') === form().awayTeamId">{{ team.name }}</option>
               }
             </select>
           </div>

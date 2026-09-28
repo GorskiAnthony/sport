@@ -39,7 +39,14 @@
   </section>
 
   <div class="text-center">
-    <app-button text="Devenir organisateur" variant="primary" routerLink="/register" [arrow]="true" className="px-8 py-3 text-base" />
+    <app-button
+      text="Devenir organisateur"
+      variant="primary"
+      routerLink="/register"
+      [queryParams]="{ role: 'ORGANIZER', returnUrl: '/dashboard/tournaments/new' }"
+      [arrow]="true"
+      className="px-8 py-3 text-base"
+    />
     <p class="text-slate-400 text-sm mt-3">Gratuit, sans carte bancaire.</p>
   </div>
 </div>

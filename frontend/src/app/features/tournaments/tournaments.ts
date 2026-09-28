@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentSummary } from '../../core/models/tournament.model';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
-import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
+import { TOURNAMENT_CATEGORY_LABELS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { StatusBadge } from '../../shared/ui/status-badge/status-badge';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
 import { SPORTS } from '../../shared/utils/sports';
@@ -122,5 +122,9 @@ export class TournamentsPage implements OnInit {
 
   dates(t: TournamentSummary): string {
     return `${t.startDate} – ${t.endDate}`;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 }

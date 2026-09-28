@@ -58,7 +58,7 @@ export class ShareModal implements OnChanges {
     if (this.startDate() && this.endDate()) {
       lines.push(`Du ${formatDateFr(this.startDate()!)} au ${formatDateFr(this.endDate()!)}`);
     }
-    if (this.teamsCount() !== null) lines.push(`${this.teamsCount()} équipes`);
+    if (this.teamsCount() !== null) lines.push(`${this.teamsCount()} équipe${this.teamsCount()! > 1 ? 's' : ''}`);
     lines.push('', `Suivez le tournoi en direct : ${this.shareUrl()}`);
     return lines.join('\n');
   });

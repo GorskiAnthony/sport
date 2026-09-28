@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { RecentTournament, TournamentSummary } from '../../../core/models/tournament.model';
-import { SPORT_ICONS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { SPORT_ICONS, SPORT_LABELS, TOURNAMENT_CATEGORY_LABELS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 import { SPORTS } from '../../../shared/utils/sports';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LucideBell } from '@lucide/angular';
@@ -45,6 +45,14 @@ export class SpectatorHomePage implements OnInit {
 
   icon(sport: string): string {
     return SPORT_ICONS[sport] ?? '🏆';
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   statusLabel(status: string): string {

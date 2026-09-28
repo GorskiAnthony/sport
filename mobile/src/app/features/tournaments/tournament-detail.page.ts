@@ -52,6 +52,8 @@ import { MatchRowComponent } from '../../shared/ui/match-row/match-row';
 import { computeStandings, Standing } from '../../shared/utils/standings';
 import { groupMatchesIntoRounds, Round } from '../../shared/utils/rounds';
 import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/tournament-status';
+import { TOURNAMENT_CATEGORY_LABELS } from '../../shared/utils/tournament-category';
+import { SPORTS } from '../../shared/utils/sports';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
@@ -208,6 +210,14 @@ export class TournamentDetailPage implements ViewWillEnter {
 
   statusColor(status: TournamentDetail['status']): 'primary' | 'warning' | 'danger' | 'medium' {
     return TOURNAMENT_STATUS_COLORS[status];
+  }
+
+  sportLabel(sport: string): string {
+    return SPORTS.find((s) => s.id === sport)?.label ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   roundsFor(matches: Match[], teams: Team[]): Round[] {

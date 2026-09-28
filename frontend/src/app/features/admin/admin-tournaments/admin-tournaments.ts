@@ -5,7 +5,7 @@ import { TournamentStatus } from '../../../core/models/tournament.model';
 import { PageHeader } from '../../../shared/ui/page-header/page-header';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
-import { TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
+import { SPORT_LABELS, TOURNAMENT_STATUS_LABELS } from '../../../shared/utils/labels';
 
 const STATUS_OPTIONS: FormSelectOption[] = [
   { value: 'UPCOMING', label: TOURNAMENT_STATUS_LABELS.UPCOMING },
@@ -48,6 +48,10 @@ export class AdminTournamentsPage implements OnInit {
 
   statusLabel(status: string): string {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
   }
 
   private load(): void {
