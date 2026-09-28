@@ -22,7 +22,7 @@
         <ion-card-title>{{ t.name }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p class="sport-category">{{ t.sport }} · {{ t.category }}</p>
+        <p class="sport-category">{{ sportLabel(t.sport) }} · {{ categoryLabel(t.category) }}</p>
         <p>{{ t.startDate }} – {{ t.endDate }}</p>
         @if (t.location) {
           <p>{{ t.location }}</p>
