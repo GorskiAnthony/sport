@@ -21,25 +21,23 @@
     </div>
 
     <select
-      [value]="sport()"
       (change)="onSportChange($event)"
       aria-label="Filtrer par sport"
       class="bg-[#161B22] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50"
     >
-      <option value="">Tous les sports</option>
+      <option value="" [selected]="!sport()">Tous les sports</option>
       @for (s of sports; track s.id) {
-        <option [value]="s.id">{{ s.label }}</option>
+        <option [value]="s.id" [selected]="s.id === sport()">{{ s.label }}</option>
       }
     </select>
 
     <select
-      [value]="pageSize()"
       (change)="onPageSizeChange($event)"
       aria-label="Résultats par page"
       class="bg-[#161B22] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50"
     >
       @for (size of pageSizes; track size) {
-        <option [value]="size">{{ size }} / page</option>
+        <option [value]="size" [selected]="size === pageSize()">{{ size }} / page</option>
       }
     </select>
   </div>
