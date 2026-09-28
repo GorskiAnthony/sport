@@ -112,12 +112,11 @@
               class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <select
-              [value]="row.category"
               (change)="updateTeamRow($index, 'category', $any($event.target).value)"
               class="w-full bg-[#0D1117] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               @for (c of teamCategories; track c) {
-                <option [value]="c">{{ c }}</option>
+                <option [value]="c" [selected]="c === row.category">{{ c }}</option>
               }
             </select>
             <button type="button" (click)="removeTeamRow($index)" class="text-slate-400 hover:text-red-400 text-sm transition-colors">Supprimer</button>

@@ -53,6 +53,14 @@ const CATEGORIES: FormSelectOption[] = [
 
 const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
 
+const DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY: Record<string, string> = {
+  u13: 'U13',
+  u15: 'U15',
+  u17: 'U17',
+  u18: 'U18',
+  senior: 'Senior',
+};
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dashboard-new-tournament-page',
@@ -190,7 +198,8 @@ export class DashboardNewTournamentPage implements OnInit {
   }
 
   addTeamRow(): void {
-    this.teams.update((rows) => [...rows, { name: '', category: 'U15' }]);
+    const defaultCategory = DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY[this.category()] ?? 'U15';
+    this.teams.update((rows) => [...rows, { name: '', category: defaultCategory }]);
   }
 
   removeTeamRow(index: number): void {
