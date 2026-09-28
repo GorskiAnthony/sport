@@ -14,7 +14,7 @@
         <app-sport-icon [sport]="tournament()!.sport" size="lg" />
         <div>
           <h1 class="text-white text-3xl font-extrabold">{{ tournament()!.name }}</h1>
-          <p class="text-slate-400">{{ tournament()!.category }} · {{ tournament()!.sport }}</p>
+          <p class="text-slate-400">{{ categoryLabel(tournament()!.category) }} · {{ sportLabel(tournament()!.sport) }}</p>
         </div>
       </div>
       <dl class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

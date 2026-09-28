@@ -32,7 +32,7 @@
         <div class="bg-[#161B22] border border-white/10 rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
           <div class="flex-1 min-w-0">
             <p class="text-white font-semibold text-sm truncate">{{ t.name }}</p>
-            <p class="text-slate-400 text-xs truncate">{{ t.sport }} · {{ t.location }} · {{ t.startDate }} – {{ t.endDate }}</p>
+            <p class="text-slate-400 text-xs truncate">{{ sportLabel(t.sport) }} · {{ t.location }} · {{ t.startDate }} – {{ t.endDate }}</p>
             <p class="text-slate-500 text-xs truncate">Organisateur : {{ t.organizerName }} ({{ t.organizerEmail }})</p>
           </div>
           <span class="text-slate-400 text-xs flex-shrink-0">{{ t.teamsCount }} équipe{{ t.teamsCount > 1 ? 's' : '' }} · {{ t.matchesCount }} match{{ t.matchesCount > 1 ? 's' : '' }}</span>

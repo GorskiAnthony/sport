@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toDataURL } from 'qrcode';
 import { TournamentService } from '../../core/services/tournament.service';
 import { TournamentDetail } from '../../core/models/tournament.model';
-import { SPORT_ICONS } from '../../shared/utils/labels';
+import { SPORT_ICONS, SPORT_LABELS, TOURNAMENT_CATEGORY_LABELS } from '../../shared/utils/labels';
 import { formatDateFr } from '../../shared/utils/date';
 import { tournamentShareSlug } from '../../shared/utils/slug';
 
@@ -41,6 +41,14 @@ export class PrintTournamentPage implements OnInit {
 
   icon(sport: string): string {
     return SPORT_ICONS[sport] ?? '🏆';
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   dateRange(t: TournamentDetail): string {

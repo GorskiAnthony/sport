@@ -10,7 +10,7 @@ import { LiveUpdateService } from '../../core/services/live-update.service';
 import { TournamentDetail } from '../../core/models/tournament.model';
 import { Match } from '../../core/models/match.model';
 import { computeStandings, Standing } from '../../shared/utils/standings';
-import { TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
+import { SPORT_LABELS, TOURNAMENT_CATEGORY_LABELS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/labels';
 import { GroupStandings, StandingsGroup } from '../../shared/ui/group-standings/group-standings';
 import { RoundPlanning } from '../../shared/ui/round-planning/round-planning';
 import { SportIcon } from '../../shared/ui/sport-icon/sport-icon';
@@ -194,6 +194,14 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
 
   statusLabel(status: string): string {
     return TOURNAMENT_STATUS_LABELS[status as keyof typeof TOURNAMENT_STATUS_LABELS] ?? status;
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   isForfeited(match: Match, teamId: number): boolean {

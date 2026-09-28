@@ -9,7 +9,7 @@
 
       <span class="text-5xl mb-3 block" aria-hidden="true">{{ icon(tournament()!.sport) }}</span>
       <h1 class="text-3xl font-extrabold leading-tight">{{ tournament()!.name }}</h1>
-      <p class="text-slate-600 mt-1 mb-8">{{ tournament()!.category }} · {{ tournament()!.sport }}</p>
+      <p class="text-slate-600 mt-1 mb-8">{{ categoryLabel(tournament()!.category) }} · {{ sportLabel(tournament()!.sport) }}</p>
 
       @if (qrDataUrl(); as qr) {
         <img [src]="qr" width="240" height="240" alt="QR code du tournoi" class="mx-auto mb-8" />

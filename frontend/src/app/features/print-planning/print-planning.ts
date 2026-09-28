@@ -8,6 +8,7 @@ import { Team } from '../../core/models/team.model';
 import { StandingsGroup } from '../../shared/ui/group-standings/group-standings';
 import { Round, groupMatchesIntoRounds } from '../../shared/utils/rounds';
 import { formatDateFr } from '../../shared/utils/date';
+import { SPORT_LABELS, TOURNAMENT_CATEGORY_LABELS } from '../../shared/utils/labels';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
@@ -56,6 +57,14 @@ export class PrintPlanningPage implements OnInit {
 
   dateRange(t: TournamentDetail): string {
     return `${formatDateFr(t.startDate)} – ${formatDateFr(t.endDate)}`;
+  }
+
+  sportLabel(sport: string): string {
+    return SPORT_LABELS[sport] ?? sport;
+  }
+
+  categoryLabel(category: string): string {
+    return TOURNAMENT_CATEGORY_LABELS[category] ?? category;
   }
 
   restingLabel(teams: Team[]): string {
