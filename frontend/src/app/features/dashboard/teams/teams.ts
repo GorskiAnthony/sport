@@ -26,6 +26,13 @@ interface TeamForm {
 
 const EMPTY_FORM: TeamForm = { name: '', category: 'U15', contact: '', logo: '' };
 const CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
+const DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY: Record<string, string> = {
+  u13: 'U13',
+  u15: 'U15',
+  u17: 'U17',
+  u18: 'U18',
+  senior: 'Senior',
+};
 const CAT_STYLES: Record<string, string> = {
   U13: 'bg-pink-500/20 text-pink-400',
   U15: 'bg-green-500/20 text-green-400',
@@ -96,7 +103,9 @@ export class DashboardTeamsPage implements OnInit {
 
   openAdd(): void {
     this.editId.set(null);
-    this.form.set(EMPTY_FORM);
+    const tournamentCategory = this.tournaments().find((t) => t.id === this.selectedTournamentId())?.category;
+    const defaultCategory = DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY[tournamentCategory ?? ''] ?? 'U15';
+    this.form.set({ ...EMPTY_FORM, category: defaultCategory });
     this.panelOpen.set(true);
   }
 
@@ -189,10 +198,13 @@ export class DashboardTeamsPage implements OnInit {
     const firstCell = splitLine(lines[0])[0]?.toLowerCase();
     const dataLines = ['nom', 'name', 'équipe', 'equipe'].includes(firstCell) ? lines.slice(1) : lines;
 
+    const tournamentCategory = this.tournaments().find((t) => t.id === this.selectedTournamentId())?.category;
+    const defaultCategory = DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY[tournamentCategory ?? ''] ?? 'U15';
+
     return dataLines
       .map((line) => {
         const [name, category, contact] = splitLine(line);
-        return { name: name ?? '', category: category?.toUpperCase() || 'U15', contact: contact ?? '' };
+        return { name: name ?? '', category: category?.toUpperCase() || defaultCategory, contact: contact ?? '' };
       })
       .filter((row) => row.name.length > 0);
   }
