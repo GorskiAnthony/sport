@@ -16,6 +16,8 @@ import { FormatPicker } from '../../../shared/ui/format-picker/format-picker';
 import { ConfirmModal } from '../../../shared/ui/confirm-modal/confirm-modal';
 import { todayIsoDate } from '../../../shared/utils/today';
 import { SPORTS as SPORT_LIST } from '../../../shared/utils/sports';
+import { CATEGORIES as CATEGORY_LIST } from '../../../shared/utils/categories';
+import { TOURNAMENT_CATEGORY_LABELS } from '../../../shared/utils/labels';
 import { LucideLock } from '@lucide/angular';
 
 interface FormErrors {
@@ -43,23 +45,12 @@ const SPORTS: FormSelectOption[] = SPORT_LIST.map((sport) => ({
   label: `${sport.label} ${sport.icon}`,
 }));
 
-const CATEGORIES: FormSelectOption[] = [
-  { value: 'u13', label: 'U13' },
-  { value: 'u15', label: 'U15' },
-  { value: 'u17', label: 'U17' },
-  { value: 'u18', label: 'U18' },
-  { value: 'senior', label: 'Senior' },
-];
+const CATEGORIES: FormSelectOption[] = CATEGORY_LIST.map((category) => ({
+  value: category.id,
+  label: category.label,
+}));
 
-const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
-
-const DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY: Record<string, string> = {
-  u13: 'U13',
-  u15: 'U15',
-  u17: 'U17',
-  u18: 'U18',
-  senior: 'Senior',
-};
+const TEAM_CATEGORIES = CATEGORY_LIST.map((category) => category.label);
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -198,7 +189,7 @@ export class DashboardNewTournamentPage implements OnInit {
   }
 
   addTeamRow(): void {
-    const defaultCategory = DEFAULT_TEAM_CATEGORY_BY_TOURNAMENT_CATEGORY[this.category()] ?? 'U15';
+    const defaultCategory = TOURNAMENT_CATEGORY_LABELS[this.category()] ?? 'U15';
     this.teams.update((rows) => [...rows, { name: '', category: defaultCategory }]);
   }
 

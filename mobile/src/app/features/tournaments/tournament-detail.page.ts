@@ -54,6 +54,7 @@ import { groupMatchesIntoRounds, Round } from '../../shared/utils/rounds';
 import { TOURNAMENT_STATUS_COLORS, TOURNAMENT_STATUS_LABELS } from '../../shared/utils/tournament-status';
 import { TOURNAMENT_CATEGORY_LABELS } from '../../shared/utils/tournament-category';
 import { SPORTS } from '../../shared/utils/sports';
+import { CATEGORIES as CATEGORY_LIST } from '../../shared/utils/categories';
 
 const GROUP_PHASE_PREFIX = 'Groupe ';
 
@@ -63,7 +64,7 @@ interface GroupPhase {
   matches: Match[];
 }
 
-const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
+const TEAM_CATEGORIES = CATEGORY_LIST.map((category) => category.label);
 
 /** Portage mobile de frontend/src/app/features/dashboard/tournament-detail/tournament-detail.ts
  *  — même branchement par format, mais avec une liste de tours simplifiée à la place du

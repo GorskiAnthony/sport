@@ -33,6 +33,7 @@ import { FormatPicker } from '../../shared/ui/format-picker/format-picker';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { todayIsoDate } from '../../shared/utils/today';
 import { SPORTS } from '../../shared/utils/sports';
+import { CATEGORIES as CATEGORY_LIST } from '../../shared/utils/categories';
 
 interface FormErrors {
   name?: string;
@@ -50,15 +51,9 @@ interface TeamRow {
 
 const MAX_TOURNAMENTS_BY_PLAN: Record<Plan, number> = { FREE: 1, CLASSIC: Infinity, PRO: Infinity };
 
-const CATEGORIES = [
-  { value: 'u13', label: 'U13' },
-  { value: 'u15', label: 'U15' },
-  { value: 'u17', label: 'U17' },
-  { value: 'u18', label: 'U18' },
-  { value: 'senior', label: 'Senior' },
-];
+const CATEGORIES = CATEGORY_LIST.map((category) => ({ value: category.id, label: category.label }));
 
-const TEAM_CATEGORIES = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'];
+const TEAM_CATEGORIES = CATEGORY_LIST.map((category) => category.label);
 
 /** Portage mobile de frontend/src/app/features/dashboard/new-tournament/new-tournament.ts —
  *  même logique en deux étapes (détails puis équipes + format + génération du tableau), sans
