@@ -42,7 +42,7 @@ const PLANS: Plan[] = [
   {
     id: 'free',
     name: 'Gratuit',
-    description: 'Pour se lancer sans risque et organiser vos premiers tournois.',
+    description: 'Pour tester Matchday sans risque avant de passer à un plan payant.',
     cta: 'Commencer gratuitement',
     highlighted: false,
     pricing: { kind: 'fixed', price: '0€', period: 'pour toujours' },
@@ -58,7 +58,7 @@ const PLANS: Plan[] = [
     id: 'classic',
     name: 'Classic',
     description: 'Pour les organisateurs réguliers qui ne veulent plus de limites.',
-    cta: "Démarrer l'essai gratuit",
+    cta: 'Passer à ce plan',
     highlighted: true,
     badge: 'Populaire',
     pricing: { kind: 'recurring', monthly: 19, annual: 190 },
