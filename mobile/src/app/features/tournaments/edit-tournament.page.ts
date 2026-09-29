@@ -24,6 +24,7 @@ import { addIcons } from 'ionicons';
 import { alertCircleOutline } from 'ionicons/icons';
 import { TournamentService } from '../../core/services/tournament.service';
 import { SPORTS } from '../../shared/utils/sports';
+import { CATEGORIES as CATEGORY_LIST } from '../../shared/utils/categories';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state';
 import { BreadcrumbComponent, BreadcrumbSegment } from '../../shared/ui/breadcrumb/breadcrumb';
 
@@ -35,13 +36,7 @@ interface FormErrors {
   endDate?: string;
 }
 
-const CATEGORIES = [
-  { value: 'u13', label: 'U13' },
-  { value: 'u15', label: 'U15' },
-  { value: 'u17', label: 'U17' },
-  { value: 'u18', label: 'U18' },
-  { value: 'senior', label: 'Senior' },
-];
+const CATEGORIES = CATEGORY_LIST.map((category) => ({ value: category.id, label: category.label }));
 
 /** Portage mobile de frontend/src/app/features/dashboard/edit-tournament/edit-tournament.ts —
  *  champs de base uniquement, sans règlement personnalisé ni sponsor (réservés au plan PRO,

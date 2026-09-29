@@ -6,10 +6,11 @@ import { ToastService } from '../../core/services/toast.service';
 import { Button } from '../../shared/ui/button/button';
 import { FormInput } from '../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../shared/ui/form-select/form-select';
+import { CATEGORIES as CATEGORY_LIST } from '../../shared/utils/categories';
 
-const CATEGORIES: FormSelectOption[] = ['U13', 'U15', 'U16', 'U17', 'U18', 'Senior'].map((c) => ({
-  value: c,
-  label: c,
+const CATEGORIES: FormSelectOption[] = CATEGORY_LIST.map((category) => ({
+  value: category.label,
+  label: category.label,
 }));
 
 @Component({

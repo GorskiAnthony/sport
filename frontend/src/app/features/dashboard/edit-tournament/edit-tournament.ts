@@ -7,6 +7,7 @@ import { Button } from '../../../shared/ui/button/button';
 import { FormInput } from '../../../shared/ui/form-input/form-input';
 import { FormSelect, FormSelectOption } from '../../../shared/ui/form-select/form-select';
 import { SPORTS as SPORT_LIST } from '../../../shared/utils/sports';
+import { CATEGORIES as CATEGORY_LIST } from '../../../shared/utils/categories';
 
 interface FormErrors {
   name?: string;
@@ -21,13 +22,10 @@ const SPORTS: FormSelectOption[] = SPORT_LIST.map((sport) => ({
   label: `${sport.label} ${sport.icon}`,
 }));
 
-const CATEGORIES: FormSelectOption[] = [
-  { value: 'u13', label: 'U13' },
-  { value: 'u15', label: 'U15' },
-  { value: 'u17', label: 'U17' },
-  { value: 'u18', label: 'U18' },
-  { value: 'senior', label: 'Senior' },
-];
+const CATEGORIES: FormSelectOption[] = CATEGORY_LIST.map((category) => ({
+  value: category.id,
+  label: category.label,
+}));
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
