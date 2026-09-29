@@ -38,7 +38,7 @@ public class ShareController {
     @GetMapping(value = "/tournaments/{id}", produces = MediaType.TEXT_HTML_VALUE)
     public String tournamentCard(@PathVariable Long id) {
         String baseUrl = corsProperties.allowedOrigin();
-        String fallbackImage = baseUrl + "/hero.png";
+        String fallbackImage = baseUrl + "/logo.png";
 
         TournamentDetailResponse tournament;
         try {

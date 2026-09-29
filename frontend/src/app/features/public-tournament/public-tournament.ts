@@ -154,7 +154,7 @@ export class PublicTournamentPage implements OnInit, OnDestroy {
           title: tournament.name,
           description,
           url: canonicalUrl,
-          image: `${origin}/hero.png`,
+          image: `${origin}/logo.png`,
           type: 'article',
         });
         setCanonical(this.document, canonicalUrl);

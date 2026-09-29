@@ -26,7 +26,7 @@ export class AboutPage {
       title: 'À propos',
       description: 'Matchday simplifie la gestion de tournois sportifs : inscriptions, classements en direct et calendrier des matchs, pour les organisateurs comme pour les spectateurs.',
       url,
-      image: `${origin}/hero.png`,
+      image: `${origin}/logo.png`,
     });
     setCanonical(document, url);
   }

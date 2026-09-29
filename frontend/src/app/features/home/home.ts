@@ -37,7 +37,7 @@ export class HomePage implements OnInit {
       title: 'Organisez vos tournois sportifs',
       description: 'Créez un tournoi, ajoutez vos équipes et suivez les scores en direct : Matchday gère le tableau, les classements et le partage avec vos spectateurs.',
       url: origin,
-      image: `${origin}/hero.png`,
+      image: `${origin}/logo.png`,
     });
   }
 
